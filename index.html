@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faisal Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div>
+            <button class="menu-btn" onclick="openSidebar()">☰</button>
+                <div class="sidebar" id="sidebar">
+                    <span class="close-btn" onclick="closeSidebar()">×</span>
+                    <a href="#">Home</a>
+                    <a href="#" class="popup-btn" onclick="openPopup()">About</a>
+                    <a href="#">Services</a>
+                    <a href="#">Contact</a>
+                </div>
+        </div>
+        <img src="img/Asset 8FC 21.png" alt="logo" class="logo">
+        <h1>Faisal Calculator 3.0</h1>
+    </nav>
+
+    <button class="add-btn" onclick="showModal()">+</button>
+    <div class="container" id="calcContainer">
+    
+
+    </div>
+
+    <!-- Modal for selecting calculator type -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="modal">
+        <h2>Select Calculator Type</h2>
+        <button onclick="addCalculator('Silver')" class="but">Silver</button>
+        <button onclick="addCalculator('Gold')" class="but">Gold</button>
+        <button onclick="addCalculator('Diamond')" class="but">Diamond</button>
+        <button onclick="addCalculator('Legend')" class="but">Legend</button>
+        <button onclick="hideModal()" class="but">Cancel</button>
+    </div>
+
+
+    <!-- About code  -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <button class="close-btnn" onclick="closePopup()">×</button>
+            <h2>About Faisal Calculator</h2>
+            <img src="img/Asset 8FC 21.png" alt="logo" class="logo"><span>Faisal Calculator 3.0</span>
+            <p>This product is licensed to 
+                Faisal Inc</p>
+                <p>
+                    Mathematician & Technical Analysis Israr Ahmad
+                </p>
+                <p> Owner of this Website Muhammad Faisal</p>
+                <p>Design by Abdul Basit </p>
+                <p>Warning: This computer program is protected by copyright law 
+                    and international treaties. Unauthorized reproduction or distribution 
+                    of this program, or any portion of it, may result in severe civil and 
+                    criminal penalties, and will be prosecuted to the maximum extent possible 
+                    under the law.
+                    </p>
+                    <p>
+                        Copyright 2025 Faisal Inc . All rights  reserved.    </p>
+
+                        <img src="img/Asset 11.png" alt="img" class="corner_img">
+
+        </div>
+
+
+    </div>
+    <footer>
+        <p>&copy; 2025 | All Rights Reserved.Faisal Inc. | Designed by <span>Abdul Basit</span></p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

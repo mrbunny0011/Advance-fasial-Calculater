@@ -1,0 +1,228 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    
+}
+nav{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    padding: 20px;
+    gap: 20px;
+    background-image: url("img/Asset\ 5slidw.png");
+
+}
+
+.logo{
+    height: 50px;
+    width: 50px;
+}
+nav h1{
+    color: white;
+    font-size: 40px;
+    font-weight: 400;
+}
+/* side baar  */
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hidden initially */
+            width: 250px;
+            height: 100%;
+            background: #333;
+            color: white;
+            padding-top: 20px;
+            transition: 0.3s ease-in-out;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #575757;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Open Sidebar */
+        .open {
+            left: 0;
+        }
+
+        /* Menu Button */
+        .menu-btn {
+            font-size: 20px;
+            cursor: pointer;
+            background: #333;
+            color: white;
+            padding: 6px 11px;
+            border: none;
+            border-radius: 5px;
+        }
+
+
+
+.container {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 20px;
+    gap: 10px;
+    border: 2px solid black;
+    width: 90vw;
+    margin: auto;
+    
+}
+.calculator {
+    border: 2px solid gray;
+    padding: 10px;
+    background: #f9f9f9;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+input {
+    font-size: 17px ;
+    margin-bottom: 5px;
+    padding: 3px;
+}
+button {
+    padding: 5px;
+    margin: 3px;
+}
+.add-btn {
+    font-size: 25px;
+    cursor: pointer;
+    background: lightgreen;
+    border: none;
+    padding: 8px 13px;
+    margin: 5px 30px
+}
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+.modal .but{
+    font-size: 18px;
+}
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.green{
+    color: green;
+}
+.red{
+    color: red;
+}
+
+.sub{
+    background-color: rgb(6, 243, 6);
+    font-weight: 500;
+    border-radius: 5px ;
+    box-shadow: 0px 0px 5px gray;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+.clear{
+    background-color: rgb(252, 84, 84);
+    font-weight: 500;
+    border-radius: 5px ;
+    box-shadow: 0px 0px 5px gray;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    z-index: -2;
+}
+
+footer span {
+    font-weight: bold;
+    color: #ffcc00;
+}
+
+
+/* about popap */
+.popup-btn {
+            
+    color: white;
+    
+}
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+.popup {
+    background: white;
+    padding: 20px;
+    width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    position: relative;
+}
+.close-btnn {
+    font-size: 25px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+.corner_img{
+    /* position: absolute;
+    bottom: 10px;
+    right: 10px; */
+    height: 100px;
+    width: 100px;
+}

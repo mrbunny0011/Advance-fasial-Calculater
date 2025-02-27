@@ -133,6 +133,10 @@ function silver() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Silver <h3>
        <form action="">
            <label for="name">Name </label>
@@ -260,6 +264,10 @@ function gold() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Gold <h3>
         <form action="">
             <label for="name">Name </label>
@@ -511,6 +519,10 @@ function galaxy() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Galaxy <h3>
        <form action="">
            <label for="name">Name </label>
@@ -698,6 +710,10 @@ function star() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Star<h3>
        <form action="">
            <label for="name">Name </label>
@@ -865,6 +881,10 @@ function moon() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Moon <h3>
        <form action="">
            <label for="name">Name </label>
@@ -1017,6 +1037,10 @@ function sun() {
     calc.className = "calculator";
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
+    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
+        <div class="menu">
+            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        </div>
         <h3>Sun<h3>
        <form action="">
            <label for="name">Name </label>
@@ -1200,6 +1224,90 @@ function legend(){
     alert("Baan rha ha Abhi!")
 }
 
+// togal btn ======================
 
+function toggleMenu(button) {
+    let menu = button.nextElementSibling; // Find the related menu
+    let allMenus = document.querySelectorAll(".menu");
+
+    // Close all other menus first
+    allMenus.forEach(m => {
+        if (m !== menu) {
+            m.style.display = "none";
+        }
+    });
+
+    // Toggle the clicked menu
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// Close menu when clicking outside
+document.addEventListener("click", function(event) {
+    if (!event.target.matches(".menu-btnn")) {
+        document.querySelectorAll(".menu").forEach(menu => {
+            menu.style.display = "none";
+        });
+    }
+});
+
+
+
+
+
+
+
+
+
+//=================Screen Shot Feature for parents=======
+async function takeScreenshot() {
+    let div = document.getElementById("calcContainer");
+
+    html2canvas(div).then(async (canvas) => {
+        let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+
+        try {
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: "screenshot.png",
+                types: [{
+                    description: "PNG Image",
+                    accept: { "image/png": [".png"] }
+                }]
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            alert("Screenshot saved successfully!");
+        } catch (error) {
+            console.error("File save cancelled or error occurred:", error);
+        }
+    });
+}
+
+async function takeScreenshot_child(btn) {
+    let div = btn.parentElement; 
+    html2canvas(div).then(async (canvas) => {
+        let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+
+        try {
+            const fileHandle = await window.showSaveFilePicker({
+                suggestedName: "screenshot.png",
+                types: [{
+                    description: "PNG Image",
+                    accept: { "image/png": [".png"] }
+                }]
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+
+            alert("Screenshot saved successfully!");
+        } catch (error) {
+            console.error("File save cancelled or error occurred:", error);
+        }
+    });
+}
 
 

@@ -88,9 +88,9 @@ nav h1{
     padding: 20px;
     gap: 10px;
     border: 2px solid black;
-    width: 90vw;
+    width: 98vw;
     margin: auto;
-    
+    height: 90vh;
 }
 .calculator {
     position: relative;

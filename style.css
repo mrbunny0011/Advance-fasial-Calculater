@@ -93,6 +93,7 @@ nav h1{
     
 }
 .calculator {
+    position: relative;
     border: 2px solid gray;
     padding: 10px;
     background: #f9f9f9;
@@ -123,12 +124,35 @@ button {
     left: 50%;
     transform: translate(-50%, -50%);
     background: white;
-    padding: 20px;
+    padding: 25px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     border-radius: 10px;
+
 }
 .modal .but{
     font-size: 18px;
+    width: 100px;
+    margin-top: 10px;
+}
+
+.modal .box{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px
+}
+
+.modal .box .one{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.modal .box .two{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 .overlay {
     display: none;
@@ -173,7 +197,7 @@ footer {
     text-align: center;
     padding: 10px 0;
     font-size: 14px;
-    z-index: -2;
+    z-index: -8;
 }
 
 footer span {
@@ -225,4 +249,30 @@ footer span {
     right: 10px; */
     height: 100px;
     width: 100px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 9px;
+}
+
+@media (max-width: 480px) {
+    nav h1{
+        font-size: 21px;
+        font-weight: 500;
+    }
+    nav .logo{
+        height: 30px;
+        width: 30px;
+    }
+    nav .menu-btn{
+        font-size: 15px;
+    }
 }

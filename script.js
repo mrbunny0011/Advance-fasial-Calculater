@@ -1,3 +1,36 @@
+
+// side bar manu
+
+function openSidebar() {
+    document.getElementById("sidebar").classList.add("open");
+}
+
+function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+}
+
+//  Remove Calculator box Selected
+function removeCalculator(button) {
+    button.parentNode.remove();
+}
+
+// Popap for about
+function openPopup() {
+document.getElementById("popupOverlay").style.display = "flex";
+}
+
+function closePopup() {
+document.getElementById("popupOverlay").style.display = "none";
+}
+
+window.onclick = function(event) {
+let popupOverlay = document.getElementById("popupOverlay");
+if (event.target === popupOverlay) {
+closePopup();
+}
+}
+
+
 function showModal() {
     document.getElementById("modal").style.display = "block";
     document.getElementById("overlay").style.display = "block";
@@ -15,7 +48,11 @@ function createCalculator(type) {
     if (type === "Diamond") return diamond();
     if (type === "Legend") return legend();
 
-    
+    if (type === "Galaxy") return galaxy();
+    if (type === "Star") return star();
+    if (type === "Moon") return moon();
+    if (type === "Sun") return sun();
+
 }
 
 function addCalculator(type) {
@@ -25,13 +62,13 @@ function addCalculator(type) {
         hideModal();
     }
     else{
-        alert("by")
+        alert("Baqi Bahi Kal Ana ")
     }
     
 }
 
 
-//silver html=================================
+
  // silver js======================================
 
 
@@ -90,11 +127,12 @@ function calcP(h, l, c) {
     return ans;
 }
 
-
+//silver html=================================
 function silver() {
     const calc = document.createElement("div");
     calc.className = "calculator";
     calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
         <h3>Silver <h3>
        <form action="">
            <label for="name">Name </label>
@@ -215,28 +253,13 @@ function silver_clear(calc) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// =/????????????????????????????????????????????????????
+//=================Gold code start=======================
 function gold() {
     const calc = document.createElement("div");
     calc.className = "calculator";
     calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
         <h3>Gold <h3>
         <form action="">
             <label for="name">Name </label>
@@ -475,6 +498,694 @@ function calcP(h, l, c) {
     return ans;
 }
 
+// Gold End
+
+
+
+//+=====++=======++========+==========================
+// Galaxy code========================================
+
+
+function galaxy() {
+    const calc = document.createElement("div");
+    calc.className = "calculator";
+    calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
+        <h3>Galaxy <h3>
+       <form action="">
+           <label for="name">Name </label>
+           <input type="text" class="name-input" placeholder="name" required>
+           <br>
+           <label for="h">Enter <span>H </span> </label>
+           <input type="number" class="h-input" placeholder="H" required>
+           <br>
+           <label for="l">Enter <span>L </span> </label>
+           <input type="number" class="l-input" placeholder="L" required>
+           <br>
+           <label for="c">Enter <span>C </span> </label>
+           <input type="number" class="c-input" placeholder="C" required>
+           <br>
+       </form>
+       <button class="sub">Submit</button>
+       <button class="clear">Clear All</button>
+       <hr>
+       <div class="ans">
+           <h4 class="name">Calculation of</h4>
+           <h4 class="red">3R is: <span class="R3 light"></span></h4>
+           <h4 class="red">2R is: <span class="R2 light"></span></h4>
+           <h4 class="red">1R is: <span class="R1 light"></span></h4>
+           <h4>P is: <span class="P"></span></h4>
+           <h4 class="green">1S is: <span class="S1 light"></span></h4>
+           <h4 class="green">2S is: <span class="S2 light"></span></h4>
+           <h4 class="green">3S is: <span class="S3 light"></span></h4>
+           
+       </div>
+    `;
+
+    // Attach event listeners to the calculator instance
+    calc.querySelector(".sub").addEventListener("click", function () {
+        galaxy_submit(calc);
+    });
+
+    calc.querySelector(".clear").addEventListener("click", function () {
+        galaxy_clear(calc);
+    });
+
+
+    // Keyboard event listener
+    calc.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            galaxy_submit(calc);
+        }
+        if (event.key === "Delete") {
+            galaxy_clear(calc);
+        }
+    });
+
+
+    return calc;
+}
+
+
+
+function galaxy_submit(calc) {
+    // Input fields
+    const name = calc.querySelector(".name-input").value;
+    const h = parseFloat(calc.querySelector(".h-input").value);
+    const l = parseFloat(calc.querySelector(".l-input").value);
+    const c = parseFloat(calc.querySelector(".c-input").value);
+
+    // Check input fields
+    if (!name || isNaN(h) || isNaN(l) || isNaN(c)) {
+        alert("Fill all Input Boxes correctly.");
+        return;
+    }
+
+    // Calculations
+    let ans_p = G_P(h, l, c);
+    let ans_r1 = G_R1(h, l, c);
+    let ans_r2 = G_R2(h, l, c);
+    let ans_r3 = G_R3(h, l, c);
+    let ans_s1 = G_S1(h, l, c);
+    let ans_s2 = G_S2(h, l, c);
+    let ans_s3 = G_S3(h, l, c);
+
+
+    // Update results in the specific calculator
+    calc.querySelector(".name").textContent = `Calculation of ${name}`;
+    calc.querySelector(".R3").textContent = ans_r3;
+    calc.querySelector(".R2").textContent = ans_r2;
+    calc.querySelector(".R1").textContent = ans_r1;
+    calc.querySelector(".P").textContent = ans_p;
+    calc.querySelector(".S1").textContent = ans_s1;
+    calc.querySelector(".S2").textContent = ans_s2;
+    calc.querySelector(".S3").textContent = ans_s3;
+    
+}
+
+function galaxy_clear(calc) {
+    // Clear inputs
+    calc.querySelector(".name-input").value = "";
+    calc.querySelector(".h-input").value = "";
+    calc.querySelector(".l-input").value = "";
+    calc.querySelector(".c-input").value = "";
+
+    // Clear output
+    calc.querySelector(".name").textContent = `Calculation of`;
+    calc.querySelector(".P").textContent = "";
+    calc.querySelector(".R1").textContent = "";
+    calc.querySelector(".R3").textContent = "";
+    calc.querySelector(".S1").textContent = "";
+    calc.querySelector(".R2").textContent = "";
+    calc.querySelector(".S2").textContent = "";
+    calc.querySelector(".S3").textContent = "";
+    
+}
+
+// Galay Function Calculations
+// Functions
+function G_R3(h,l,c) {
+    const x = G_x1(h, l, c);
+    const ans = (x / 2) - l;
+    return ans;
+}
+
+function G_R2(h,l,c) {
+    const x = G_x3(h, l, c);
+    const ans = (x / 2) - l;
+    return ans;
+}
+
+function G_R1(h,l,c) {
+    const x = G_x2(h, l, c);
+    const ans = (x / 2) - l;
+    return ans;
+}
+
+
+function G_S3(h,l,c) {
+    const x = G_x2(h, l, c);
+    const ans = (x / 2) - h;
+    return ans;
+}
+
+
+function G_S2(h,l,c) {
+    const x = G_x3(h, l, c);
+    const ans = (x / 2) - h;
+    return ans;
+}
+
+
+function G_S1(h,l,c) {
+    const x = G_x1(h, l, c);
+    const ans = (x / 2) - h;
+    return ans;
+}
+
+
+function G_P(h, l, c) {
+    const sum = h + (2*l) + c;
+    const ans = sum / 4;
+    return ans;
+}
+
+function G_x1(h, l, c) {
+    const ans = (2*h)+l+c;
+    return ans;
+}
+
+function G_x2(h, l, c) {
+    const ans = (2*l)+h+c;
+    return ans;
+}
+
+function G_x3(h, l, c) {
+    const ans = (2*c)+l+h;
+    return ans;
+}
+
+// Galaxy Code End
+
+
+
+// ?????????????????????????????????
+// Star Code Start 
+
+function star() {
+    const calc = document.createElement("div");
+    calc.className = "calculator";
+    calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
+        <h3>Star<h3>
+       <form action="">
+           <label for="name">Name </label>
+           <input type="text" class="name-input" placeholder="name" required>
+           <br>
+           <label for="h">Enter <span>H </span> </label>
+           <input type="number" class="h-input" placeholder="H" required>
+           <br>
+           <label for="l">Enter <span>L </span> </label>
+           <input type="number" class="l-input" placeholder="L" required>
+           <br>
+           <label for="c">Enter <span>C </span> </label>
+           <input type="number" class="c-input" placeholder="C" required>
+           <br>
+       </form>
+       <button class="sub">Submit</button>
+       <button class="clear">Clear All</button>
+       <hr>
+       <div class="ans">
+           <h4 class="name">Calculation of</h4>
+           <h4 class="red">3R is: <span class="R3 light"></span></h4>
+           <h4 class="red">2R is: <span class="R2 light"></span></h4>
+           <h4 class="red">1R is: <span class="R1 light"></span></h4>
+           <h4>P is: <span class="P"></span></h4>
+           <h4 class="green">1S is: <span class="S1 light"></span></h4>
+           <h4 class="green">2S is: <span class="S2 light"></span></h4>
+           <h4 class="green">3S is: <span class="S3 light"></span></h4>
+           
+       </div>
+    `;
+
+    // Attach event listeners to the calculator instance
+    calc.querySelector(".sub").addEventListener("click", function () {
+        star_submit(calc);
+    });
+
+    calc.querySelector(".clear").addEventListener("click", function () {
+        star_clear(calc);
+    });
+
+
+    // Keyboard event listener
+    calc.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            star_submit(calc);
+        }
+        if (event.key === "Delete") {
+            star_clear(calc);
+        }
+    });
+
+
+    return calc;
+}
+
+
+
+function star_submit(calc) {
+    // Input fields
+    const name = calc.querySelector(".name-input").value;
+    const h = parseFloat(calc.querySelector(".h-input").value);
+    const l = parseFloat(calc.querySelector(".l-input").value);
+    const c = parseFloat(calc.querySelector(".c-input").value);
+
+    // Check input fields
+    if (!name || isNaN(h) || isNaN(l) || isNaN(c)) {
+        alert("Fill all Input Boxes correctly.");
+        return;
+    }
+
+    // Calculations
+    let ans_p = star_P(h, l, c);
+    let ans_r1 = star_R1(h, l, c);
+    let ans_r2 = star_R2(h, l, c);
+    let ans_r3 = star_R3(h, l, c);
+    let ans_s1 = star_S1(h, l, c);
+    let ans_s2 = star_S2(h, l, c);
+    let ans_s3 = star_S3(h, l, c);
+
+    // Update results in the specific calculator
+    calc.querySelector(".name").textContent = `Calculation of ${name}`;
+    calc.querySelector(".R3").textContent = ans_r3;
+    calc.querySelector(".R2").textContent = ans_r2;
+    calc.querySelector(".R1").textContent = ans_r1;
+    calc.querySelector(".P").textContent = ans_p;
+    calc.querySelector(".S1").textContent = ans_s1;
+    calc.querySelector(".S2").textContent = ans_s2;
+    calc.querySelector(".S3").textContent = ans_s3;
+    
+}
+
+function star_clear(calc) {
+    // Clear inputs
+    calc.querySelector(".name-input").value = "";
+    calc.querySelector(".h-input").value = "";
+    calc.querySelector(".l-input").value = "";
+    calc.querySelector(".c-input").value = "";
+
+    // Clear output
+    calc.querySelector(".name").textContent = `Calculation of`;
+    calc.querySelector(".P").textContent = "";
+    calc.querySelector(".R1").textContent = "";
+    calc.querySelector(".R3").textContent = "";
+    calc.querySelector(".S1").textContent = "";
+    calc.querySelector(".R2").textContent = "";
+    calc.querySelector(".S2").textContent = "";
+    calc.querySelector(".S3").textContent = "";
+    
+}
+
+// Galay Function Calculations
+// Functions
+function star_R3(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x + (1.000*(h-l))
+    return ans;
+}
+
+function star_R2(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x + (0.618 *(h-l))
+    return ans;
+}
+function star_R1(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x + (0.382 *(h-l))
+    return ans;
+}
+
+
+function star_S1(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x - (0.382 *(h-l))
+    return ans;
+}
+
+function star_S2(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x - (0.618 *(h-l))
+    return ans;
+}
+
+function star_S3(h,l,c) {
+    const x = star_P(h, l, c);
+    const ans = x - (1.000*(h-l))
+    return ans;
+}
+
+
+function star_P(h, l, c) {
+    const sum = h + l + c;
+    const ans = sum / 3;
+    return ans;
+}
+
+//  Star Function End 
+
+// ============================================
+// Moon Code Start ++++++++++++++++++++++++++++
+
+
+function moon() {
+    const calc = document.createElement("div");
+    calc.className = "calculator";
+    calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
+        <h3>Moon <h3>
+       <form action="">
+           <label for="name">Name </label>
+           <input type="text" class="name-input" placeholder="name" required>
+           <br>
+           <label for="h">Enter <span>H </span> </label>
+           <input type="number" class="h-input" placeholder="H" required>
+           <br>
+           <label for="l">Enter <span>L </span> </label>
+           <input type="number" class="l-input" placeholder="L" required>
+           <br>
+           <label for="c">Enter <span>C </span> </label>
+           <input type="number" class="c-input" placeholder="C" required>
+           <br>
+       </form>
+       <button class="sub">Submit</button>
+       <button class="clear">Clear All</button>
+       <hr>
+       <div class="ans">
+           <h4 class="name">Calculation of</h4>
+           <h4 class="red">2R is: <span class="R2 light"></span></h4>
+           <h4 class="red">1R is: <span class="R1 light"></span></h4>
+           <h4>P is: <span class="P"></span></h4>
+           <h4 class="green">1S is: <span class="S1 light"></span></h4>
+           <h4 class="green">2S is: <span class="S2 light"></span></h4>
+           
+       </div>
+    `;
+
+    // Attach event listeners to the calculator instance
+    calc.querySelector(".sub").addEventListener("click", function () {
+        moon_submit(calc);
+    });
+
+    calc.querySelector(".clear").addEventListener("click", function () {
+        moon_clear(calc);
+    });
+
+
+    // Keyboard event listener
+    calc.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            moon_submit(calc);
+        }
+        if (event.key === "Delete") {
+            moon_clear(calc);
+        }
+    });
+
+
+    return calc;
+}
+
+
+
+function moon_submit(calc) {
+    // Input fields
+    const name = calc.querySelector(".name-input").value;
+    const h = parseFloat(calc.querySelector(".h-input").value);
+    const l = parseFloat(calc.querySelector(".l-input").value);
+    const c = parseFloat(calc.querySelector(".c-input").value);
+
+    // Check input fields
+    if (!name || isNaN(h) || isNaN(l) || isNaN(c)) {
+        alert("Fill all Input Boxes correctly.");
+        return;
+    }
+
+    // Calculations
+    let ans_p = moon_P(h, l, c);
+    let ans_r1 = moon_R1(h, l, c);
+    let ans_r2 = moon_R2(h, l, c);
+    let ans_s1 = moon_S1(h, l, c);
+    let ans_s2 = moon_S2(h, l, c);
+    
+
+    // Update results in the specific calculator
+    calc.querySelector(".name").textContent = `Calculation of ${name}`;
+    calc.querySelector(".R2").textContent = ans_r2;
+    calc.querySelector(".R1").textContent = ans_r1;
+    calc.querySelector(".P").textContent = ans_p;
+    calc.querySelector(".S1").textContent = ans_s1;
+    calc.querySelector(".S2").textContent = ans_s2;
+    
+}
+
+function moon_clear(calc) {
+    // Clear inputs
+    calc.querySelector(".name-input").value = "";
+    calc.querySelector(".h-input").value = "";
+    calc.querySelector(".l-input").value = "";
+    calc.querySelector(".c-input").value = "";
+
+    // Clear output
+    calc.querySelector(".name").textContent = `Calculation of`;
+    calc.querySelector(".P").textContent = "";
+    calc.querySelector(".R1").textContent = "";
+    calc.querySelector(".S1").textContent = "";
+    calc.querySelector(".R2").textContent = "";
+    calc.querySelector(".S2").textContent = "";
+   
+    
+}
+
+
+// Functions
+
+
+function moon_R2(h,l,c) {
+    const x = moon_P(h, l, c);
+    const ans = x + (h-l);
+    return ans;
+}
+function moon_R1(h,l,c) {
+    const x = moon_P(h, l, c);
+    const ans = (2 * x) - l;
+    return ans;
+}
+
+
+function moon_S1(h,l,c) {
+    const x = moon_P(h, l, c);
+    const ans = (2 * x) - h;
+    return ans;
+}
+
+function moon_S2(h,l,c) {
+    const x = moon_P(h, l, c);
+    const ans = x - (h-l);
+    return ans;
+}
+
+
+function moon_P(h, l, c) {
+    const sum = h + l + (c * 2);
+    const ans = sum / 4;
+    return ans;
+}
+
+//  Moon Function End 
+
+
+
+//==========================================================
+//Start of SUN Cod============================
+
+function sun() {
+    const calc = document.createElement("div");
+    calc.className = "calculator";
+    calc.innerHTML = `
+    <button class="close-btn" onclick="removeCalculator(this)">X</button>
+        <h3>Sun<h3>
+       <form action="">
+           <label for="name">Name </label>
+           <input type="text" class="name-input" placeholder="name" required>
+           <br>
+           <label for="h">Enter <span>H </span> </label>
+           <input type="number" class="h-input" placeholder="H" required>
+           <br>
+           <label for="l">Enter <span>L </span> </label>
+           <input type="number" class="l-input" placeholder="L" required>
+           <br>
+           <label for="c">Enter <span>C </span> </label>
+           <input type="number" class="c-input" placeholder="C" required>
+           <br>
+       </form>
+       <button class="sub">Submit</button>
+       <button class="clear">Clear All</button>
+       <hr>
+       <div class="ans">
+           <h4 class="name">Calculation of</h4>
+           <h4 class="red">4R is: <span class="R4 light"></span></h4>
+           <h4 class="red">3R is: <span class="R3 light"></span></h4>
+           <h4 class="red">2R is: <span class="R2 light"></span></h4>
+           <h4 class="red">1R is: <span class="R1 light"></span></h4>
+           <h4>P is: <span class="P"></span></h4>
+           <h4 class="green">1S is: <span class="S1 light"></span></h4>
+           <h4 class="green">2S is: <span class="S2 light"></span></h4>
+           <h4 class="green">3S is: <span class="S3 light"></span></h4>
+           <h4 class="green">4S is: <span class="S4 light"></span></h4>
+           
+       </div>
+    `;
+
+    // Attach event listeners to the calculator instance
+    calc.querySelector(".sub").addEventListener("click", function () {
+        sun_submit(calc);
+    });
+
+    calc.querySelector(".clear").addEventListener("click", function () {
+        sun_clear(calc);
+    });
+
+
+    // Keyboard event listener
+    calc.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sun_submit(calc);
+        }
+        if (event.key === "Delete") {
+            sun_clear(calc);
+        }
+    });
+
+
+    return calc;
+}
+
+
+
+function sun_submit(calc) {
+    // Input fields
+    const name = calc.querySelector(".name-input").value;
+    const h = parseFloat(calc.querySelector(".h-input").value);
+    const l = parseFloat(calc.querySelector(".l-input").value);
+    const c = parseFloat(calc.querySelector(".c-input").value);
+
+    // Check input fields
+    if (!name || isNaN(h) || isNaN(l) || isNaN(c)) {
+        alert("Fill all Input Boxes correctly.");
+        return;
+    }
+
+    // Calculations
+    let ans_p = sun_P(h, l, c);
+    let ans_r1 = sun_R1(h, l, c);
+    let ans_r2 = sun_R2(h, l, c);
+    let ans_r3 = sun_R3(h, l, c);
+    let ans_r4 = sun_R4(h, l, c);
+    let ans_s1 = sun_S1(h, l, c);
+    let ans_s2 = sun_S2(h, l, c);
+    let ans_s3 = sun_S3(h, l, c);
+    let ans_s4 = sun_S4(h, l, c);
+
+    // Update results in the specific calculator
+    calc.querySelector(".name").textContent = `Calculation of ${name}`;
+    calc.querySelector(".R4").textContent = ans_r4;
+    calc.querySelector(".R3").textContent = ans_r3;
+    calc.querySelector(".R2").textContent = ans_r2;
+    calc.querySelector(".R1").textContent = ans_r1;
+    calc.querySelector(".P").textContent = ans_p;
+    calc.querySelector(".S1").textContent = ans_s1;
+    calc.querySelector(".S2").textContent = ans_s2;
+    calc.querySelector(".S3").textContent = ans_s3;
+    calc.querySelector(".S4").textContent = ans_s4;
+    
+}
+
+function sun_clear(calc) {
+    // Clear inputs
+    calc.querySelector(".name-input").value = "";
+    calc.querySelector(".h-input").value = "";
+    calc.querySelector(".l-input").value = "";
+    calc.querySelector(".c-input").value = "";
+
+    // Clear output
+    calc.querySelector(".name").textContent = `Calculation of`;
+    calc.querySelector(".P").textContent = "";
+    calc.querySelector(".R1").textContent = "";
+    calc.querySelector(".R2").textContent = "";
+    calc.querySelector(".R3").textContent = "";
+    calc.querySelector(".R4").textContent = "";
+    calc.querySelector(".S1").textContent = "";
+    calc.querySelector(".S2").textContent = "";
+    calc.querySelector(".S3").textContent = "";
+    calc.querySelector(".S4").textContent = "";
+    
+}
+
+
+// Functions
+function sun_R4(h,l,c) {
+    const ans = c +((h - l) * 1.5000)
+    return ans;
+}
+function sun_R3(h,l,c) {
+    const ans = c +((h - l) * 1.2500)
+    return ans;
+}
+function sun_R2(h,l,c) {
+    const ans = c +((h - l) * 1.1666)
+    return ans;
+}
+function sun_R1(h,l,c) {
+    const ans = c +((h - l) * 1.0833)
+    return ans;
+}
+
+
+function sun_S1(h,l,c) {
+    const ans = c -((h - l) * 1.0833)
+    return ans;
+}
+function sun_S2(h,l,c) {
+    const ans = c -((h - l) * 1.1666)
+    return ans;
+}
+function sun_S3(h,l,c) {
+    const ans = c -((h - l) * 1.2500)
+    return ans;
+}
+function sun_S4(h,l,c) {
+    const ans = c -((h - l) * 1.5000)
+    return ans;
+}
+
+
+function sun_P(h, l, c) {
+    const sum = h + l + c;
+    const ans = sum / 3;
+    return ans;
+}
+
+//  Sun Function End 
+
+
+
+
+
 
 
 
@@ -482,41 +1193,13 @@ function calcP(h, l, c) {
 
 
 function diamond(){
-    alert("phla yai use kar la bahii");
+    alert("Phla Dosra Use kar la Bahi ");
 }
 
 function legend(){
-    alert("Baan rha ha abii kal ana ")
+    alert("Baan rha ha Abhi!")
 }
 
 
 
 
-
-// side bar manu
-
-        function openSidebar() {
-            document.getElementById("sidebar").classList.add("open");
-        }
-
-        function closeSidebar() {
-            document.getElementById("sidebar").classList.remove("open");
-        }
-
-
-// Popap for about
-function openPopup() {
-    document.getElementById("popupOverlay").style.display = "flex";
-}
-
-function closePopup() {
-    document.getElementById("popupOverlay").style.display = "none";
-}
-
-window.onclick = function(event) {
-    let popupOverlay = document.getElementById("popupOverlay");
-    if (event.target === popupOverlay) {
-        closePopup();
-    }
-}
-        

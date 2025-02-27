@@ -1256,8 +1256,6 @@ document.addEventListener("click", function(event) {
 
 
 
-
-
 //=================Screen Shot Feature for parents=======
 async function takeScreenshot() {
     let div = document.getElementById("calcContainer");
@@ -1286,7 +1284,7 @@ async function takeScreenshot() {
 }
 
 async function takeScreenshot_child(btn) {
-    let div = btn.parentElement; 
+    let div = btn.parentElement.parentElement; 
     html2canvas(div).then(async (canvas) => {
         let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
 

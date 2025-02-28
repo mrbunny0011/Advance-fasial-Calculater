@@ -136,7 +136,7 @@ function silver() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
     <div class="child-calculator-nav">
             <h3 >Silver<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
        <form action="">
            <label for="name">Name </label>
@@ -267,7 +267,7 @@ function gold() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
    <div class="child-calculator-nav">
             <h3 >Gold<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
         <form action="">
             <label for="name">Name </label>
@@ -522,7 +522,7 @@ function galaxy() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
    <div class="child-calculator-nav">
             <h3 >Galaxy<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
        <form action="">
            <label for="name">Name </label>
@@ -713,7 +713,7 @@ function star() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
    <div class="child-calculator-nav">
             <h3 >Star<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
        <form action="">
            <label for="name">Name </label>
@@ -884,7 +884,7 @@ function moon() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
     <div class="child-calculator-nav">
             <h3 >Moon<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
        <form action="">
            <label for="name">Name </label>
@@ -1040,7 +1040,7 @@ function sun() {
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
         <div class="child-calculator-nav">
             <h3 >Sun<h3>
-            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
+            <img src="img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
        <form action="">
            <label for="name">Name </label>

@@ -131,13 +131,13 @@ function calcP(h, l, c) {
 function silver() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+    <div class="child-calculator-nav">
+            <h3 >Silver<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Silver <h3>
        <form action="">
            <label for="name">Name </label>
            <input type="text" class="name-input" placeholder="name" required>
@@ -262,13 +262,13 @@ function silver_clear(calc) {
 function gold() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+   <div class="child-calculator-nav">
+            <h3 >Gold<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Gold <h3>
         <form action="">
             <label for="name">Name </label>
             <input type="text" id="name" placeholder="name" required>
@@ -517,13 +517,13 @@ function calcP(h, l, c) {
 function galaxy() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+   <div class="child-calculator-nav">
+            <h3 >Galaxy<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Galaxy <h3>
        <form action="">
            <label for="name">Name </label>
            <input type="text" class="name-input" placeholder="name" required>
@@ -708,13 +708,13 @@ function G_x3(h, l, c) {
 function star() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+   <div class="child-calculator-nav">
+            <h3 >Star<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Star<h3>
        <form action="">
            <label for="name">Name </label>
            <input type="text" class="name-input" placeholder="name" required>
@@ -879,13 +879,13 @@ function star_P(h, l, c) {
 function moon() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+    <div class="child-calculator-nav">
+            <h3 >Moon<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Moon <h3>
        <form action="">
            <label for="name">Name </label>
            <input type="text" class="name-input" placeholder="name" required>
@@ -1035,13 +1035,13 @@ function moon_P(h, l, c) {
 function sun() {
     const calc = document.createElement("div");
     calc.className = "calculator";
+    calc.draggable = true;
     calc.innerHTML = `
     <button class="close-btn" onclick="removeCalculator(this)">X</button>
-    <button class="menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot_child(this)">ScreenShot</button>
+        <div class="child-calculator-nav">
+            <h3 >Sun<h3>
+            <img src="/img/screenshot.png" alt="screenshot" class="child-screenshot" onclick="takeScreenshot_child(this)">
         </div>
-        <h3>Sun<h3>
        <form action="">
            <label for="name">Name </label>
            <input type="text" class="name-input" placeholder="name" required>
@@ -1284,7 +1284,7 @@ async function takeScreenshot() {
 }
 
 async function takeScreenshot_child(btn) {
-    let div = btn.parentElement.parentElement; 
+    let div = btn.parentElement.parentElement.parentElement; 
     html2canvas(div).then(async (canvas) => {
         let blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
 
@@ -1309,3 +1309,91 @@ async function takeScreenshot_child(btn) {
 }
 
 
+// 1️⃣ Full Screen Toggle
+function toggleFullScreen() {
+    let contentDiv = document.getElementById("calcContainer");
+    if (!document.fullscreenElement) {
+        contentDiv.requestFullscreen().catch(err => {
+            alert(`Error: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+ // 2️⃣ Mouse Wheel Zoom (Fix Extra Space Issue)
+//  let scale = 1; // Default zoom level
+//  let content = document.getElementById("calcContainer");
+
+//  document.getElementById("calcContainer").addEventListener("wheel", function (event) {
+//      event.preventDefault(); // Prevent default scrolling
+
+//      let children = document.querySelectorAll(".calculator"); // Select all child elements
+
+//      if (event.deltaY < 0) {
+//          scale += 0.1; // Zoom In
+//      } else {
+//          scale -= 0.1; // Zoom Out
+//      }
+
+//      scale = Math.min(Math.max(scale, 0.5), 2); // Limit zoom between 0.5x and 2x
+
+//      // Apply zoom to all child elements
+//      children.forEach(child => {
+//          child.style.transform = `scale(${scale})`;
+//      });
+
+//      // Dynamically adjust gap based on scale
+//      let newGap = 20 / scale; // Reduce gap as scale increases
+//      content.style.gap = `${newGap}px`;
+//  });
+
+
+
+
+// ====================================================================
+// Drag and Drop Functionality 
+const calcContainer = document.getElementById("calcContainer");
+        let draggedItem = null;
+
+        // Drag Start
+        calcContainer.addEventListener("dragstart", (e) => {
+            if (e.target.classList.contains("calculator")) {
+                draggedItem = e.target;
+                e.target.classList.add("dragging");
+            }
+        });
+
+        // Drag Over (Allow dropping)
+        calcContainer.addEventListener("dragover", (e) => {
+            e.preventDefault(); // Allow dropping
+
+            const afterElement = getDragAfterElement(calcContainer, e.clientX);
+            if (afterElement == null) {
+                calcContainer.appendChild(draggedItem);
+            } else {
+                calcContainer.insertBefore(draggedItem, afterElement);
+            }
+        });
+
+        // Drag End (Reset styles)
+        calcContainer.addEventListener("dragend", () => {
+            if (draggedItem) {
+                draggedItem.classList.remove("dragging");
+                draggedItem = null;
+            }
+        });
+
+        // Helper Function: Find closest element after mouse pointer
+        function getDragAfterElement(container, x) {
+            const draggableElements = [...container.querySelectorAll(".calculator:not(.dragging)")];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = x - box.left - box.width / 2;
+                return offset < 0 && offset > closest.offset ? { offset, element: child } : closest;
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+    
+        
+        

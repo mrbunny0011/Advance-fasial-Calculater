@@ -23,12 +23,14 @@
         <h1>Faisal Calculator 7.0</h1>
     </nav>
 <div>
-    <button class="add-btn" onclick="showModal()">+</button>
-    <button class="main-menu-btnn menu-btnn" onclick="toggleMenu(this)">⋮</button>
-        <div class="menu">
-            <button onclick="takeScreenshot()">Full ScreenShot</button>
+    <div class="mid-bar">
+        <button class="add-btn" onclick="showModal()" title="Add Calculator">+</button>
+        <div class="mid-bar-manu">
+            <img src="img/paint.png" alt="" class="icon" title="paint">
+            <img src="img/full screen.png" alt="full screen" class="icon" onclick="toggleFullScreen()" title="Full Screen">
+            <img src="/img/screenshot.png" alt="takeScreenshot" onclick="takeScreenshot()" class="icon" title="Take ScreenShot">
         </div>
-
+    </div>
 </div>
     
     <div class="container" id="calcContainer">

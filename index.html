@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faisal Calculator 7.0</title>
+    <title>Faisal Calculator 8.0</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -153,8 +153,8 @@
     </select>
 
     <button onclick="calculateAnalysis()">Analyze Market</button>
-    
-    <table>
+    <div class="table-container">
+    <table >
         <thead>
             <tr>
                 <th>Coin</th>
@@ -170,7 +170,7 @@
         <tbody id="marketTable">
         </tbody>
     </table>
-    
+</div>
     <!-- Market Trend Analysis Section -->
      <!-- BOX -->
      <div class="outer_box">
@@ -205,8 +205,11 @@
     </select>
 
     <select id="timeFrame" onchange="updateValues()">
+        <option value="15m">15 Minutes</option>
+        <option value="30m">30 Minutes</option>
         <option value="1h">1 Hour</option>
         <option value="4h">4 Hours</option>
+        <option value="1d">1 Day</option>
         <option value="1w">1 Week</option>
         <option value="1m">1 Month</option>
     </select>

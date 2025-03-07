@@ -1625,7 +1625,12 @@ function openPopup_hv() {
             let avg = sum / values.length;
             let trendElement = document.getElementById("marketTrend_");
             
-            let coinTrend = document.querySelector("#marketTable td:nth-child(6)").innerText;
+            setTimeout(() => {
+                let coinTrendElement = document.querySelector("#marketTable td:nth-child(6)");
+                let coinTrend = coinTrendElement ? coinTrendElement.innerText : "N/A";
+            }, 1000); // Adjust timing based on data load speed
+            
+            // let coinTrend = document.querySelector("#marketTable td:nth-child(6)").innerText;
 
             // Combine coin trend with indicators' trend
             if (coinTrend === "Bullish" && avg > 66) {

@@ -377,11 +377,48 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
 }
 
         #Analysis table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        #Analysis th, #Analysis td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        #Analysis th, #Analysis td { border: 1px solid #ccc; padding: 20px; text-align: center; }
         #Analysis th { background: #f4f4f4; }
         #Analysis .bullish { color: green; font-weight: bold; }
         #Analysis .bearish { color: red; font-weight: bold; }
         #Analysis .stable { color: orange; font-weight: bold; }
+        .table-container {
+            width: 100%;
+            overflow-x: auto; /* Enable horizontal scrolling */
+        }
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px; /* Ensures table does not shrink too much */
+        }
+        .table-container th, .table-container td {
+            border: 1px solid #ccc; padding: 20px; text-align: center;
+            text-align: center;
+            white-space: nowrap; /* Prevents text from wrapping */
+        }
+    
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+                display: block;
+                width: 100%;
+            }
+            .table-container table {
+                width: 100%;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .table-container th, .table-container td {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+
+
         #Analysis #coinSearch {
             width: 100%;
             padding: 8px;

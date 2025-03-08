@@ -211,7 +211,7 @@
                 <select id="coinSelector-SLCD" onchange="updateValues_SLDC()">
                     <option value="">Loading USDT pairs...</option>
                 </select>
-                <select id="timeFrame" onchange="updateValues_SLDC()">
+                <select id="timeFrame_SLCD" onchange="updateValues_SLDC()">
                     <option value="15m">15 Minutes</option>
                     <option value="30m">30 Minutes</option>
                     <option value="1h">1 Hour</option>
@@ -303,6 +303,9 @@
 <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
  <!-- =====================BINANACE FUTURE CALCULATOR ================================     -->
   <section id="BinanceFuturesCalculator">
+      
+
+        <!-- Left Side -->
         <div class="container_BFC">
             <h1>Binance Futures Calculator</h1>
             
@@ -335,6 +338,38 @@
                 <tr><td>PnL</td><td id="pnl">-</td></tr>
                 <tr><td>ROI (%)</td><td id="roi">-</td></tr>
             </table>
+        </div>
+
+        <!-- Right Side -->
+        <div class="MAWOBI">
+                        <h1>Market Analysis with Order Book & Indicators</h1>
+                <select id="coinSelector_MAWOBI" onchange="updateValues_MAWOBI()">
+                    <option value="">Select a Coin</option>
+                </select>
+                <select id="timeFrame_MAWOBI" onchange="updateValues_MAWOBI()">
+                    <option value="15m">15 Minutes</option>
+                    <option value="30m">30 Minutes</option>
+                    <option value="1h">1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="1d">1 Day</option>
+                    <option value="1w">1 Week</option>
+                    <option value="1M">1 Month</option>
+                </select>
+                <table>
+                    <tr><th>Indicator</th><th>Value</th></tr>
+                    <tr><td>HRVC</td><td id="hrvc_MAWOBI">Loading...</td></tr>
+                    <tr><td>SMP</td><td id="smp_MAWOBI">Loading...</td></tr>
+                    <tr><td>SATR</td><td id="satr_MAWOBI">Loading...</td></tr>
+                    <tr><td>VWEP</td><td id="vwep_MAWOBI">Loading...</td></tr>
+                    <tr><td>RVol</td><td id="rvol_MAWOBI">Loading...</td></tr>
+                    <tr><td>OFI</td><td id="ofi_MAWOBI">Loading...</td></tr>
+                    <tr><td>Bid Price</td><td id="bidPrice_MAWOBI">Loading...</td></tr>
+                    <tr><td>Ask Price</td><td id="askPrice_MAWOBI">Loading...</td></tr>
+                    <tr><td>Bid Volume</td><td id="bidVolume_MAWOBI">Loading...</td></tr>
+                    <tr><td>Ask Volume</td><td id="askVolume_MAWOBI">Loading...</td></tr>
+                    <tr><td>Bid/Ask Spread</td><td id="spread_MAWOBI">Loading...</td></tr>
+                    <tr><td>Order Book Depth</td><td id="orderBookDepth_MAWOBI">Loading...</td></tr>
+                </table>
         </div>
 
   </section>

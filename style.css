@@ -436,6 +436,9 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         font-family: Arial, sans-serif; 
         padding: 20px; 
         text-align: center;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
     }
     
             #BinanceFuturesCalculator .container { width: 50%; margin: auto; }
@@ -469,6 +472,14 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                 justify-content: space-around;
                 align-items: center;
             
+            }
+            #BinanceFuturesCalculator{
+               
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                align-items: center;
             }
         }
 

@@ -1826,7 +1826,7 @@ function fetchBinanceData_SLDC(symbol, interval) {
 }
 
 function updateValues_SLDC() {
-    let timeFrame = document.getElementById("timeFrame").value;
+    let timeFrame = document.getElementById("timeFrame_SLCD").value;
     let selectedCoin = document.getElementById("coinSelector-SLCD").value;
     if (selectedCoin) {
         fetchBinanceData_SLDC(selectedCoin, timeFrame);
@@ -1935,3 +1935,97 @@ function calculatePnL() {
 
 fetchUSDTCoins_BFC();
 setInterval(updateMarketPrice_BFC, 300000); // Refresh price every 5 minutes
+
+
+// ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+// ==========================================================================
+// ==================MAWOBI====================================
+
+
+let previousBidVolume = 0.0;
+        let previousAskVolume = 0.0;
+        let debounceTimer;
+        let ws;
+
+        function fetchUSDTpairs_MAWOBI() {
+            fetch('https://api.binance.com/api/v3/exchangeInfo')
+                .then(response => response.json())
+                .then(data => {
+                    let coinSelector = document.getElementById("coinSelector_MAWOBI");
+                    coinSelector.innerHTML = '<option value="">Select a Coin</option>';
+                    let symbols = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT'));
+                    symbols.forEach(symbolData => {
+                        let option = document.createElement("option");
+                        option.value = symbolData.symbol;
+                        option.innerText = symbolData.symbol.replace("USDT", "");
+                        coinSelector.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching USDT pairs:', error));
+        }
+
+        function updateValues_MAWOBI() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                let timeFrame = document.getElementById("timeFrame_MAWOBI").value;
+                let selectedCoin = document.getElementById("coinSelector_MAWOBI").value;
+                if (selectedCoin) {
+                    fetchBinanceData_MAWOBI(selectedCoin, timeFrame);
+                    startWebSocket_MAWOBI(selectedCoin);
+                }
+            }, 2000);  // 2 sec debounce
+        }
+
+        function fetchBinanceData_MAWOBI(symbol, interval) {
+            fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=17`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length < 17) return;
+                    calculateIndicators_MAWOBI(data);
+                })
+                .catch(error => console.error('Error fetching Binance data:', error));
+        }
+
+        function startWebSocket_MAWOBI(symbol) {
+            if (ws) ws.close();
+            ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth20`);
+
+            ws.onmessage = (event) => {
+                let data = JSON.parse(event.data);
+                if (!data.bids.length || !data.asks.length) return;
+
+                let bidPrice = parseFloat(data.bids[0][0]);
+                let askPrice = parseFloat(data.asks[0][0]);
+                let spread = (askPrice - bidPrice).toFixed(2);
+
+                let bidVolume = data.bids.reduce((sum, bid) => sum + parseFloat(bid[1]), 0).toFixed(2);
+                let askVolume = data.asks.reduce((sum, ask) => sum + parseFloat(ask[1]), 0).toFixed(2);
+                let orderBookDepth = (parseFloat(bidVolume) + parseFloat(askVolume)).toFixed(2);
+
+                let ofi = ((parseFloat(bidVolume) - previousBidVolume) - 
+                           (parseFloat(askVolume) - previousAskVolume)).toFixed(2);
+                previousBidVolume = parseFloat(bidVolume);
+                previousAskVolume = parseFloat(askVolume);
+
+                document.getElementById("bidPrice_MAWOBI").innerText = bidPrice;
+                document.getElementById("askPrice_MAWOBI").innerText = askPrice;
+                document.getElementById("bidVolume_MAWOBI").innerText = bidVolume;
+                document.getElementById("askVolume_MAWOBI").innerText = askVolume;
+                document.getElementById("spread_MAWOBI").innerText = spread;
+                document.getElementById("orderBookDepth_MAWOBI").innerText = orderBookDepth;
+                document.getElementById("ofi_MAWOBI").innerText = ofi;
+            };
+        }
+
+        function calculateIndicators_MAWOBI(data) {
+            let volumes = data.slice(0, 15).map(c => parseFloat(c[5]));
+            let closes = data.slice(0, 15).map(c => parseFloat(c[4]));
+
+            document.getElementById("hrvc_MAWOBI").innerText = Math.max(...volumes).toFixed(2);
+            document.getElementById("smp_MAWOBI").innerText = (closes.reduce((a, b) => a + b, 0) / closes.length).toFixed(2);
+            document.getElementById("satr_MAWOBI").innerText = (volumes.reduce((a, b) => a + b, 0) / volumes.length).toFixed(2);
+            document.getElementById("vwep_MAWOBI").innerText = (closes.map((c, i) => c * volumes[i]).reduce((a, b) => a + b, 0) / volumes.reduce((a, b) => a + b, 0)).toFixed(2);
+            document.getElementById("rvol_MAWOBI").innerText = (volumes[volumes.length - 1] / (volumes.reduce((a, b) => a + b, 0) / volumes.length)).toFixed(2);
+        }
+
+        fetchUSDTpairs_MAWOBI();

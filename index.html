@@ -174,7 +174,67 @@
     <!-- Market Trend Analysis Section -->
      <!-- BOX -->
      <div class="outer_box">
-    <!-- Left table -->
+    <!-- Left 1 table -->
+     <div class="Current_Candle_Data">
+                <h1>Current Candle Data</h1>
+            <select id="coinSelector_CCD" onchange="updateValues_CCD()">
+                <option value="">Loading USDT pairs...</option>
+            </select>
+            <select id="timeFrame" onchange="updateValues_CCD()">
+                <option value="15m">15 Minutes</option>
+                <option value="30m">30 Minutes</option>
+                <option value="1h">1 Hour</option>
+                <option value="4h">4 Hours</option>
+                <option value="1d">1 Day</option>
+                <option value="1w">1 Week</option>
+                <option value="1M">1 Month</option>
+            </select>
+            <table>
+                <tr>
+                    <th>Indicator</th>
+                    <th>Value</th>
+                </tr>
+                <tr><td>Open</td><td id="open_CCD">Loading...</td></tr>
+                <tr><td>High</td><td id="high_CCD">Loading...</td></tr>
+                <tr><td>Low</td><td id="low_CCD">Loading...</td></tr>
+                <tr><td>Close</td><td id="close_CCD">Loading...</td></tr>
+                <tr><td>Volume</td><td id="volume_CCD">Loading...</td></tr>
+                <tr><td>Momentum</td><td id="momentum_CCD">Loading...</td></tr>
+                <tr><td>15 Candle Avg</td><td id="avgVolume_CCD">Loading...</td></tr>
+            </table>
+     </div>
+    
+    <!-- Left 2 table -->
+     <div class="Second_Last_Candle_Data">
+
+                <h1>Second Last Candle Data</h1>
+                <select id="coinSelector-SLCD" onchange="updateValues_SLDC()">
+                    <option value="">Loading USDT pairs...</option>
+                </select>
+                <select id="timeFrame" onchange="updateValues_SLDC()">
+                    <option value="15m">15 Minutes</option>
+                    <option value="30m">30 Minutes</option>
+                    <option value="1h">1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="1d">1 Day</option>
+                    <option value="1w">1 Week</option>
+                    <option value="1M">1 Month</option>
+                </select>
+                <table>
+                    <tr><th>Indicator</th><th>Value</th></tr>
+                    <tr><td>Open</td><td id="open">Loading...</td></tr>
+                    <tr><td>High</td><td id="high">Loading...</td></tr>
+                    <tr><td>Low</td><td id="low">Loading...</td></tr>
+                    <tr><td>Close</td><td id="close">Loading...</td></tr>
+                    <tr><td>Volume</td><td id="volume">Loading...</td></tr>
+                    <tr><td>Momentum</td><td id="momentum">Loading...</td></tr>
+                    <tr><td>15 Candle Volume Avg</td><td id="avgVolume">Loading...</td></tr>
+                    <tr><td>15 Candle Avg Momentum</td><td id="avgMomentum">Loading...</td></tr>
+                </table>
+                
+     </div>
+
+    <!-- Right 1 table -->
     <div class="market-trend-section">
         <h2>Market Trend Analysis</h2>
         <table class="market-trend-table">
@@ -194,7 +254,7 @@
         
         <h2>Market Trend: <span id="marketTrend_">Calculating...</span></h2>
     </div>
-    <!-- Right table -->
+    <!-- Right 2 table -->
     <div class="market-coin-section">
         
     <h1>Market Trend Analysis</h1>
@@ -239,6 +299,45 @@
  </div>
 </section>
 
+
+<!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
+ <!-- =====================BINANACE FUTURE CALCULATOR ================================     -->
+  <section id="BinanceFuturesCalculator">
+        <div class="container_BFC">
+            <h1>Binance Futures Calculator</h1>
+            
+            <label for="coinPair">Select Coin Pair:</label>
+            <select id="coinPair"></select>
+            
+            <label for="positionType">Position Type:</label>
+            <select id="positionType">
+                <option value="long">Long</option>
+                <option value="short">Short</option>
+            </select>
+            
+            <label for="leverage">Leverage:</label>
+            <input type="number" id="leverage" value="10" min="1" max="125">
+            
+            <label for="entryPrice">Entry Price (USDT):</label>
+            <input type="number" id="entryPrice" value="2100">
+            
+            <label for="exitPrice">Exit Price (USDT):</label>
+            <input type="number" id="exitPrice" value="2200">
+            
+            <label for="quantity">Quantity (USDT):</label>
+            <input type="number" id="quantity" value="100">
+            
+            <button onclick="calculatePnL()">Calculate</button>
+            
+            <table>
+                <tr><th>Metric</th><th>Value</th></tr>
+                <tr><td>Initial Margin</td><td id="initialMargin">-</td></tr>
+                <tr><td>PnL</td><td id="pnl">-</td></tr>
+                <tr><td>ROI (%)</td><td id="roi">-</td></tr>
+            </table>
+        </div>
+
+  </section>
     <!-- footer code -->
     <footer>
         <p>&copy; 2025 | All Rights Reserved.Faisal Inc. | Designed by <span>Abdul Basit</span></p>

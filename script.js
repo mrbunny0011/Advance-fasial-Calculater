@@ -1777,3 +1777,161 @@ function updateCoinTrend(symbol, avgVolumeLast15, avgVolumePrev15) {
 
 // Initial load
 fetchUSDTpairs();
+
+// "Second_Last_Candle_Data"
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// "Second_Last_Candle_Data"
+
+function fetchUSDTpairs_SLCD() {
+    fetch('https://api.binance.com/api/v3/exchangeInfo')
+        .then(response => response.json())
+        .then(data => {
+            let coinSelector = document.getElementById("coinSelector-SLCD");
+            let symbols = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT'));
+            symbols.forEach(symbolData => {
+                let option = document.createElement("option");
+                option.value = symbolData.symbol;
+                option.innerText = symbolData.symbol.replace("USDT", "");
+                coinSelector.appendChild(option);
+            });
+            updateValues_SLDC();
+        })
+        .catch(error => console.error('Error fetching USDT pairs:', error));
+}
+
+function fetchBinanceData_SLDC(symbol, interval) {
+    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=17`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length < 17) return;
+            let candle = data[data.length - 2];
+            document.getElementById("open").innerText = candle[1];
+            document.getElementById("high").innerText = candle[2];
+            document.getElementById("low").innerText = candle[3];
+            document.getElementById("close").innerText = candle[4];
+            document.getElementById("volume").innerText = candle[5];
+            let momentum = (candle[4] - candle[1]).toFixed(2);
+            document.getElementById("momentum").innerText = momentum;
+            
+            let last15Volumes = data.slice(0, 15).map(c => parseFloat(c[5]));
+            let avgVolume = (last15Volumes.reduce((a, b) => a + b, 0) / 15).toFixed(2);
+            document.getElementById("avgVolume").innerText = avgVolume;
+            
+            let last15Momentums = data.slice(0, 15).map(c => parseFloat(c[4]) - parseFloat(c[1]));
+            let avgMomentum = (last15Momentums.reduce((a, b) => a + b, 0) / 15).toFixed(2);
+            document.getElementById("avgMomentum").innerText = avgMomentum;
+        })
+        .catch(error => console.error('Error fetching Binance data:', error));
+}
+
+function updateValues_SLDC() {
+    let timeFrame = document.getElementById("timeFrame").value;
+    let selectedCoin = document.getElementById("coinSelector-SLCD").value;
+    if (selectedCoin) {
+        fetchBinanceData_SLDC(selectedCoin, timeFrame);
+    }
+}
+
+fetchUSDTpairs_SLCD();
+
+
+// / Current_Candle_Data"
+// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Current_Candle_Data"
+
+function fetchUSDTpairs_CCD() {
+    fetch('https://api.binance.com/api/v3/exchangeInfo')
+        .then(response => response.json())
+        .then(data => {
+            let coinSelector = document.getElementById("coinSelector_CCD");
+            let symbols = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT'));
+            symbols.forEach(symbolData => {
+                let option = document.createElement("option");
+                option.value = symbolData.symbol;
+                option.innerText = symbolData.symbol.replace("USDT", "");
+                coinSelector.appendChild(option);
+            });
+            updateValues_CCD();
+        })
+        .catch(error => console.error('Error fetching USDT pairs:', error));
+}
+function fetchBinanceData_CCD(symbol, interval) {
+    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=16`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length < 16) return;
+            let candle = data[data.length - 1];
+            document.getElementById("open_CCD").innerText = candle[1];
+            document.getElementById("high_CCD").innerText = candle[2];
+            document.getElementById("low_CCD").innerText = candle[3];
+            document.getElementById("close_CCD").innerText = candle[4];
+            document.getElementById("volume_CCD").innerText = candle[5];
+            document.getElementById("momentum_CCD").innerText = (candle[4] - candle[1]).toFixed(2);
+            let last15Volumes = data.slice(0, 15).map(c => parseFloat(c[5]));
+            let avgVolume = (last15Volumes.reduce((a, b) => a + b, 0) / 15).toFixed(2);
+            document.getElementById("avgVolume_CCD").innerText = avgVolume;
+        })
+        .catch(error => console.error('Error fetching Binance data:', error));
+}
+function updateValues_CCD() {
+    let timeFrame = document.getElementById("timeFrame").value;
+    let selectedCoin = document.getElementById("coinSelector_CCD").value;
+    if (selectedCoin) {
+        fetchBinanceData_CCD(selectedCoin, timeFrame);
+    }
+}
+fetchUSDTpairs_CCD();
+
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+async function fetchUSDTCoins_BFC() {
+    try {
+        let response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+        let data = await response.json();
+        let select = document.getElementById("coinPair");
+        
+        data.symbols.forEach(symbol => {
+            if (symbol.quoteAsset === "USDT" && symbol.status === "TRADING") {
+                let option = document.createElement("option");
+                option.value = symbol.symbol;
+                option.text = symbol.symbol;
+                select.appendChild(option);
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching USDT coins:", error);
+    }
+}
+
+async function updateMarketPrice_BFC() {
+    let coin = document.getElementById("coinPair").value;
+    try {
+        let response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${coin}`);
+        let data = await response.json();
+        document.getElementById("entryPrice").value = data.price;
+    } catch (error) {
+        console.error("Error fetching market price:", error);
+    }
+}
+
+function calculatePnL() {
+    let positionType = document.getElementById("positionType").value;
+    let leverage = parseFloat(document.getElementById("leverage").value);
+    let entryPrice = parseFloat(document.getElementById("entryPrice").value);
+    let exitPrice = parseFloat(document.getElementById("exitPrice").value);
+    let quantity = parseFloat(document.getElementById("quantity").value);
+    
+    let initialMargin = quantity / leverage;
+    let pnl = (positionType === "long") ? (exitPrice - entryPrice) * (quantity / entryPrice) : (entryPrice - exitPrice) * (quantity / entryPrice);
+    let roi = (pnl / initialMargin) * 100;
+    
+    document.getElementById("initialMargin").innerText = initialMargin.toFixed(2) + " USDT";
+    document.getElementById("pnl").innerText = pnl.toFixed(2) + " USDT";
+    document.getElementById("roi").innerText = roi.toFixed(2) + " %";
+}
+
+fetchUSDTCoins_BFC();
+setInterval(updateMarketPrice_BFC, 300000); // Refresh price every 5 minutes

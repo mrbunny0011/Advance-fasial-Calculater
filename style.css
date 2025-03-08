@@ -398,26 +398,6 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         }
     
 
-        /* Mobile Optimization */
-        @media (max-width: 768px) {
-            .table-container {
-                overflow-x: auto;
-                display: block;
-                width: 100%;
-            }
-            .table-container table {
-                width: 100%;
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            .table-container th, .table-container td {
-                padding: 8px;
-                font-size: 14px;
-            }
-        }
-
-
 
         #Analysis #coinSearch {
             width: 100%;
@@ -445,3 +425,50 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         .market-coin-section .bullish { color: green; font-weight: bold; }
         .market-coin-section .bearish { color: red; font-weight: bold; }
         .market-coin-section .stable { color: orange; font-weight: bold; }
+
+
+
+        /* Binace future calculator */
+    #BinanceFuturesCalculator{
+        width: 99%;
+        margin: 7px;
+        border: 2px solid black;
+        font-family: Arial, sans-serif; 
+        padding: 20px; 
+        text-align: center;
+    }
+    
+            #BinanceFuturesCalculator .container { width: 50%; margin: auto; }
+            #BinanceFuturesCalculator label,     #BinanceFuturesCalculator select,     #BinanceFuturesCalculator input,     #BinanceFuturesCalculator button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+            #BinanceFuturesCalculator table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+            #BinanceFuturesCalculator th,     #BinanceFuturesCalculator td { border: 1px solid black; padding: 10px; }
+            #BinanceFuturesCalculator .long { color: green; font-weight: bold; }
+            #BinanceFuturesCalculator .short { color: red; font-weight: bold; }
+
+
+            /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+                display: block;
+                width: 100%;
+            }
+            .table-container table {
+                width: 100%;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .table-container th, .table-container td {
+                padding: 8px;
+                font-size: 14px;
+            }
+            #Analysis .outer_box{
+                display: flex;
+                flex-direction: column;
+                justify-content: space-around;
+                align-items: center;
+            
+            }
+        }
+

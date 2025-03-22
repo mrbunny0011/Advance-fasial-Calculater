@@ -163,17 +163,17 @@
             let multiData = await fetchMultipleTimeFrameData(symbol);
             let backtest = await backtestModel(symbol, interval);
 
-            document.getElementById("aiResistance").innerText = aiResistance.toFixed(2);
-            document.getElementById("aiSupport").innerText = aiSupport.toFixed(2);
-            document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(2);
-            document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(2);
-            document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(2);
+            document.getElementById("aiResistance").innerText = aiResistance.toFixed(6);
+            document.getElementById("aiSupport").innerText = aiSupport.toFixed(6);
+            document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(6);
+            document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(6);
+            document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(6);
             document.getElementById("marketImbalance").innerText = marketImbalance;
             document.getElementById("riskRewardRatio").innerText = riskRewardRatio;
             document.getElementById("sentimentScore").innerText = sentimentScore;
             // document.getElementById("volumeProfile").innerText = JSON.stringify(volumeProfile);
-            document.getElementById("stopLoss").innerText = stopLoss.toFixed(2);
-            document.getElementById("takeProfit").innerText = takeProfit.toFixed(2);
+            document.getElementById("stopLoss").innerText = stopLoss.toFixed(6);
+            document.getElementById("takeProfit").innerText = takeProfit.toFixed(6);
             updateChart(data.map(c => parseFloat(c[4])));
         }
 

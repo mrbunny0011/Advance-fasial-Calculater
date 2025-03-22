@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Market Liquidity Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { width: 80%; margin: auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 10px; }
+        h1 { color: #333; }
+        select, input { padding: 5px; font-size: 16px; margin: 10px; }
+        canvas { margin: 20px auto; display: block; }
+    </style>
+</head>
+<body>
+    <h1>Complete Market Liquidity & AI Support/Resistance</h1>
+    <select id="coinSelector" onchange="updateValues()"></select>
+    <select id="timeFrame" onchange="updateValues()">
+        <option value="15m">15 Minutes</option>
+        <option value="30m">30 Minutes</option>
+        <option value="1h">1 Hour</option>
+        <option value="4h">4 Hours</option>
+        <option value="1d">1 Day</option>
+        <option value="1w">1 Week</option>
+        <option value="1M">1 Month</option>
+    </select>
+    <table>
+        <tr><th>Indicator</th><th>Value</th></tr>
+        <tr><td>AI Resistance</td><td id="aiResistance">Loading...</td></tr>
+        <tr><td>AI Support</td><td id="aiSupport">Loading...</td></tr>
+        <tr><td>Liquidity Zone 1</td><td id="liquidityZone1">Loading...</td></tr>
+        <tr><td>Liquidity Zone 2</td><td id="liquidityZone2">Loading...</td></tr>
+        <tr><td>Liquidity Zone 3</td><td id="liquidityZone3">Loading...</td></tr>
+        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
+        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
+        <tr><td>Sentiment Score</td><td id="sentimentScore">Loading...</td></tr>
+        <tr><td>Volume Profile</td><td id="volumeProfile">Loading...</td></tr>
+        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
+        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
+    </table>
+    <canvas id="marketChart" width="800" height="400"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let marketChart;
+        let ws;
+        let allCoins = [];
+
+        // Fetch all futures pairs from Binance
+        async function fetchFuturesPairs() {
+            let response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+            let data = await response.json();
+            let coinSelector = document.getElementById("coinSelector");
+            allCoins = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT')).map(symbolData => {
+                let option = document.createElement("option");
+                option.value = symbolData.symbol;
+                option.innerText = symbolData.symbol.replace("USDT", "");
+                coinSelector.appendChild(option);
+                return symbolData.symbol.replace("USDT", "");
+            });
+            updateValues();
+        }
+
+        // Calculate stop-loss and take-profit based on support and resistance
+        function calculateLevels(entryPrice, support, resistance) {
+            let stopLoss = support - (support * 0.01); // 1% below support
+            let takeProfit = resistance + (resistance * 0.01); // 1% above resistance
+
+            return { stopLoss, takeProfit };
+        }
+
+        // Calculate liquidity zones
+        function calculateLiquidityZones(pivot, high, low) {
+            let liquidityZone1 = pivot; // Pivot point itself
+            let liquidityZone2 = pivot + (high - low) * 0.25; // Upper zone
+            let liquidityZone3 = pivot - (high - low) * 0.25; // Lower zone
+            return { liquidityZone1, liquidityZone2, liquidityZone3 };
+        }
+
+        // AI-based support/resistance calculation
+        function aiGenerateSupportResistance(pivot, high, low, volume) {
+            let aiResistance = pivot + (high - low) * 0.5; // Resistance level
+            let aiSupport = pivot - (high - low) * 0.5; // Support level
+
+            // Adjust levels based on volume
+            if (volume > 100000) {
+                aiResistance += (high - low) * 0.1;
+                aiSupport -= (high - low) * 0.1;
+            }
+
+            return { aiResistance, aiSupport };
+        }
+
+        // Calculate market imbalance (cumulative delta)
+        function calculateMarketImbalance(data) {
+            let buyVolume = 0;
+            let sellVolume = 0;
+            data.forEach(candle => {
+                if (candle[4] > candle[1]) buyVolume += parseFloat(candle[5]); // Green candle
+                else sellVolume += parseFloat(candle[5]); // Red candle
+            });
+            return (buyVolume - sellVolume).toFixed(2);
+        }
+
+        // Calculate risk-reward ratio
+        function calculateRiskRewardRatio(entryPrice, stopLoss, takeProfit) {
+            let risk = entryPrice - stopLoss; // Potential Risk
+            let reward = takeProfit - entryPrice; // Potential Reward
+            return (reward / risk).toFixed(2); // Risk-Reward Ratio
+        }
+
+        // Analyze news sentiment (dummy implementation)
+        async function analyzeNewsSentiment() {
+            // Fetch news data from an API (e.g., NewsAPI)
+            let response = await fetch('https://newsapi.org/v2/everything?q=bitcoin&apiKey=YOUR_API_KEY');
+            let data = await response.json();
+            let sentimentScore = 0; // Calculate sentiment score
+            return sentimentScore;
+        }
+
+        // Calculate volume profile
+        function calculateVolumeProfile(data) {
+            const volumeProfile = {};
+            data.forEach(candle => {
+                const price = parseFloat(candle[4]); // Close price
+                const volume = parseFloat(candle[5]); // Volume
+                if (volumeProfile[price]) volumeProfile[price] += volume;
+                else volumeProfile[price] = volume;
+            });
+            return volumeProfile;
+        }
+
+        // Fetch market data and update UI
+        async function fetchMarketData(symbol, interval) {
+            let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=17`);
+            let data = await response.json();
+            if (data.length < 17) return;
+
+            let candle = data[data.length - 2]; // Second last candle
+            let high = parseFloat(candle[2]);
+            let low = parseFloat(candle[3]);
+            let close = parseFloat(candle[4]);
+            let volume = parseFloat(candle[5]);
+
+            // Calculate pivot point
+            let pivot = (high + low + close) / 3;
+
+            // Calculate liquidity zones
+            let { liquidityZone1, liquidityZone2, liquidityZone3 } = calculateLiquidityZones(pivot, high, low);
+
+            // AI-based support/resistance
+            let { aiResistance, aiSupport } = aiGenerateSupportResistance(pivot, high, low, volume);
+
+            // Calculate stop-loss and take-profit
+            let { stopLoss, takeProfit } = calculateLevels(close, aiSupport, aiResistance);
+
+            // Calculate market imbalance
+            let marketImbalance = calculateMarketImbalance(data);
+
+            // Calculate risk-reward ratio
+            let riskRewardRatio = calculateRiskRewardRatio(close, stopLoss, takeProfit);
+
+            // Analyze news sentiment
+            let sentimentScore = await analyzeNewsSentiment();
+
+            // Calculate volume profile
+            let volumeProfile = calculateVolumeProfile(data);
+
+            // Update UI
+            document.getElementById("aiResistance").innerText = aiResistance.toFixed(2);
+            document.getElementById("aiSupport").innerText = aiSupport.toFixed(2);
+            document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(2);
+            document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(2);
+            document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(2);
+            document.getElementById("marketImbalance").innerText = marketImbalance;
+            document.getElementById("riskRewardRatio").innerText = riskRewardRatio;
+            document.getElementById("sentimentScore").innerText = sentimentScore;
+            // document.getElementById("volumeProfile").innerText = JSON.stringify(volumeProfile);
+            document.getElementById("stopLoss").innerText = stopLoss.toFixed(2);
+            document.getElementById("takeProfit").innerText = takeProfit.toFixed(2);
+
+            // Update chart
+            updateChart(data.map(candle => parseFloat(candle[4])));
+        }
+
+        // Update values when coin or time frame changes
+        function updateValues() {
+            let timeFrame = document.getElementById("timeFrame").value;
+            let selectedCoin = document.getElementById("coinSelector").value;
+            if (selectedCoin) {
+                fetchMarketData(selectedCoin, timeFrame);
+                setupWebSocket(selectedCoin.toLowerCase());
+            }
+        }
+
+        // Initialize the dashboard
+        fetchFuturesPairs();
+
+        // Setup WebSocket for real-time order book data
+        function setupWebSocket(symbol) {
+            if (ws) ws.close(); // Close existing connection
+            ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol}@depth`);
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const bids = data.bids; // Buy orders
+                const asks = data.asks; // Sell orders
+
+                // Identify large buy/sell walls
+                const largeBid = bids.find(order => parseFloat(order[1]) > 10); // > 10 BTC
+                const largeAsk = asks.find(order => parseFloat(order[1]) > 10); // > 10 BTC
+
+                if (largeBid) console.log("Large Buy Wall:", largeBid);
+                if (largeAsk) console.log("Large Sell Wall:", largeAsk);
+            };
+        }
+
+        // Update chart using Chart.js
+        function updateChart(priceData) {
+            let ctx = document.getElementById('marketChart').getContext('2d');
+            if (marketChart) marketChart.destroy();
+            marketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: priceData.map((_, i) => i),
+                    datasets: [{
+                        label: 'Price',
+                        data: priceData,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -45,7 +45,6 @@ function createCalculator(type) {
     
     if (type === "Silver") return silver() 
     if (type === "Gold") return gold();
-    if (type === "Diamond") return diamond();
     if (type === "Legend") return legend();
 
     if (type === "Galaxy") return galaxy();
@@ -1216,9 +1215,6 @@ function sun_P(h, l, c) {
 
 
 
-function diamond(){
-    alert("Phla Dosra Use kar la Bahi ");
-}
 
 function legend(){
     alert("Baan rha ha Abhi!")
@@ -1399,265 +1395,8 @@ const calcContainer = document.getElementById("calcContainer");
 
 
 
-        
-        //  ===== HV code ==========
-        function addRow() {
-            let table = document.getElementById("priceTable");
-            let row = table.insertRow();
-            let cell = row.insertCell(0);
-            cell.innerHTML = '<input type="number" class="price">';
-        }
 
-        function calculateHV() {
-            let prices = Array.from(document.querySelectorAll(".price"))
-                .map(input => parseFloat(input.value))
-                .filter(Boolean);
-            
-            if (prices.length < 2) {
-                document.getElementById("result").innerText = "Enter at least 2 prices";
-                return;
-            }
-
-            let logReturns = [];
-            for (let i = 1; i < prices.length; i++) {
-                logReturns.push(Math.log(prices[i] / prices[i - 1]));
-            }
-
-            let mean = logReturns.reduce((a, b) => a + b, 0) / logReturns.length;
-            let variance = logReturns.reduce((sum, r) => sum + (r - mean) ** 2, 0) / (logReturns.length - 1);
-            let stdDev = Math.sqrt(variance);
-            let hv = stdDev * Math.sqrt(252) * 100;
-            
-            document.getElementById("result").innerText = `Historical Volatility: ${hv.toFixed(2)}%`;
-        }
-        function clean(){
-            document.querySelectorAll(".price").forEach(e=> {
-                e.value="";
-            });
-            document.getElementById("result").innerText = ``;
-
-        }
-
-        // Popap for Hv Calculator
-function openPopup_hv() {
-    document.getElementById("popupOverlay-hv").style.display = "flex";
-    }
     
-    function closePopup_hv() {
-    document.getElementById("popupOverlay-hv").style.display = "none";
-    }
-    
-    window.onclick = function(event) {
-    let popupOverlay = document.getElementById("popupOverlay-hv");
-    if (event.target === popupOverlay) {
-    closePopup();
-    }
-    }
-    
-    
-
-
-
-    // :::::::::::::::::::::CRYPTO MARKeT ANALYSISI:::::::::::::::::::::::::::::::::::::;
-    // =====================crypto market analysisi=====================================
-
-    let binanceCoins = [];  // To store Binance coin list
-
-        // Fetch available coins from Binance
-        async function fetchCoins() {
-            try {
-                let response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
-                let data = await response.json();
-                binanceCoins = data.symbols.filter(symbol => symbol.status === 'TRADING').map(symbol => symbol.symbol);
-                populateCoinDropdown(binanceCoins);
-            } catch (error) {
-                console.error("Error fetching Binance coins:", error);
-                alert("Failed to load coin list.");
-            }
-        }
-
-        // Populate the dropdown with available Binance coins
-        function populateCoinDropdown(coins) {
-            let coinDropdown = document.getElementById("coin");
-            coinDropdown.innerHTML = ""; // Clear existing options
-            let defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.text = "Select a Coin";
-            coinDropdown.appendChild(defaultOption);
-
-            coins.forEach(coin => {
-                let option = document.createElement("option");
-                option.value = coin;
-                option.text = coin;
-                coinDropdown.appendChild(option);
-            });
-        }
-
-        // Filter coins based on search input
-        function filterCoins() {
-            let searchQuery = document.getElementById("coinSearch").value.toUpperCase();
-            let filteredCoins = binanceCoins.filter(coin => coin.includes(searchQuery));
-            populateCoinDropdown(filteredCoins);
-        }
-
-        // Analyze market and update table
-        async function calculateAnalysis() {
-            let coin = document.getElementById("coin").value;
-            let timeframe = document.getElementById("timeframe").value;
-            
-            if (!coin) {
-                alert("Please select a coin.");
-                return;
-            }
-            
-            try {
-                // Fetch real-time market data for the selected coin
-                let marketData = await getMarketData(coin);
-                let bid = marketData.bid;
-                let ask = marketData.ask;
-                let spread = (ask - bid).toFixed(2);
-                let depth = (Math.random() * 5000).toFixed(0);
-                let trend = spread < 5 ? "Stable" : spread < 10 ? "Bullish" : "Bearish";
-                let trendClass = trend === "Bullish" ? "bullish" : trend === "Bearish" ? "bearish" : "stable";
-
-                // Get price change based on timeframe
-                let priceChange = await getPriceChange(coin, timeframe);
-
-                // Calculate volume average for the selected timeframe
-                let volumeAvg = await getVolumeAvg(coin, timeframe);
-
-                let table = document.getElementById("marketTable");
-                table.innerHTML = ` 
-                    <tr>
-                        <td>${coin}</td>
-                        <td>${bid}</td>
-                        <td>${ask}</td>
-                        <td>${spread}</td>
-                        <td>${depth}</td>
-                        <td class="${trendClass}">${trend}</td>
-                        <td>${priceChange}</td>
-                        <td>${volumeAvg}</td>
-                    </tr>
-                `;
-
-                // Update market trend analysis indicators
-                updateMarketTrendAnalysis();
-            } catch (error) {
-                console.error("Error calculating analysis:", error);
-                alert("Error analyzing the market. Please try again later.");
-            }
-        }
-
-        // Fetch market data for the coin (mocked for now)
-        async function getMarketData(coin) {
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve({
-                        bid: (Math.random() * 100 + 1000).toFixed(2),
-                        ask: (Math.random() * 10 + 1010).toFixed(2)
-                    });
-                }, 1000);
-            });
-        }
-
-        // Fetch the price change data based on selected timeframe
-        async function getPriceChange(coin, timeframe) {
-            try {
-                let url = `https://api.binance.com/api/v3/klines?symbol=${coin}&interval=${timeframe}&limit=2`;
-
-                let response = await fetch(url);
-                let data = await response.json();
-
-                if (data.length < 2) {
-                    throw new Error("Not enough data to calculate price change.");
-                }
-
-                let openPrice = parseFloat(data[0][1]);  // Opening price of the previous timeframe
-                let closePrice = parseFloat(data[1][4]);  // Closing price of the current timeframe
-
-                let priceChange = ((closePrice - openPrice) / openPrice * 100).toFixed(2);
-                return `${priceChange}%`;
-            } catch (error) {
-                console.error("Error fetching price change data:", error);
-                return "N/A";
-            }
-        }
-
-        // Calculate the volume average for the last 15 candles for the selected coin and timeframe
-        async function getVolumeAvg(coin, timeframe) {
-            try {
-                let url = `https://api.binance.com/api/v3/klines?symbol=${coin}&interval=${timeframe}&limit=15`;
-                let response = await fetch(url);
-                let data = await response.json();
-
-                if (data.length < 15) {
-                    throw new Error("Not enough data to calculate volume average.");
-                }
-
-                let totalVolume = data.reduce((sum, candle) => sum + parseFloat(candle[5]), 0); // 5th index is volume
-                let volumeAvg = (totalVolume / data.length).toFixed(2);
-                return volumeAvg;
-            } catch (error) {
-                console.error("Error fetching volume data:", error);
-                return "N/A";
-            }
-        }
-
-        // Update market trend analysis indicators and calculate market trend
-        function updateMarketTrendAnalysis() {
-            document.getElementById("rvol").innerText = getRandomValue(0, 100);
-            document.getElementById("lar").innerText = getRandomValue(0, 100);
-            document.getElementById("lmc").innerText = getRandomValue(0, 100);
-            document.getElementById("pas").innerText = getRandomValue(0, 100);
-            document.getElementById("atr").innerText = getRandomValue(0, 100);
-            document.getElementById("smp").innerText = getRandomValue(0, 100);
-            document.getElementById("pac").innerText = getRandomValue(0, 100);
-            document.getElementById("lss").innerText = getRandomValue(0, 100);
-            
-            analyzeMarketTrend();
-        }
-
-        // Analyze the overall market trend based on indicator values and coin data
-        function analyzeMarketTrend() {
-            let values = document.querySelectorAll("td:nth-child(2)");
-            let sum = 0;
-            values.forEach(cell => sum += parseFloat(cell.innerText));
-            let avg = sum / values.length;
-            let trendElement = document.getElementById("marketTrend_");
-            
-            setTimeout(() => {
-                let coinTrendElement = document.querySelector("#marketTable td:nth-child(6)");
-                let coinTrend = coinTrendElement ? coinTrendElement.innerText : "N/A";
-            }, 1000); // Adjust timing based on data load speed
-            
-            // let coinTrend = document.querySelector("#marketTable td:nth-child(6)").innerText;
-
-            // Combine coin trend with indicators' trend
-            if (coinTrend === "Bullish" && avg > 66) {
-                trendElement.innerText = "Bullish";
-                trendElement.className = "bullish";
-            } else if (coinTrend === "Bearish" && avg < 33) {
-                trendElement.innerText = "Bearish";
-                trendElement.className = "bearish";
-            } else {
-                trendElement.innerText = "Stable";
-                trendElement.className = "stable";
-            }
-        }
-
-        // Random value generator for market trend analysis indicators
-        function getRandomValue(min, max) {
-            return (Math.random() * (max - min) + min).toFixed(2);
-        }
-
-        // Set the interval for updating market analysis every 5 seconds
-        setInterval(updateMarketTrendAnalysis, 5000);
-
-        // Initial call to fetch coins on page load
-        fetchCoins();
-
-
-
 
 
 // market-coin-section
@@ -1778,10 +1517,10 @@ function updateCoinTrend(symbol, avgVolumeLast15, avgVolumePrev15) {
 // Initial load
 fetchUSDTpairs();
 
-// "Second_Last_Candle_Data"
+// "sport Second_Last_Candle_Data"
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// "Second_Last_Candle_Data"
+// "sport Second_Last_Candle_Data"
 
 function fetchUSDTpairs_SLCD() {
     fetch('https://api.binance.com/api/v3/exchangeInfo')
@@ -1836,53 +1575,72 @@ function updateValues_SLDC() {
 fetchUSDTpairs_SLCD();
 
 
-// / Current_Candle_Data"
+// / Futture Second last candal"
 // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// Current_Candle_Data"
-
-function fetchUSDTpairs_CCD() {
-    fetch('https://api.binance.com/api/v3/exchangeInfo')
+// Futture Second last candal"
+function fetchUSDTperpPairs_FSLC() {
+    fetch('https://fapi.binance.com/fapi/v1/exchangeInfo')
         .then(response => response.json())
         .then(data => {
-            let coinSelector = document.getElementById("coinSelector_CCD");
-            let symbols = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT'));
+            let coinSelector = document.getElementById("coinSelector_FSLC");
+            coinSelector.innerHTML = ""; // Clear existing options
+            
+            let symbols = data.symbols.filter(symbol => 
+                symbol.contractType === "PERPETUAL" && 
+                symbol.symbol.endsWith('USDT')
+            );
+
             symbols.forEach(symbolData => {
                 let option = document.createElement("option");
                 option.value = symbolData.symbol;
-                option.innerText = symbolData.symbol.replace("USDT", "");
+                option.innerText = symbolData.symbol.replace("USDT", "") + " Perpetual";
                 coinSelector.appendChild(option);
             });
-            updateValues_CCD();
+
+            if (symbols.length > 0) {
+                updateValues_FSLC(); // Auto-update first available pair
+            }
         })
-        .catch(error => console.error('Error fetching USDT pairs:', error));
+        .catch(error => console.error('Error fetching USDT Perpetual pairs:', error));
 }
-function fetchBinanceData_CCD(symbol, interval) {
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=16`)
+
+function fetchBinanceData_FSLC(symbol, interval) {
+    fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=17`)
         .then(response => response.json())
         .then(data => {
-            if (data.length < 16) return;
-            let candle = data[data.length - 1];
-            document.getElementById("open_CCD").innerText = candle[1];
-            document.getElementById("high_CCD").innerText = candle[2];
-            document.getElementById("low_CCD").innerText = candle[3];
-            document.getElementById("close_CCD").innerText = candle[4];
-            document.getElementById("volume_CCD").innerText = candle[5];
-            document.getElementById("momentum_CCD").innerText = (candle[4] - candle[1]).toFixed(2);
-            let last15Volumes = data.slice(0, 15).map(c => parseFloat(c[5]));
+            if (data.length < 17) return;
+            let candle = data[data.length - 2]; // Second last candle
+            document.getElementById("open_FSLC").innerText = candle[1];
+            document.getElementById("high_FSLC").innerText = candle[2];
+            document.getElementById("low_FSLC").innerText = candle[3];
+            document.getElementById("close_FSLC").innerText = candle[4];
+            document.getElementById("volume_FSLC").innerText = candle[5];
+
+            let momentum = (parseFloat(candle[4]) - parseFloat(candle[1])).toFixed(2);
+            document.getElementById("momentum_FSLC").innerText = momentum;
+
+            let last15Volumes = data.slice(data.length - 16, data.length - 1).map(c => parseFloat(c[5]));
             let avgVolume = (last15Volumes.reduce((a, b) => a + b, 0) / 15).toFixed(2);
-            document.getElementById("avgVolume_CCD").innerText = avgVolume;
+            document.getElementById("avgVolume_FSLC").innerText = avgVolume;
+
+            let last15Momentums = data.slice(data.length - 16, data.length - 1).map(c => parseFloat(c[4]) - parseFloat(c[1]));
+            let avgMomentum = (last15Momentums.reduce((a, b) => a + b, 0) / 15).toFixed(2);
+            document.getElementById("avgMomentum_FSLC").innerText = avgMomentum;
         })
-        .catch(error => console.error('Error fetching Binance data:', error));
+        .catch(error => console.error('Error fetching Binance Futures data:', error));
 }
-function updateValues_CCD() {
-    let timeFrame = document.getElementById("timeFrame").value;
-    let selectedCoin = document.getElementById("coinSelector_CCD").value;
+
+function updateValues_FSLC() {
+    let timeFrame = document.getElementById("timeFrame_FSLC").value;
+    let selectedCoin = document.getElementById("coinSelector_FSLC").value;
     if (selectedCoin) {
-        fetchBinanceData_CCD(selectedCoin, timeFrame);
+        fetchBinanceData_FSLC(selectedCoin, timeFrame);
     }
 }
-fetchUSDTpairs_CCD();
+
+// Initialize everything
+fetchUSDTperpPairs_FSLC();
 
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -1939,93 +1697,3 @@ setInterval(updateMarketPrice_BFC, 300000); // Refresh price every 5 minutes
 
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 // ==========================================================================
-// ==================MAWOBI====================================
-
-
-let previousBidVolume = 0.0;
-        let previousAskVolume = 0.0;
-        let debounceTimer;
-        let ws;
-
-        function fetchUSDTpairs_MAWOBI() {
-            fetch('https://api.binance.com/api/v3/exchangeInfo')
-                .then(response => response.json())
-                .then(data => {
-                    let coinSelector = document.getElementById("coinSelector_MAWOBI");
-                    coinSelector.innerHTML = '<option value="">Select a Coin</option>';
-                    let symbols = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT'));
-                    symbols.forEach(symbolData => {
-                        let option = document.createElement("option");
-                        option.value = symbolData.symbol;
-                        option.innerText = symbolData.symbol.replace("USDT", "");
-                        coinSelector.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error fetching USDT pairs:', error));
-        }
-
-        function updateValues_MAWOBI() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                let timeFrame = document.getElementById("timeFrame_MAWOBI").value;
-                let selectedCoin = document.getElementById("coinSelector_MAWOBI").value;
-                if (selectedCoin) {
-                    fetchBinanceData_MAWOBI(selectedCoin, timeFrame);
-                    startWebSocket_MAWOBI(selectedCoin);
-                }
-            }, 2000);  // 2 sec debounce
-        }
-
-        function fetchBinanceData_MAWOBI(symbol, interval) {
-            fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=17`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length < 17) return;
-                    calculateIndicators_MAWOBI(data);
-                })
-                .catch(error => console.error('Error fetching Binance data:', error));
-        }
-
-        function startWebSocket_MAWOBI(symbol) {
-            if (ws) ws.close();
-            ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth20`);
-
-            ws.onmessage = (event) => {
-                let data = JSON.parse(event.data);
-                if (!data.bids.length || !data.asks.length) return;
-
-                let bidPrice = parseFloat(data.bids[0][0]);
-                let askPrice = parseFloat(data.asks[0][0]);
-                let spread = (askPrice - bidPrice).toFixed(2);
-
-                let bidVolume = data.bids.reduce((sum, bid) => sum + parseFloat(bid[1]), 0).toFixed(2);
-                let askVolume = data.asks.reduce((sum, ask) => sum + parseFloat(ask[1]), 0).toFixed(2);
-                let orderBookDepth = (parseFloat(bidVolume) + parseFloat(askVolume)).toFixed(2);
-
-                let ofi = ((parseFloat(bidVolume) - previousBidVolume) - 
-                           (parseFloat(askVolume) - previousAskVolume)).toFixed(2);
-                previousBidVolume = parseFloat(bidVolume);
-                previousAskVolume = parseFloat(askVolume);
-
-                document.getElementById("bidPrice_MAWOBI").innerText = bidPrice;
-                document.getElementById("askPrice_MAWOBI").innerText = askPrice;
-                document.getElementById("bidVolume_MAWOBI").innerText = bidVolume;
-                document.getElementById("askVolume_MAWOBI").innerText = askVolume;
-                document.getElementById("spread_MAWOBI").innerText = spread;
-                document.getElementById("orderBookDepth_MAWOBI").innerText = orderBookDepth;
-                document.getElementById("ofi_MAWOBI").innerText = ofi;
-            };
-        }
-
-        function calculateIndicators_MAWOBI(data) {
-            let volumes = data.slice(0, 15).map(c => parseFloat(c[5]));
-            let closes = data.slice(0, 15).map(c => parseFloat(c[4]));
-
-            document.getElementById("hrvc_MAWOBI").innerText = Math.max(...volumes).toFixed(2);
-            document.getElementById("smp_MAWOBI").innerText = (closes.reduce((a, b) => a + b, 0) / closes.length).toFixed(2);
-            document.getElementById("satr_MAWOBI").innerText = (volumes.reduce((a, b) => a + b, 0) / volumes.length).toFixed(2);
-            document.getElementById("vwep_MAWOBI").innerText = (closes.map((c, i) => c * volumes[i]).reduce((a, b) => a + b, 0) / volumes.reduce((a, b) => a + b, 0)).toFixed(2);
-            document.getElementById("rvol_MAWOBI").innerText = (volumes[volumes.length - 1] / (volumes.reduce((a, b) => a + b, 0) / volumes.length)).toFixed(2);
-        }
-
-        fetchUSDTpairs_MAWOBI();

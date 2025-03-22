@@ -20,7 +20,8 @@
                     <span class="close-btn" onclick="closeSidebar()">×</span>
                     <a href="#home">Home</a>
                     <a href="#" class="popup-btn" onclick="openPopup()">About</a>
-                    <a href="#" class="popup-btn-hv" onclick="openPopup_hv()">HV Calculator</a>
+                    <a href="dimand.html">Diamond</a>
+                    <a href="Advance_diamond.html">Advance Diamond</a>
                     <a href="#Analysis">Analysis</a>
                     <a href="#">Contact</a>
                 </div>
@@ -55,7 +56,7 @@
             <button onclick="addCalculator('Calculator')" class="but">Calculator</button>
             <button onclick="addCalculator('Silver')" class="but">Silver</button>
             <button onclick="addCalculator('Gold')" class="but">Gold</button>
-            <button onclick="addCalculator('Diamond')" class="but">Diamond</button>
+            <button class="but"><a href="dimand.html">Diamond</a></button>
             <button onclick="addCalculator('Legend')" class="but">Legend</button>
         </div>
         
@@ -133,81 +134,42 @@
 <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
  <!-- =====================Market/ Analysis Seation ================================     -->
 <section id="Analysis">
-    
-    <h1>Crypto Market Analysis</h1>
-    
-    <label for="coin">Search Coin:</label>
-    <input type="text" id="coinSearch" placeholder="Search for a coin..." onkeyup="filterCoins()">
-    
-    <select id="coin">
-        <option value="">Select a Coin</option>
-    </select>
 
-    <label for="timeframe">Select Timeframe:</label>
-    <select id="timeframe">
-        <option value="1h">1 Hour</option>
-        <option value="4h">4 Hours</option>
-        <option value="1d">1 Day</option>
-        <option value="1w">1 Week</option>
-        <option value="1M">1 Month</option>
-    </select>
-
-    <button onclick="calculateAnalysis()">Analyze Market</button>
-    <div class="table-container">
-    <table >
-        <thead>
-            <tr>
-                <th>Coin</th>
-                <th>Bid Price</th>
-                <th>Ask Price</th>
-                <th>Spread</th>
-                <th>Order Book Depth</th>
-                <th>Market Trend</th>
-                <th>Price Change (Timeframe)</th>
-                <th>Volume Avg (Last 15 Candles)</th>
-            </tr>
-        </thead>
-        <tbody id="marketTable">
-        </tbody>
-    </table>
-</div>
-    <!-- Market Trend Analysis Section -->
      <!-- BOX -->
      <div class="outer_box">
     <!-- Left 1 table -->
      <div class="Current_Candle_Data">
-                <h1>Current Candle Data</h1>
-            <select id="coinSelector_CCD" onchange="updateValues_CCD()">
-                <option value="">Loading USDT pairs...</option>
-            </select>
-            <select id="timeFrame" onchange="updateValues_CCD()">
-                <option value="15m">15 Minutes</option>
-                <option value="30m">30 Minutes</option>
-                <option value="1h">1 Hour</option>
-                <option value="4h">4 Hours</option>
-                <option value="1d">1 Day</option>
-                <option value="1w">1 Week</option>
-                <option value="1M">1 Month</option>
-            </select>
-            <table>
-                <tr>
-                    <th>Indicator</th>
-                    <th>Value</th>
-                </tr>
-                <tr><td>Open</td><td id="open_CCD">Loading...</td></tr>
-                <tr><td>High</td><td id="high_CCD">Loading...</td></tr>
-                <tr><td>Low</td><td id="low_CCD">Loading...</td></tr>
-                <tr><td>Close</td><td id="close_CCD">Loading...</td></tr>
-                <tr><td>Volume</td><td id="volume_CCD">Loading...</td></tr>
-                <tr><td>Momentum</td><td id="momentum_CCD">Loading...</td></tr>
-                <tr><td>15 Candle Avg</td><td id="avgVolume_CCD">Loading...</td></tr>
-            </table>
+        <h1>Futures Second Last Candle</h1>
+        <select id="coinSelector_FSLC" onchange="updateValues_FSLC()">
+            <option value="">Loading USDT Perpetual pairs...</option>
+        </select>
+        <select id="timeFrame_FSLC" onchange="updateValues_FSLC()">
+            <option value="15m">15 Minutes</option>
+            <option value="30m">30 Minutes</option>
+            <option value="1h">1 Hour</option>
+            <option value="4h">4 Hours</option>
+            <option value="1d">1 Day</option>
+            <option value="1w">1 Week</option>
+            <option value="1M">1 Month</option>
+        </select>
+        <table>
+            <tr><th>Indicator</th><th>Value</th></tr>
+            <tr><td>Open</td><td id="open_FSLC">Loading...</td></tr>
+            <tr><td>High</td><td id="high_FSLC">Loading...</td></tr>
+            <tr><td>Low</td><td id="low_FSLC">Loading...</td></tr>
+            <tr><td>Close</td><td id="close_FSLC">Loading...</td></tr>
+            <tr><td>Volume</td><td id="volume_FSLC">Loading...</td></tr>
+            <tr><td>Momentum</td><td id="momentum_FSLC">Loading...</td></tr>
+            <tr><td>15 Candle Volume Avg</td><td id="avgVolume_FSLC">Loading...</td></tr>
+            <tr><td>15 Candle Avg Momentum</td><td id="avgMomentum_FSLC">Loading...</td></tr>
+        </table>
+    
      </div>
     
     <!-- Left 2 table -->
      <div class="Second_Last_Candle_Data">
 
-                <h1>Second Last Candle Data</h1>
+                <h1>Sport Second Last Candle</h1>
                 <select id="coinSelector-SLCD" onchange="updateValues_SLDC()">
                     <option value="">Loading USDT pairs...</option>
                 </select>
@@ -235,24 +197,38 @@
      </div>
 
     <!-- Right 1 table -->
-    <div class="market-trend-section">
-        <h2>Market Trend Analysis</h2>
-        <table class="market-trend-table">
-            <tr>
-                <th>Indicator</th>
-                <th>Value</th>
-            </tr>
-            <tr><td>RVol</td><td id="rvol">Loading...</td></tr>
-            <tr><td>LAR</td><td id="lar">Loading...</td></tr>
-            <tr><td>LMC</td><td id="lmc">Loading...</td></tr>
-            <tr><td>PAS</td><td id="pas">Loading...</td></tr>
-            <tr><td>ATR</td><td id="atr">Loading...</td></tr>
-            <tr><td>SMP</td><td id="smp">Loading...</td></tr>
-            <tr><td>PAC</td><td id="pac">Loading...</td></tr>
-            <tr><td>LSS</td><td id="lss">Loading...</td></tr>
-        </table>
+    <div class="container_BFC">
+        <h1>Binance Futures Calculator</h1>
         
-        <h2>Market Trend: <span id="marketTrend_">Calculating...</span></h2>
+        <label for="coinPair">Select Coin Pair:</label>
+        <select id="coinPair"></select>
+        
+        <label for="positionType">Position Type:</label>
+        <select id="positionType">
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+        </select>
+        
+        <label for="leverage">Leverage:</label>
+        <input type="number" id="leverage" value="10" min="1" max="125">
+        
+        <label for="entryPrice">Entry Price (USDT):</label>
+        <input type="number" id="entryPrice" value="2100">
+        
+        <label for="exitPrice">Exit Price (USDT):</label>
+        <input type="number" id="exitPrice" value="2200">
+        
+        <label for="quantity">Quantity (USDT):</label>
+        <input type="number" id="quantity" value="100">
+        
+        <button onclick="calculatePnL()">Calculate</button>
+        
+        <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Initial Margin</td><td id="initialMargin">-</td></tr>
+            <tr><td>PnL</td><td id="pnl">-</td></tr>
+            <tr><td>ROI (%)</td><td id="roi">-</td></tr>
+        </table>
     </div>
     <!-- Right 2 table -->
     <div class="market-coin-section">
@@ -303,74 +279,6 @@
 <!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
  <!-- =====================BINANACE FUTURE CALCULATOR ================================     -->
   <section id="BinanceFuturesCalculator">
-      
-
-        <!-- Left Side -->
-        <div class="container_BFC">
-            <h1>Binance Futures Calculator</h1>
-            
-            <label for="coinPair">Select Coin Pair:</label>
-            <select id="coinPair"></select>
-            
-            <label for="positionType">Position Type:</label>
-            <select id="positionType">
-                <option value="long">Long</option>
-                <option value="short">Short</option>
-            </select>
-            
-            <label for="leverage">Leverage:</label>
-            <input type="number" id="leverage" value="10" min="1" max="125">
-            
-            <label for="entryPrice">Entry Price (USDT):</label>
-            <input type="number" id="entryPrice" value="2100">
-            
-            <label for="exitPrice">Exit Price (USDT):</label>
-            <input type="number" id="exitPrice" value="2200">
-            
-            <label for="quantity">Quantity (USDT):</label>
-            <input type="number" id="quantity" value="100">
-            
-            <button onclick="calculatePnL()">Calculate</button>
-            
-            <table>
-                <tr><th>Metric</th><th>Value</th></tr>
-                <tr><td>Initial Margin</td><td id="initialMargin">-</td></tr>
-                <tr><td>PnL</td><td id="pnl">-</td></tr>
-                <tr><td>ROI (%)</td><td id="roi">-</td></tr>
-            </table>
-        </div>
-
-        <!-- Right Side -->
-        <div class="MAWOBI">
-                        <h1>Market Analysis with Order Book & Indicators</h1>
-                <select id="coinSelector_MAWOBI" onchange="updateValues_MAWOBI()">
-                    <option value="">Select a Coin</option>
-                </select>
-                <select id="timeFrame_MAWOBI" onchange="updateValues_MAWOBI()">
-                    <option value="15m">15 Minutes</option>
-                    <option value="30m">30 Minutes</option>
-                    <option value="1h">1 Hour</option>
-                    <option value="4h">4 Hours</option>
-                    <option value="1d">1 Day</option>
-                    <option value="1w">1 Week</option>
-                    <option value="1M">1 Month</option>
-                </select>
-                <table>
-                    <tr><th>Indicator</th><th>Value</th></tr>
-                    <tr><td>HRVC</td><td id="hrvc_MAWOBI">Loading...</td></tr>
-                    <tr><td>SMP</td><td id="smp_MAWOBI">Loading...</td></tr>
-                    <tr><td>SATR</td><td id="satr_MAWOBI">Loading...</td></tr>
-                    <tr><td>VWEP</td><td id="vwep_MAWOBI">Loading...</td></tr>
-                    <tr><td>RVol</td><td id="rvol_MAWOBI">Loading...</td></tr>
-                    <tr><td>OFI</td><td id="ofi_MAWOBI">Loading...</td></tr>
-                    <tr><td>Bid Price</td><td id="bidPrice_MAWOBI">Loading...</td></tr>
-                    <tr><td>Ask Price</td><td id="askPrice_MAWOBI">Loading...</td></tr>
-                    <tr><td>Bid Volume</td><td id="bidVolume_MAWOBI">Loading...</td></tr>
-                    <tr><td>Ask Volume</td><td id="askVolume_MAWOBI">Loading...</td></tr>
-                    <tr><td>Bid/Ask Spread</td><td id="spread_MAWOBI">Loading...</td></tr>
-                    <tr><td>Order Book Depth</td><td id="orderBookDepth_MAWOBI">Loading...</td></tr>
-                </table>
-        </div>
 
   </section>
     <!-- footer code -->

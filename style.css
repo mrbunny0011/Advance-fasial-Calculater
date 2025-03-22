@@ -373,6 +373,7 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     display: flex;
     justify-content: space-around;
     align-items: center;
+    gap:10px;
 
 }
 
@@ -426,6 +427,15 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         .market-coin-section .bearish { color: red; font-weight: bold; }
         .market-coin-section .stable { color: orange; font-weight: bold; }
 
+        #Analysis .container_BFC{
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+        #Analysis .container_BFC input{
+            max-width: 300px;
+        }
 
 
         /* Binace future calculator */
@@ -441,12 +451,12 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
         align-items: center;
     }
     
-            #BinanceFuturesCalculator .container { width: 50%; margin: auto; }
-            #BinanceFuturesCalculator label,     #BinanceFuturesCalculator select,     #BinanceFuturesCalculator input,     #BinanceFuturesCalculator button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
-            #BinanceFuturesCalculator table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-            #BinanceFuturesCalculator th,     #BinanceFuturesCalculator td { border: 1px solid black; padding: 10px; }
-            #BinanceFuturesCalculator .long { color: green; font-weight: bold; }
-            #BinanceFuturesCalculator .short { color: red; font-weight: bold; }
+            #Analysis .container_BFC .container { width: 50%; margin: auto; }
+            #Analysis .container_BFC table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+            #Analysis .container_BFCBinanceFuturesCalculator label,     #Analysis .container_BFC select,     #Analysis .container_BFC input,     #Analysis .container_BFC button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+            #Analysis .container_BFC th,     #Analysis .container_BFC td { border: 1px solid black; padding: 10px; }
+            #Analysis .container_BFC .long { color: green; font-weight: bold; }
+            #Analysis .container_BFC .short { color: red; font-weight: bold; }
 
 
             /* Mobile Optimization */

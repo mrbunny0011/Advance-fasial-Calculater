@@ -14,7 +14,7 @@
     </style>
 </head>
 <body>
-    <h1>Complete Market Liquidity & AI Support/Resistance</h1>
+    <h1>Faisal Advance Diamond</h1>
     <select id="coinSelector" onchange="updateValues()"></select>
     <select id="timeFrame" onchange="updateValues()">
         <option value="15m">15 Minutes</option>
@@ -29,186 +29,198 @@
         <tr><th>Indicator</th><th>Value</th></tr>
         <tr><td>AI Resistance</td><td id="aiResistance">Loading...</td></tr>
         <tr><td>AI Support</td><td id="aiSupport">Loading...</td></tr>
+        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
+        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
+        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
+        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
         <tr><td>Liquidity Zone 1</td><td id="liquidityZone1">Loading...</td></tr>
         <tr><td>Liquidity Zone 2</td><td id="liquidityZone2">Loading...</td></tr>
         <tr><td>Liquidity Zone 3</td><td id="liquidityZone3">Loading...</td></tr>
-        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
-        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
         <tr><td>Sentiment Score</td><td id="sentimentScore">Loading...</td></tr>
         <tr><td>Volume Profile</td><td id="volumeProfile">Loading...</td></tr>
-        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
-        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
     </table>
     <canvas id="marketChart" width="800" height="400"></canvas>
+    
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let marketChart;
+    let ws;
+    let allCoins = [];
 
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    async function fetchFuturesPairs() {
+        let response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+        let data = await response.json();
+        let coinSelector = document.getElementById("coinSelector");
+        allCoins = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT')).map(symbolData => {
+            let option = document.createElement("option");
+            option.value = symbolData.symbol;
+            option.innerText = symbolData.symbol.replace("USDT", "");
+            coinSelector.appendChild(option);
+            return symbolData.symbol.replace("USDT", "");
+        });
+        updateValues();
+    }
 
-    <script>
-        let marketChart;
-        let ws;
-        let allCoins = [];
+    function calculateLevels(entryPrice, support, resistance) {
+        let stopLoss = support - (support * 0.01);
+        let takeProfit = resistance + (resistance * 0.01);
+        return { stopLoss, takeProfit };
+    }
 
-        async function fetchFuturesPairs() {
-            let response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
-            let data = await response.json();
-            let coinSelector = document.getElementById("coinSelector");
-            allCoins = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT')).map(symbolData => {
-                let option = document.createElement("option");
-                option.value = symbolData.symbol;
-                option.innerText = symbolData.symbol.replace("USDT", "");
-                coinSelector.appendChild(option);
-                return symbolData.symbol.replace("USDT", "");
-            });
-            updateValues();
+    function calculateLiquidityZones(pivot, high, low) {
+        let liquidityZone1 = pivot;
+        let liquidityZone2 = pivot + (high - low) * 0.25;
+        let liquidityZone3 = pivot - (high - low) * 0.25;
+        return { liquidityZone1, liquidityZone2, liquidityZone3 };
+    }
+
+    async function trainModel(data) {
+        const model = tf.sequential();
+        model.add(tf.layers.dense({ units: 10, inputShape: [1], activation: 'relu' }));
+        model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
+        model.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
+
+        const xs = tf.tensor1d(data.map((_, i) => i));
+        const ys = tf.tensor1d(data.map(candle => parseFloat(candle[4]))); // Close prices
+        await model.fit(xs, ys, { epochs: 100 });
+        return model;
+    }
+
+    async function predictLevels(model, data) {
+        const xs = tf.tensor1d(data.map((_, i) => i));
+        const predicted = model.predict(xs);
+        return predicted.dataSync();
+    }
+
+    // ✅ Fix: Add this function to generate AI-based support/resistance
+    async function aiGenerateSupportResistance(data) {
+        const model = await trainModel(data);
+        const predictions = await predictLevels(model, data);
+        const max = Math.max(...predictions);
+        const min = Math.min(...predictions);
+        return {
+            aiResistance: max,
+            aiSupport: min
+        };
+    }
+
+    function calculateMarketImbalance(data) {
+        let buyVolume = 0, sellVolume = 0;
+        data.forEach(candle => {
+            if (parseFloat(candle[4]) > parseFloat(candle[1])) buyVolume += parseFloat(candle[5]);
+            else sellVolume += parseFloat(candle[5]);
+        });
+        return (buyVolume - sellVolume).toFixed(2);
+    }
+
+    function calculateRiskRewardRatio(entryPrice, stopLoss, takeProfit) {
+        let risk = entryPrice - stopLoss;
+        let reward = takeProfit - entryPrice;
+        return (reward / risk).toFixed(2);
+    }
+
+    async function analyzeNewsSentiment() {
+        // Dummy sentiment score
+        return 0;
+    }
+
+    function calculateVolumeProfile(data) {
+        const volumeProfile = {};
+        data.forEach(candle => {
+            const price = parseFloat(candle[4]);
+            const volume = parseFloat(candle[5]);
+            if (volumeProfile[price]) volumeProfile[price] += volume;
+            else volumeProfile[price] = volume;
+        });
+        return volumeProfile;
+    }
+
+    async function fetchMarketData(symbol, interval) {
+        let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=17`);
+        let data = await response.json();
+        if (data.length < 17) return;
+
+        let candle = data[data.length - 2];
+        let high = parseFloat(candle[2]);
+        let low = parseFloat(candle[3]);
+        let close = parseFloat(candle[4]);
+        let volume = parseFloat(candle[5]);
+        let pivot = (high + low + close) / 3;
+
+        let { liquidityZone1, liquidityZone2, liquidityZone3 } = calculateLiquidityZones(pivot, high, low);
+        let { aiResistance, aiSupport } = await aiGenerateSupportResistance(data);
+        let { stopLoss, takeProfit } = calculateLevels(close, aiSupport, aiResistance);
+        let marketImbalance = calculateMarketImbalance(data);
+        let riskRewardRatio = calculateRiskRewardRatio(close, stopLoss, takeProfit);
+        let sentimentScore = await analyzeNewsSentiment();
+        let volumeProfile = calculateVolumeProfile(data);
+
+        document.getElementById("aiResistance").innerText = aiResistance.toFixed(6);
+        document.getElementById("aiSupport").innerText = aiSupport.toFixed(6);
+        document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(6);
+        document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(6);
+        document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(6);
+        document.getElementById("marketImbalance").innerText = marketImbalance;
+        document.getElementById("riskRewardRatio").innerText = riskRewardRatio;
+        document.getElementById("sentimentScore").innerText = sentimentScore;
+        // document.getElementById("volumeProfile").innerText = JSON.stringify(volumeProfile);
+        document.getElementById("stopLoss").innerText = stopLoss.toFixed(6);
+        document.getElementById("takeProfit").innerText = takeProfit.toFixed(6);
+
+        updateChart(data.map(candle => parseFloat(candle[4])));
+    }
+
+    function updateValues() {
+        let timeFrame = document.getElementById("timeFrame").value;
+        let selectedCoin = document.getElementById("coinSelector").value;
+        if (selectedCoin) {
+            fetchMarketData(selectedCoin, timeFrame);
+            setupWebSocket(selectedCoin.toLowerCase());
         }
+    }
 
-        function calculateLevels(entryPrice, support, resistance) {
-            let stopLoss = support - (support * 0.01);
-            let takeProfit = resistance + (resistance * 0.01);
-            return { stopLoss, takeProfit };
-        }
+    async function backtestModel(symbol, interval) {
+        let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`);
+        let data = await response.json();
+        let accuracy = 0;
+        return accuracy;
+    }
 
-        function calculateLiquidityZones(pivot, high, low) {
-            return {
-                liquidityZone1: pivot,
-                liquidityZone2: pivot + (high - low) * 0.25,
-                liquidityZone3: pivot - (high - low) * 0.25
-            };
-        }
+    function setupWebSocket(symbol) {
+        if (ws) ws.close();
+        ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol}@depth`);
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const bids = data.bids;
+            const asks = data.asks;
+            const largeBid = bids.find(order => parseFloat(order[1]) > 10);
+            const largeAsk = asks.find(order => parseFloat(order[1]) > 10);
+            if (largeBid) console.log("Large Buy Wall:", largeBid);
+            if (largeAsk) console.log("Large Sell Wall:", largeAsk);
+        };
+    }
 
-        function aiGenerateSupportResistance(pivot, high, low, volume) {
-            let aiResistance = pivot + (high - low) * 0.5;
-            let aiSupport = pivot - (high - low) * 0.5;
-            if (volume > 100000) {
-                aiResistance += (high - low) * 0.1;
-                aiSupport -= (high - low) * 0.1;
-            }
-            return { aiResistance, aiSupport };
-        }
+    function updateChart(priceData) {
+        let ctx = document.getElementById('marketChart').getContext('2d');
+        if (marketChart) marketChart.destroy();
+        marketChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: priceData.map((_, i) => i),
+                datasets: [{
+                    label: 'Price',
+                    data: priceData,
+                    borderColor: 'blue',
+                    fill: false
+                }]
+            },
+            options: { responsive: true }
+        });
+    }
 
-        function calculateMarketImbalance(data) {
-            let buyVolume = 0, sellVolume = 0;
-            data.forEach(candle => {
-                parseFloat(candle[4]) > parseFloat(candle[1]) ? buyVolume += parseFloat(candle[5]) : sellVolume += parseFloat(candle[5]);
-            });
-            return (buyVolume - sellVolume).toFixed(2);
-        }
+    fetchFuturesPairs();
+</script>
 
-        function calculateRiskRewardRatio(entryPrice, stopLoss, takeProfit) {
-            let risk = entryPrice - stopLoss;
-            let reward = takeProfit - entryPrice;
-            return (reward / risk).toFixed(2);
-        }
-
-        async function analyzeNewsSentiment() {
-            return 0; // Dummy
-        }
-
-        function calculateVolumeProfile(data) {
-            const volumeProfile = {};
-            data.forEach(candle => {
-                const price = parseFloat(candle[4]);
-                const volume = parseFloat(candle[5]);
-                volumeProfile[price] = (volumeProfile[price] || 0) + volume;
-            });
-            return volumeProfile;
-        }
-
-        async function trainModel(data) {
-            const model = tf.sequential();
-            model.add(tf.layers.dense({ units: 10, inputShape: [1], activation: 'relu' }));
-            model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
-            model.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
-            const xs = tf.tensor1d(data.map((_, i) => i));
-            const ys = tf.tensor1d(data.map(c => parseFloat(c[4])));
-            await model.fit(xs, ys, { epochs: 100 });
-            return model;
-        }
-
-        async function predictLevels(model, data) {
-            const predicted = model.predict(tf.tensor1d(data.map((_, i) => i)));
-            return predicted.dataSync();
-        }
-
-        async function fetchMultipleTimeFrameData(symbol) {
-            const intervals = ['15m', '1h', '4h', '1d'];
-            const allData = await Promise.all(intervals.map(i => fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${i}&limit=17`).then(r => r.json())));
-            return allData.flat();
-        }
-
-        async function backtestModel(symbol, interval) {
-            let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`);
-            let data = await response.json();
-            let accuracy = 0; // Placeholder
-            return accuracy;
-        }
-
-        async function fetchMarketData(symbol, interval) {
-            let data = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=17`).then(r => r.json());
-            if (data.length < 17) return;
-            let candle = data[data.length - 2];
-            let high = parseFloat(candle[2]), low = parseFloat(candle[3]), close = parseFloat(candle[4]), volume = parseFloat(candle[5]);
-            let pivot = (high + low + close) / 3;
-            let { liquidityZone1, liquidityZone2, liquidityZone3 } = calculateLiquidityZones(pivot, high, low);
-            let { aiResistance, aiSupport } = aiGenerateSupportResistance(pivot, high, low, volume);
-            let { stopLoss, takeProfit } = calculateLevels(close, aiSupport, aiResistance);
-            let marketImbalance = calculateMarketImbalance(data);
-            let riskRewardRatio = calculateRiskRewardRatio(close, stopLoss, takeProfit);
-            let sentimentScore = await analyzeNewsSentiment();
-            let volumeProfile = calculateVolumeProfile(data);
-            let model = await trainModel(data);
-            let predictions = await predictLevels(model, data);
-            let multiData = await fetchMultipleTimeFrameData(symbol);
-            let backtest = await backtestModel(symbol, interval);
-
-            document.getElementById("aiResistance").innerText = aiResistance.toFixed(6);
-            document.getElementById("aiSupport").innerText = aiSupport.toFixed(6);
-            document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(6);
-            document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(6);
-            document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(6);
-            document.getElementById("marketImbalance").innerText = marketImbalance;
-            document.getElementById("riskRewardRatio").innerText = riskRewardRatio;
-            document.getElementById("sentimentScore").innerText = sentimentScore;
-            // document.getElementById("volumeProfile").innerText = JSON.stringify(volumeProfile);
-            document.getElementById("stopLoss").innerText = stopLoss.toFixed(6);
-            document.getElementById("takeProfit").innerText = takeProfit.toFixed(6);
-            updateChart(data.map(c => parseFloat(c[4])));
-        }
-
-        function updateValues() {
-            let timeFrame = document.getElementById("timeFrame").value;
-            let selectedCoin = document.getElementById("coinSelector").value;
-            if (selectedCoin) {
-                fetchMarketData(selectedCoin, timeFrame);
-                setupWebSocket(selectedCoin.toLowerCase());
-            }
-        }
-
-        function setupWebSocket(symbol) {
-            if (ws) ws.close();
-            ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol}@depth`);
-            ws.onmessage = (event) => {
-                let data = JSON.parse(event.data);
-                let largeBid = data.bids.find(o => parseFloat(o[1]) > 10);
-                let largeAsk = data.asks.find(o => parseFloat(o[1]) > 10);
-                if (largeBid) console.log("Large Buy Wall:", largeBid);
-                if (largeAsk) console.log("Large Sell Wall:", largeAsk);
-            };
-        }
-
-        function updateChart(priceData) {
-            let ctx = document.getElementById('marketChart').getContext('2d');
-            if (marketChart) marketChart.destroy();
-            marketChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: priceData.map((_, i) => i), datasets: [{ label: 'Price', data: priceData, borderColor: 'blue', fill: false }] },
-                options: { responsive: true }
-            });
-        }
-
-        fetchFuturesPairs();
-    </script>
 </body>
 </html>

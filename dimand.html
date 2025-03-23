@@ -14,7 +14,7 @@
     </style>
 </head>
 <body>
-    <h1>Complete Market Liquidity & AI Support/Resistance</h1>
+    <h1>Faisal Diamond</h1>
     <select id="coinSelector" onchange="updateValues()"></select>
     <select id="timeFrame" onchange="updateValues()">
         <option value="15m">15 Minutes</option>
@@ -29,15 +29,15 @@
         <tr><th>Indicator</th><th>Value</th></tr>
         <tr><td>AI Resistance</td><td id="aiResistance">Loading...</td></tr>
         <tr><td>AI Support</td><td id="aiSupport">Loading...</td></tr>
+        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
+        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
+        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
+        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
         <tr><td>Liquidity Zone 1</td><td id="liquidityZone1">Loading...</td></tr>
         <tr><td>Liquidity Zone 2</td><td id="liquidityZone2">Loading...</td></tr>
         <tr><td>Liquidity Zone 3</td><td id="liquidityZone3">Loading...</td></tr>
-        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
-        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
         <tr><td>Sentiment Score</td><td id="sentimentScore">Loading...</td></tr>
         <tr><td>Volume Profile</td><td id="volumeProfile">Loading...</td></tr>
-        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
-        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
     </table>
     <canvas id="marketChart" width="800" height="400"></canvas>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

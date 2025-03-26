@@ -3,187 +3,950 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete Market Liquidity Dashboard</title>
+    <title>Luxury Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        table { width: 80%; margin: auto; border-collapse: collapse; }
-        th, td { border: 1px solid black; padding: 10px; }
-        h1 { color: #333; }
-        select, input { padding: 5px; font-size: 16px; margin: 10px; }
-        canvas { margin: 20px auto; display: block; }
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --info: #0984e3;
+            --card-bg: #ffffff;
+            --body-bg: #f9f9ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--body-bg);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--info);
+        }
+        
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+            background: linear-gradient(45deg, var(--primary), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        #coinSearch {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 2px solid #e0e0e0;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        #coinSearch:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background: linear-gradient(45deg, var(--primary), var(--info));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
+        }
+        
+        .search-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        select {
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 2px solid #e0e0e0;
+            font-size: 16px;
+            outline: none;
+            background-color: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            min-width: 200px;
+        }
+        
+        select:focus {
+            border-color: var(--primary);
+        }
+        
+        #marketSignal {
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 30px auto;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        #marketSignal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .bullish {
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.1), rgba(0, 184, 148, 0.2));
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+        
+        .bearish {
+            background: linear-gradient(135deg, rgba(214, 48, 49, 0.1), rgba(214, 48, 49, 0.2));
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+        
+        .stable {
+            background: linear-gradient(135deg, rgba(9, 132, 227, 0.1), rgba(9, 132, 227, 0.2));
+            color: var(--info);
+            border: 2px solid var(--info);
+        }
+        
+        .ignore {
+            background: linear-gradient(135deg, rgba(178, 190, 195, 0.1), rgba(178, 190, 195, 0.2));
+            color: #636e72;
+            border: 2px solid #b2bec3;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            animation: slideInLeft 0.5s ease;
+        }
+        
+        .indicators-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            animation: slideInRight 0.5s ease;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        
+        th {
+            text-align: left;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+        
+        th:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+        
+        th:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        td {
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover td {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 500;
+        }
+        
+        td:last-child {
+            border-radius: 0 10px 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        .neutral {
+            color: var(--info);
+        }
+        
+        .ignore-signal {
+            color: #636e72;
+        }
+        
+        canvas {
+            width: 100% !important;
+            height: 400px !important;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--secondary);
+            font-size: 14px;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @media (max-width: 992px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            select {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        /* Glow effect for important elements */
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px rgba(108, 92, 231, 0.5);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(108, 92, 231, 0.8);
+            }
+        }
+        
+        /* Floating animation for the logo */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
     </style>
 </head>
 <body>
-    <h1>Faisal Diamond</h1>
-    <select id="coinSelector" onchange="updateValues()"></select>
-    <select id="timeFrame" onchange="updateValues()">
-        <option value="15m">15 Minutes</option>
-        <option value="30m">30 Minutes</option>
-        <option value="1h">1 Hour</option>
-        <option value="4h">4 Hours</option>
-        <option value="1d">1 Day</option>
-        <option value="1w">1 Week</option>
-        <option value="1M">1 Month</option>
-    </select>
-    <table>
-        <tr><th>Indicator</th><th>Value</th></tr>
-        <tr><td>AI Resistance</td><td id="aiResistance">Loading...</td></tr>
-        <tr><td>AI Support</td><td id="aiSupport">Loading...</td></tr>
-        <tr><td>Take-Profit</td><td id="takeProfit">Loading...</td></tr>
-        <tr><td>Stop-Loss</td><td id="stopLoss">Loading...</td></tr>
-        <tr><td>Risk-Reward Ratio</td><td id="riskRewardRatio">Loading...</td></tr>
-        <tr><td>Market Imbalance</td><td id="marketImbalance">Loading...</td></tr>
-        <tr><td>Liquidity Zone 1</td><td id="liquidityZone1">Loading...</td></tr>
-        <tr><td>Liquidity Zone 2</td><td id="liquidityZone2">Loading...</td></tr>
-        <tr><td>Liquidity Zone 3</td><td id="liquidityZone3">Loading...</td></tr>
-        <tr><td>Sentiment Score</td><td id="sentimentScore">Loading...</td></tr>
-        <tr><td>Volume Profile</td><td id="volumeProfile">Loading...</td></tr>
-    </table>
-    <canvas id="marketChart" width="800" height="400"></canvas>
+    <div class="container">
+        <header>
+            <div class="logo floating">
+                <i class="fas fa-chart-line"></i> TradingGenius
+            </div>
+            <h1>Faisal's Diamond</h1>
+            <p class="subtitle">Professional trading insights with beautiful visualization</p>
+            
+            <div class="search-container">
+                <input type="text" id="coinSearch" placeholder="Search for any coin...">
+                <button class="search-btn" onclick="searchCoin()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="controls">
+                <select id="coinSelector"></select>
+                <select id="timeFrame">
+                    <option value="15m">15 Minutes</option>
+                    <option value="30m">30 Minutes</option>
+                    <option value="1h">1 Hour</option>
+                    <option value="4h">4 Hours</option>
+                    <option value="1d">1 Day</option>
+                    <option value="1w">1 Week</option>
+                    <option value="1M">1 Month</option>
+                </select>
+            </div>
+            
+            <div id="marketSignal" class="pulse">-</div>
+        </header>
+        
+        <div class="dashboard">
+            <div class="chart-container glow">
+                <canvas id="marketChart"></canvas>
+            </div>
+            
+            <div class="indicators-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Indicator</th>
+                            <th>Value</th>
+                            <th>Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-shield-alt"></i> AI Resistance</td>
+                            <td id="aiResistance">-</td>
+                            <td id="aiResistanceSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-shield-alt"></i> AI Support</td>
+                            <td id="aiSupport">-</td>
+                            <td id="aiSupportSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-bullseye"></i> Take-Profit</td>
+                            <td id="takeProfit">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-stop-circle"></i> Stop-Loss</td>
+                            <td id="stopLoss">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-balance-scale"></i> Risk-Reward Ratio</td>
+                            <td id="riskRewardRatio">-</td>
+                            <td id="riskRewardSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-chart-bar"></i> RVol (15 candles)</td>
+                            <td id="rVolValue">-</td>
+                            <td id="rVolSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-wave-square"></i> LOF</td>
+                            <td id="lofValue">-</td>
+                            <td id="lofSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-brain"></i> Sentiment Score</td>
+                            <td id="sentimentScore">-</td>
+                            <td id="sentimentSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-exchange-alt"></i> CVD (Current)</td>
+                            <td id="cvdValue">-</td>
+                            <td id="cvdSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-unbalance-scale"></i> Market Imbalance</td>
+                            <td id="marketImbalance">-</td>
+                            <td id="marketImbalanceSignal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Liquidity Zone 1</td>
+                            <td id="liquidityZone1">-</td>
+                            <td id="liquidityZone1Signal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Liquidity Zone 2</td>
+                            <td id="liquidityZone2">-</td>
+                            <td id="liquidityZone2Signal">-</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-tint"></i> Liquidity Zone 3</td>
+                            <td id="liquidityZone3">-</td>
+                            <td id="liquidityZone3Signal">-</td>
+                        </tr> 
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 | All Rights Reserved.Faisal Inc</p>
+        </footer>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-gradient-colors"></script>
     <script>
+        // Original Working Variables
         let marketChart;
         let ws;
         let allCoins = [];
+        let currentOrderBookData = { bids: [], asks: [] };
 
-        // Fetch all futures pairs from Binance
+        // 1. Original Initialization
         async function fetchFuturesPairs() {
             let response = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
             let data = await response.json();
             let coinSelector = document.getElementById("coinSelector");
-            allCoins = data.symbols.filter(symbol => symbol.symbol.endsWith('USDT')).map(symbolData => {
-                let option = document.createElement("option");
-                option.value = symbolData.symbol;
-                option.innerText = symbolData.symbol.replace("USDT", "");
-                coinSelector.appendChild(option);
-                return symbolData.symbol.replace("USDT", "");
-            });
-            updateValues();
-        }
-
-        // Calculate stop-loss and take-profit based on support and resistance
-        function calculateLevels(entryPrice, support, resistance) {
-            let stopLoss = support - (support * 0.01); // 1% below support
-            let takeProfit = resistance + (resistance * 0.01); // 1% above resistance
-
-            return { stopLoss, takeProfit };
-        }
-
-        // Calculate liquidity zones
-        function calculateLiquidityZones(pivot, high, low) {
-            let liquidityZone1 = pivot; // Pivot point itself
-            let liquidityZone2 = pivot + (high - low) * 0.25; // Upper zone
-            let liquidityZone3 = pivot - (high - low) * 0.25; // Lower zone
-            return { liquidityZone1, liquidityZone2, liquidityZone3 };
-        }
-
-        // AI-based support/resistance calculation
-        function aiGenerateSupportResistance(pivot, high, low, volume) {
-            let aiResistance = pivot + (high - low) * 0.5; // Resistance level
-            let aiSupport = pivot - (high - low) * 0.5; // Support level
-
-            // Adjust levels based on volume
-            if (volume > 100000) {
-                aiResistance += (high - low) * 0.1;
-                aiSupport -= (high - low) * 0.1;
+            
+            allCoins = data.symbols
+                .filter(symbol => symbol.symbol.endsWith('USDT'))
+                .map(symbolData => {
+                    let option = document.createElement("option");
+                    option.value = symbolData.symbol;
+                    option.textContent = symbolData.symbol.replace("USDT", "");
+                    coinSelector.appendChild(option);
+                    return symbolData.symbol;
+                });
+            
+            // Default to BTC
+            if (allCoins.includes("BTCUSDT")) {
+                coinSelector.value = "BTCUSDT";
+                updateValues();
             }
-
-            return { aiResistance, aiSupport };
         }
 
-        // Calculate market imbalance (cumulative delta)
-        function calculateMarketImbalance(data) {
-            let buyVolume = 0;
-            let sellVolume = 0;
-            data.forEach(candle => {
-                if (candle[4] > candle[1]) buyVolume += parseFloat(candle[5]); // Green candle
-                else sellVolume += parseFloat(candle[5]); // Red candle
-            });
-            return (buyVolume - sellVolume).toFixed(2);
+        // Search functionality
+        function searchCoin() {
+            const searchTerm = document.getElementById("coinSearch").value.toUpperCase();
+            if (!searchTerm) return;
+            
+            const coinSelector = document.getElementById("coinSelector");
+            const options = coinSelector.options;
+            
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].text.includes(searchTerm) || 
+                    options[i].value.includes(searchTerm)) {
+                    coinSelector.value = options[i].value;
+                    updateValues();
+                    return;
+                }
+            }
+            
+            alert("Coin not found. Please try another search term.");
         }
 
-        // Calculate risk-reward ratio
-        function calculateRiskRewardRatio(entryPrice, stopLoss, takeProfit) {
-            let risk = entryPrice - stopLoss; // Potential Risk
-            let reward = takeProfit - entryPrice; // Potential Reward
-            return (reward / risk).toFixed(2); // Risk-Reward Ratio
+        // 2. Original WebSocket Connection
+        function setupWebSocket(symbol) {
+            if (ws) ws.close();
+            
+            ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@depth`);
+            
+            ws.onmessage = (event) => {
+                let data = JSON.parse(event.data);
+                currentOrderBookData = {
+                    bids: data.bids,
+                    asks: data.asks
+                };
+            };
         }
 
-        // Analyze news sentiment (dummy implementation)
-        async function analyzeNewsSentiment() {
-            // Fetch news data from an API (e.g., NewsAPI)
-            let response = await fetch('https://newsapi.org/v2/everything?q=bitcoin&apiKey=YOUR_API_KEY');
-            let data = await response.json();
-            let sentimentScore = 0; // Calculate sentiment score
-            return sentimentScore;
-        }
-
-        // Calculate volume profile
-        function calculateVolumeProfile(data) {
-            const volumeProfile = {};
-            data.forEach(candle => {
-                const price = parseFloat(candle[4]); // Close price
-                const volume = parseFloat(candle[5]); // Volume
-                if (volumeProfile[price]) volumeProfile[price] += volume;
-                else volumeProfile[price] = volume;
-            });
-            return volumeProfile;
-        }
-
-        // Fetch market data and update UI
+        // 4. Original Data Processing
         async function fetchMarketData(symbol, interval) {
-            let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=17`);
+            let response = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`);
             let data = await response.json();
-            if (data.length < 17) return;
+            
+            if (data.length < 20) return;
+            
+            let lastCandle = data[data.length - 2];
+            let high = parseFloat(lastCandle[2]);
+            let low = parseFloat(lastCandle[3]);
+            let close = parseFloat(lastCandle[4]);
+            let volume = parseFloat(lastCandle[5]);
 
-            let candle = data[data.length - 2]; // Second last candle
-            let high = parseFloat(candle[2]);
-            let low = parseFloat(candle[3]);
-            let close = parseFloat(candle[4]);
-            let volume = parseFloat(candle[5]);
-
-            // Calculate pivot point
+            // Original Calculations
             let pivot = (high + low + close) / 3;
-
-            // Calculate liquidity zones
+            let range = high - low;
+            
+            // Liquidity Zones
             let { liquidityZone1, liquidityZone2, liquidityZone3 } = calculateLiquidityZones(pivot, high, low);
-
-            // AI-based support/resistance
+            
+            // Support/Resistance
             let { aiResistance, aiSupport } = aiGenerateSupportResistance(pivot, high, low, volume);
-
-            // Calculate stop-loss and take-profit
+            
+            // Stop-Loss/Take-Profit
             let { stopLoss, takeProfit } = calculateLevels(close, aiSupport, aiResistance);
-
-            // Calculate market imbalance
+            
+            // CVD (Second last candle)
+            let cvd = lastCandle[4] > lastCandle[1] ? +lastCandle[5] : -lastCandle[5];
+            
+            // Volume Analysis
             let marketImbalance = calculateMarketImbalance(data);
-
-            // Calculate risk-reward ratio
-            let riskRewardRatio = calculateRiskRewardRatio(close, stopLoss, takeProfit);
-
-            // Analyze news sentiment
-            let sentimentScore = await analyzeNewsSentiment();
-
-            // Calculate volume profile
-            let volumeProfile = calculateVolumeProfile(data);
-
+            let rvol = calculateRVol(data);
+            
+            // Liquidity Indicators
+            let lof = calculateLOF(data);
+            
+            // Sentiment Score (new addition)
+            let sentimentScore = calculateSentimentScore(data);
+            
             // Update UI
-            document.getElementById("aiResistance").innerText = aiResistance.toFixed(6);
-            document.getElementById("aiSupport").innerText = aiSupport.toFixed(6);
-            document.getElementById("liquidityZone1").innerText = liquidityZone1.toFixed(6);
-            document.getElementById("liquidityZone2").innerText = liquidityZone2.toFixed(6);
-            document.getElementById("liquidityZone3").innerText = liquidityZone3.toFixed(6);
-            document.getElementById("marketImbalance").innerText = marketImbalance;
-            document.getElementById("riskRewardRatio").innerText = riskRewardRatio;
-            document.getElementById("sentimentScore").innerText = sentimentScore;
-            // document.getElementById("volumeProfile").innerText = JSON.stringify(volumeProfile);
-            document.getElementById("stopLoss").innerText = stopLoss.toFixed(6);
-            document.getElementById("takeProfit").innerText = takeProfit.toFixed(6);
-
+            document.getElementById("aiResistance").textContent = aiResistance.toFixed(6);
+            document.getElementById("aiSupport").textContent = aiSupport.toFixed(6);
+            document.getElementById("liquidityZone1").textContent = liquidityZone1.toFixed(6);
+            document.getElementById("liquidityZone2").textContent = liquidityZone2.toFixed(6);
+            document.getElementById("liquidityZone3").textContent = liquidityZone3.toFixed(6);
+            document.getElementById("stopLoss").textContent = stopLoss.toFixed(6);
+            document.getElementById("takeProfit").textContent = takeProfit.toFixed(6);
+            
+            let rrRatio = (takeProfit - close) / (close - stopLoss);
+            document.getElementById("riskRewardRatio").textContent = rrRatio.toFixed(6);
+            
+            document.getElementById("marketImbalance").textContent = marketImbalance.toFixed(6);
+            document.getElementById("cvdValue").textContent = cvd.toFixed(6);
+            document.getElementById("rVolValue").textContent = rvol;
+            document.getElementById("lofValue").textContent = lof.toFixed(6);
+            document.getElementById("sentimentScore").textContent = sentimentScore.toFixed(6);
+            
+            // Update indicator signals
+            updateIndicatorSignals({
+                rrRatio,
+                marketImbalance,
+                cvd,
+                rvol,
+                lof,
+                sentimentScore,
+                close,
+                aiSupport,
+                aiResistance,
+                liquidityZone1,
+                liquidityZone2,
+                liquidityZone3
+            });
+            
+            // Determine overall market signal
+            let marketSignal = determineMarketSignal({
+                rrRatio,
+                marketImbalance,
+                cvd,
+                rvol,
+                lof,
+                sentimentScore,
+                close,
+                aiSupport,
+                aiResistance,
+                liquidityZone1,
+                liquidityZone2,
+                liquidityZone3
+            });
+            
+            // Display market signal
+            displayMarketSignal(marketSignal);
+            
             // Update chart
             updateChart(data.map(candle => parseFloat(candle[4])));
         }
 
-        // Update values when coin or time frame changes
+        // Update individual indicator signals
+        function updateIndicatorSignals(indicators) {
+            // Risk-Reward Ratio
+            const rrSignal = indicators.rrRatio >= 2 ? 'Bullish' : 
+                           indicators.rrRatio <= 1 ? 'Bearish' : 'Neutral';
+            setSignal('riskRewardSignal', rrSignal);
+            
+            // Market Imbalance
+            const imbalanceSignal = indicators.marketImbalance > 0 ? 'Bullish' : 
+                                  indicators.marketImbalance < 0 ? 'Bearish' : 'Neutral';
+            setSignal('marketImbalanceSignal', imbalanceSignal);
+            
+            // CVD
+            const cvdSignal = indicators.cvd > 0 ? 'Bullish' : 
+                            indicators.cvd < 0 ? 'Bearish' : 'Neutral';
+            setSignal('cvdSignal', cvdSignal);
+            
+            // RVol
+            let rvolValue = parseFloat(indicators.rvol);
+            const rvolSignal = !isNaN(rvolValue) ? 
+                             (rvolValue > 1.5 ? 'Bullish' : 
+                              rvolValue < 0.5 ? 'Bearish' : 'Neutral') : 'Neutral';
+            setSignal('rVolSignal', rvolSignal);
+            
+            // LOF
+            const lofSignal = indicators.lof > 0 ? 'Bullish' : 
+                            indicators.lof < 0 ? 'Bearish' : 'Neutral';
+            setSignal('lofSignal', lofSignal);
+            
+            // Sentiment Score
+            const sentimentSignal = indicators.sentimentScore > 20 ? 'Bullish' : 
+                                   indicators.sentimentScore < -20 ? 'Bearish' : 'Neutral';
+            setSignal('sentimentSignal', sentimentSignal);
+            
+            // Support/Resistance
+            const supportSignal = indicators.close > indicators.aiSupport ? 'Bullish' : 'Bearish';
+            const resistanceSignal = indicators.close < indicators.aiResistance ? 'Bullish' : 'Bearish';
+            setSignal('aiSupportSignal', supportSignal);
+            setSignal('aiResistanceSignal', resistanceSignal);
+            
+            // Liquidity Zones
+            const lz1Signal = indicators.close > indicators.liquidityZone1 ? 'Bullish' : 'Bearish';
+            const lz2Signal = indicators.close > indicators.liquidityZone2 ? 'Bullish' : 'Bearish';
+            const lz3Signal = indicators.close > indicators.liquidityZone3 ? 'Bullish' : 'Bearish';
+            setSignal('liquidityZone1Signal', lz1Signal);
+            setSignal('liquidityZone2Signal', lz2Signal);
+            setSignal('liquidityZone3Signal', lz3Signal);
+        }
+
+        // Helper function to set signal display
+        function setSignal(elementId, signal) {
+            const element = document.getElementById(elementId);
+            element.textContent = signal;
+            
+            // Add icon based on signal
+            let icon = '';
+            if (signal === 'Bullish') icon = '<i class="fas fa-arrow-up"></i>';
+            else if (signal === 'Bearish') icon = '<i class="fas fa-arrow-down"></i>';
+            else icon = '<i class="fas fa-equals"></i>';
+            
+            element.innerHTML = `${icon} ${signal}`;
+            element.className = signal.toLowerCase();
+        }
+
+        // Determine overall market signal
+        function determineMarketSignal(indicators) {
+            // Count signals
+            let bullishCount = 0;
+            let bearishCount = 0;
+            
+            // Risk-Reward Ratio
+            if (indicators.rrRatio >= 2) bullishCount++;
+            else if (indicators.rrRatio <= 1) bearishCount++;
+            
+            // Market Imbalance
+            if (indicators.marketImbalance > 0) bullishCount++;
+            else if (indicators.marketImbalance < 0) bearishCount++;
+            
+            // CVD
+            if (indicators.cvd > 0) bullishCount++;
+            else if (indicators.cvd < 0) bearishCount++;
+            
+            // RVol
+            let rvolValue = parseFloat(indicators.rvol);
+            if (!isNaN(rvolValue)) {
+                if (rvolValue > 1.5) bullishCount++;
+                else if (rvolValue < 0.5) bearishCount++;
+            }
+            
+            // LOF
+            if (indicators.lof > 0) bullishCount++;
+            else if (indicators.lof < 0) bearishCount++;
+            
+            // Sentiment Score
+            if (indicators.sentimentScore > 20) bullishCount++;
+            else if (indicators.sentimentScore < -20) bearishCount++;
+            
+            // Price position
+            if (indicators.close > indicators.aiSupport) bullishCount++;
+            else bearishCount++;
+            
+            if (indicators.close < indicators.aiResistance) bullishCount++;
+            else bearishCount++;
+            
+            // Determine overall signal
+            const totalSignals = bullishCount + bearishCount;
+            const bullishPercentage = (bullishCount / totalSignals) * 100;
+            const bearishPercentage = (bearishCount / totalSignals) * 100;
+            
+            if (totalSignals < 5) return "Ignore"; // Not enough data
+            
+            if (bullishPercentage >= 70) return "Bullish";
+            if (bearishPercentage >= 70) return "Bearish";
+            if (Math.abs(bullishPercentage - bearishPercentage) < 20) return "Stable";
+            
+            return "Ignore";
+        }
+
+        // Display market signal
+        function displayMarketSignal(signal) {
+            const element = document.getElementById("marketSignal");
+            element.textContent = signal;
+            element.className = signal.toLowerCase();
+            
+            // Add icon and animation based on signal
+            let icon = '';
+            switch(signal) {
+                case "Bullish": 
+                    icon = '<i class="fas fa-rocket"></i>';
+                    element.classList.add('pulse');
+                    break;
+                case "Bearish": 
+                    icon = '<i class="fas fa-bear"></i>';
+                    element.classList.add('pulse');
+                    break;
+                case "Stable": 
+                    icon = '<i class="fas fa-balance-scale"></i>';
+                    element.classList.remove('pulse');
+                    break;
+                case "Ignore": 
+                    icon = '<i class="fas fa-eye-slash"></i>';
+                    element.classList.remove('pulse');
+                    break;
+            }
+            
+            element.innerHTML = `${signal} ${icon}`;
+        }
+
+        // New function to calculate sentiment score
+        function calculateSentimentScore(data) {
+            // Analyze last 20 candles
+            const recentData = data.slice(-22, -2);
+            
+            // 1. Price direction (weight: 40%)
+            const priceChange = (recentData[recentData.length-1][4] - recentData[0][4]) / recentData[0][4];
+            
+            // 2. Volume trend (weight: 30%)
+            const volumeSum = recentData.reduce((sum, c) => sum + parseFloat(c[5]), 0);
+            const avgVolume = volumeSum / recentData.length;
+            const lastVolume = parseFloat(recentData[recentData.length-1][5]);
+            const volumeTrend = (lastVolume - avgVolume) / avgVolume;
+            
+            // 3. CVD (weight: 20%)
+            let cvd = 0;
+            recentData.forEach(candle => {
+                cvd += candle[4] > candle[1] ? +candle[5] : -candle[5];
+            });
+            
+            // 4. LOF (weight: 10%)
+            let buyVol = 0, sellVol = 0;
+            recentData.forEach(candle => {
+                if (candle[4] > candle[1]) buyVol += parseFloat(candle[5]);
+                else sellVol += parseFloat(candle[5]);
+            });
+            const lof = ((buyVol - sellVol) / (buyVol + sellVol)) * 100;
+            
+            // Combine factors (scale to -100 to +100 range)
+            const score = 
+                (priceChange * 100 * 0.4) + 
+                (volumeTrend * 50 * 0.3) + 
+                (Math.sign(cvd) * Math.min(Math.abs(cvd)/1000, 1) * 100 * 0.2) +
+                (lof * 0.1);
+            
+            return Math.max(-100, Math.min(100, score));
+        }
+
+        // 5. Original Indicator Calculations
+        function calculateLiquidityZones(pivot, high, low) {
+            let range = high - low;
+            return {
+                liquidityZone1: pivot,
+                liquidityZone2: pivot + range * 0.25,
+                liquidityZone3: pivot - range * 0.25
+            };
+        }
+
+        function aiGenerateSupportResistance(pivot, high, low, volume) {
+            let aiResistance = pivot + (high - low) * 0.5;
+            let aiSupport = pivot - (high - low) * 0.5;
+            if (volume > 100000) {
+                aiResistance += (high - low) * 0.1;
+                aiSupport -= (high - low) * 0.1;
+            }
+            return { aiResistance, aiSupport };
+        }
+
+        function calculateLevels(entryPrice, support, resistance) {
+            return {
+                stopLoss: support - (support * 0.01),
+                takeProfit: resistance + (resistance * 0.01)
+            };
+        }
+
+        function calculateMarketImbalance(data) {
+            let buyVolume = 0, sellVolume = 0;
+            data.slice(-15).forEach(candle => {
+                if (candle[4] > candle[1]) buyVolume += parseFloat(candle[5]);
+                else sellVolume += parseFloat(candle[5]);
+            });
+            return (buyVolume - sellVolume);
+        }
+
+        function calculateRVol(data) {
+            if (data.length < 17) return "N/A";
+            let currentVolume = parseFloat(data[data.length - 2][5]);
+            let avgVolume = data.slice(-17, -2).reduce((sum, c) => sum + parseFloat(c[5]), 0) / 15;
+            return (currentVolume / avgVolume).toFixed(2);
+        }
+
+        function calculateLOF(data) {
+            let last10 = data.slice(-12, -2);
+            let buyVol = 0, sellVol = 0;
+            last10.forEach(candle => {
+                if (candle[4] > candle[1]) buyVol += parseFloat(candle[5]);
+                else sellVol += parseFloat(candle[5]);
+            });
+            return ((buyVol - sellVol) / (buyVol + sellVol) * 100);
+        }
+
+        function updateChart(priceData) {
+            let ctx = document.getElementById('marketChart').getContext('2d');
+            if (marketChart) marketChart.destroy();
+            
+            // Create gradient
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(108, 92, 231, 0.8)');
+            gradient.addColorStop(1, 'rgba(108, 92, 231, 0.1)');
+            
+            marketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: priceData.map((_, i) => i),
+                    datasets: [{
+                        label: 'Price',
+                        data: priceData,
+                        borderColor: '#6c5ce7',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: gradient,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
         function updateValues() {
             let timeFrame = document.getElementById("timeFrame").value;
             let selectedCoin = document.getElementById("coinSelector").value;
@@ -193,46 +956,17 @@
             }
         }
 
-        // Initialize the dashboard
+        // Initialize
         fetchFuturesPairs();
-
-        // Setup WebSocket for real-time order book data
-        function setupWebSocket(symbol) {
-            if (ws) ws.close(); // Close existing connection
-            ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol}@depth`);
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                const bids = data.bids; // Buy orders
-                const asks = data.asks; // Sell orders
-
-                // Identify large buy/sell walls
-                const largeBid = bids.find(order => parseFloat(order[1]) > 10); // > 10 BTC
-                const largeAsk = asks.find(order => parseFloat(order[1]) > 10); // > 10 BTC
-
-                if (largeBid) console.log("Large Buy Wall:", largeBid);
-                if (largeAsk) console.log("Large Sell Wall:", largeAsk);
-            };
-        }
-
-        // Update chart using Chart.js
-        function updateChart(priceData) {
-            let ctx = document.getElementById('marketChart').getContext('2d');
-            if (marketChart) marketChart.destroy();
-            marketChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: priceData.map((_, i) => i),
-                    datasets: [{
-                        label: 'Price',
-                        data: priceData,
-                        borderColor: 'blue',
-                        fill: false
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
+        document.getElementById("timeFrame").addEventListener("change", updateValues);
+        document.getElementById("coinSelector").addEventListener("change", updateValues);
+        
+        // Add event listener for Enter key in search box
+        document.getElementById("coinSearch").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                searchCoin();
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Binance Pivot Tracker Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #f0b90b;
+            --primary-light: #f8d12f;
+            --secondary-color: #1e2026;
+            --secondary-light: #2b2e36;
+            --background-color: #0b0e11;
+            --card-bg: #1e2329;
+            --text-color: #eaecef;
+            --text-light: #848e9c;
+            --success-color: #02c076;
+            --danger-color: #f6465d;
+            --warning-color: #f0b90b;
+            --border-color: #2b3139;
+            --highlight-color: #474d57;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .stat-card .change {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .change.up {
+            color: var(--success-color);
+        }
+        
+        .change.down {
+            color: var(--danger-color);
+        }
+        
+        /* Main Table Container */
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        /* Controls Section */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background-color: var(--secondary-light);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            width: 250px;
+            font-size: 14px;
+            background-color: var(--secondary-light);
+            color: var(--text-color);
+        }
+        
+        select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: var(--secondary-light);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(240, 185, 11, 0.2);
+        }
+        
+        .status {
+            padding: 10px 15px;
+            background-color: var(--secondary-light);
+            color: white;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .online {
+            background-color: var(--success-color);
+            box-shadow: 0 0 10px var(--success-color);
+        }
+        
+        .offline {
+            background-color: var(--danger-color);
+            box-shadow: 0 0 10px var(--danger-color);
+        }
+        
+        .reconnecting {
+            background-color: var(--warning-color);
+            box-shadow: 0 0 10px var(--warning-color);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s ease;
+            height: 100vh;
+            overflow-y: scroll;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--secondary-light);
+            color: var(--text-color);
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: var(--secondary-light);
+            color: white;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+        
+        th:hover {
+            background-color: var(--highlight-color);
+        }
+        
+        tr:hover {
+            background-color: var(--secondary-light);
+        }
+        
+        .price-up {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+        
+        .price-down {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
+        
+        .pivot-cell {
+            font-weight: bold;
+        }
+        
+        .support {
+            color: var(--danger-color);
+        }
+        
+        .resistance {
+            color: var(--success-color);
+        }
+        
+        .sorted-asc::after {
+            content: " ↑";
+            font-weight: bold;
+        }
+        
+        .sorted-desc::after {
+            content: " ↓";
+            font-weight: bold;
+        }
+        
+        .connection-settings {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .connection-settings:hover {
+            background-color: rgba(240, 185, 11, 0.1);
+        }
+        
+        .retry-button {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .retry-button:hover {
+            background-color: #e5354a;
+        }
+        
+        #coinCounter {
+            margin: 10px 0;
+            font-weight: bold;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        tr[data-distance="0%"] { 
+            background-color: rgba(255, 243, 205, 0.1) !important; 
+        }
+        
+        tr[data-distance="0.5%"] { 
+            background-color: rgba(255, 238, 186, 0.1) !important; 
+        }
+        
+        .distance-indicator {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        #entriesPerPage {
+            width: 120px;
+        }
+        
+        .active-level {
+            font-weight: bold;
+        }
+        
+        .distance-percent {
+            font-weight: bold;
+        }
+        
+        .distance-close {
+            color: var(--danger-color);
+        }
+        
+        .distance-medium {
+            color: var(--warning-color);
+        }
+        
+        .distance-far {
+            color: var(--success-color);
+        }
+        
+        .level-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        /* Time Estimation Styles */
+        .time-estimate {
+            font-size: 13px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        
+        .time-estimate.active {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .time-estimate.soon {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .velocity-indicator {
+            font-size: 10px;
+            color: var(--text-light);
+        }
+        
+        .velocity-up {
+            color: var(--success-color);
+        }
+        
+        .velocity-down {
+            color: var(--danger-color);
+        }
+        
+        .touched-status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .touched-status.active {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .touched-status.inactive {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .search-box, select {
+                width: 100%;
+            }
+            
+            #entriesPerPage {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--secondary-color);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+        .support{
+            color: rgb(11, 236, 11);
+        }
+        .resistance{
+            color: rgb(250, 36, 36);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-chart-line"></i> Binance Future Perpetual Coin Market </h1>
+        
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Total Coins Tracked</h3>
+                <div class="value" id="totalCoinsStat">0</div>
+                <div class="change up">
+                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Signals</h3>
+                <div class="value" id="activeSignalsStat">0</div>
+                <div class="change down">
+                    <i class="fas fa-arrow-down"></i> <span>0%</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Nearest Pivot</h3>
+                <div class="value" id="nearestPivotStat">-</div>
+                <div class="change">
+                    <span id="nearestPivotDistance">-</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <h3>Connection Status</h3>
+                <div class="value" id="connectionStatusStat">Offline</div>
+                <div class="change">
+                    <span id="lastUpdateTime">Never</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <div class="controls">
+                <div class="control-group">
+                    <input type="text" id="search" class="search-box" placeholder="Search coins...">
+                    <select id="entriesPerPage">
+                        <option value="10">10 entries</option>
+                        <option value="25" selected>25 entries</option>
+                        <option value="50">50 entries</option>
+                        <option value="100">100 entries</option>
+                        <option value="all">All</option>
+                    </select>
+                    <select id="timeframe">
+                        <option value="15m">15 Minutes</option>
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h" selected>1 Hour</option>
+                        <option value="4h">4 Hours</option>
+                        <option value="1d">1 Day</option>
+                        <option value="1w">1 Week</option>
+                        <option value="1M">1 Month</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <div class="status">
+                        <span id="statusIndicator" class="status-indicator offline"></span>
+                        <span id="statusText">Connecting...</span>
+                    </div>
+                    <button id="retryButton" class="retry-button">Retry Now</button>
+                    <button id="settingsButton" class="connection-settings"><i class="fas fa-cog"></i> Settings</button>
+                </div>
+            </div>
+            
+            <div id="coinCounter">
+                <i class="fas fa-coins"></i> Total Coins: <span id="totalCoins">0</span> | 
+                <i class="fas fa-filter"></i> Showing: <span id="filteredCoins">0</span> |
+                <i class="fas fa-bell"></i> <span id="alarmStatus">Alarm: Ready</span>
+            </div>
+            
+            <div id="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading coin data...
+            </div>
+            
+            <table id="coinsTable">
+                <thead>
+                    <tr>
+                        <th data-sort="symbol"><i class="fas fa-coins"></i> Coin</th>
+                        <th data-sort="price"><i class="fas fa-dollar-sign"></i> Price</th>
+                        <th data-sort="pivot"><i class="fas fa-balance-scale"></i> Pivot (P)</th>
+                        <th data-sort="s1"><i class="fas fa-shield-alt"></i> Support 1</th>
+                        <th data-sort="s2"><i class="fas fa-shield-alt"></i> Support 2</th>
+                        <th data-sort="s3"><i class="fas fa-shield-alt"></i> Support 3</th>
+                        <th data-sort="r1"><i class="fas fa-arrow-up"></i> Resistance 1</th>
+                        <th data-sort="r2"><i class="fas fa-arrow-up"></i> Resistance 2</th>
+                        <th data-sort="r3"><i class="fas fa-arrow-up"></i> Resistance 3</th>
+                        <th data-sort="timeToTouch"><i class="fas fa-clock"></i> Time Estimate</th>
+                        <th data-sort="touchedStatus"><i class="fas fa-bolt"></i> Status</th>
+                        <th><i class="fas fa-info-circle"></i> Level Info</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Connection Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title"><i class="fas fa-cog"></i> Settings</div>
+            
+            <!-- API Connection Settings -->
+            <h3 style="margin-top: 0; color: var(--primary-color);"><i class="fas fa-plug"></i> API Connection</h3>
+            <div class="form-group">
+                <label for="apiUrl">Binance API Base URL</label>
+                <input type="text" id="apiUrl" placeholder="https://api.binance.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="websocketUrl">Binance WebSocket URL</label>
+                <input type="text" id="websocketUrl" placeholder="wss://stream.binance.com:9443">
+            </div>
+            
+            <div class="form-group">
+                <label for="futuresApiUrl">Binance Futures API URL</label>
+                <input type="text" id="futuresApiUrl" placeholder="https://fapi.binance.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="futuresWebsocketUrl">Binance Futures WS URL</label>
+                <input type="text" id="futuresWebsocketUrl" placeholder="wss://fstream.binance.com">
+            </div>
+            
+            <!-- Alert Settings -->
+            <h3 style="margin-top: 25px; color: var(--primary-color);"><i class="fas fa-bell"></i> Alert Settings</h3>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="enableSound" checked style="width: auto;"> 
+                    Enable Notification Sound
+                </label>
+            </div>
+            <button id="playButton"> Sound Play </button>
+
+            <div class="form-group">
+                <label>Alert Cooldown (minutes)</label>
+                <input type="number" id="alertCooldown" min="1" max="1440" value="15" style="width: 100%;">
+            </div>
+            
+            <div class="form-group">
+                <label>Enable Alerts for Timeframes:</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                    <label><input type="checkbox" data-tf="15m" checked> 15m</label>
+                    <label><input type="checkbox" data-tf="30m" checked> 30m</label>
+                    <label><input type="checkbox" data-tf="1h" checked> 1h</label>
+                    <label><input type="checkbox" data-tf="4h" checked> 4h</label>
+                    <label><input type="checkbox" data-tf="1d" checked> 1d</label>
+                    <label><input type="checkbox" data-tf="1w" checked> 1w</label>
+                    <label><input type="checkbox" data-tf="1M" checked> 1M</label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="cancelSettings">Cancel</button>
+                <button id="saveSettings">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SmartPivotTracker {
+            constructor() {
+                this.config = {
+                    apiBaseUrl: 'https://api.binance.com',
+                    websocketUrl: 'wss://stream.binance.com:9443',
+                    futuresApiUrl: 'https://fapi.binance.com',
+                    futuresWebsocketUrl: 'wss://fstream.binance.com',
+                    maxRetries: 5,
+                    retryInterval: 3000,
+                    updateThrottleInterval: 1000,
+                    alarmThreshold: 0.5,
+                    touchThreshold: 0.1,
+                    enableSound: true,
+                    alertCooldown: 15,
+                    enabledTimeframes: ['15m', '30m', '1h', '4h', '1d', '1w', '1M']
+                };
+                
+                this.coinsData = [];
+                this.selectedTimeframe = '1h';
+                this.pivotUpdateTimeout = null;
+                this.ws = null;
+                this.sortConfig = { key: 'price', direction: 'desc' };
+                this.initialLoad = true;
+                this.retryCount = 0;
+                this.updateThrottle = null;
+                this.reconnectTimeout = null;
+                this.alarmSound = new Audio("img/Alert.mp3");
+                this.visibleRows = 25;
+                this.levelTouchHistory = {};
+                this.activeLevels = {};
+                this.priceHistory = {};
+                this.historyLength = 5;
+                this.lastUpdateTime = null;
+                
+                this.loadConfig();
+                this.initElements();
+                this.initEventListeners();
+                this.init();
+            }
+            
+            loadConfig() {
+                const savedConfig = localStorage.getItem('binanceApiConfig');
+                if (savedConfig) {
+                    this.config = { ...this.config, ...JSON.parse(savedConfig) };
+                }
+            }
+            
+            saveConfig() {
+                localStorage.setItem('binanceApiConfig', JSON.stringify(this.config));
+            }
+            
+            initElements() {
+                this.elements = {
+                    search: document.getElementById('search'),
+                    timeframe: document.getElementById('timeframe'),
+                    statusIndicator: document.getElementById('statusIndicator'),
+                    statusText: document.getElementById('statusText'),
+                    loading: document.getElementById('loading'),
+                    table: document.getElementById('coinsTable'),
+                    tableBody: document.querySelector('#coinsTable tbody'),
+                    tableHeaders: document.querySelectorAll('#coinsTable th[data-sort]'),
+                    retryButton: document.getElementById('retryButton'),
+                    settingsButton: document.getElementById('settingsButton'),
+                    settingsModal: document.getElementById('settingsModal'),
+                    apiUrl: document.getElementById('apiUrl'),
+                    websocketUrl: document.getElementById('websocketUrl'),
+                    futuresApiUrl: document.getElementById('futuresApiUrl'),
+                    futuresWebsocketUrl: document.getElementById('futuresWebsocketUrl'),
+                    cancelSettings: document.getElementById('cancelSettings'),
+                    saveSettings: document.getElementById('saveSettings'),
+                    totalCoins: document.getElementById('totalCoins'),
+                    filteredCoins: document.getElementById('filteredCoins'),
+                    alarmStatus: document.getElementById('alarmStatus'),
+                    entriesPerPage: document.getElementById('entriesPerPage'),
+                    enableSound: document.getElementById('enableSound'),
+                    alertCooldown: document.getElementById('alertCooldown'),
+                    totalCoinsStat: document.getElementById('totalCoinsStat'),
+                    activeSignalsStat: document.getElementById('activeSignalsStat'),
+                    nearestPivotStat: document.getElementById('nearestPivotStat'),
+                    nearestPivotDistance: document.getElementById('nearestPivotDistance'),
+                    connectionStatusStat: document.getElementById('connectionStatusStat'),
+                    lastUpdateTime: document.getElementById('lastUpdateTime')
+                };
+                
+                // Set initial values from config
+                this.elements.apiUrl.value = this.config.apiBaseUrl;
+                this.elements.websocketUrl.value = this.config.websocketUrl;
+                this.elements.futuresApiUrl.value = this.config.futuresApiUrl;
+                this.elements.futuresWebsocketUrl.value = this.config.futuresWebsocketUrl;
+                this.elements.enableSound.checked = this.config.enableSound;
+                this.elements.alertCooldown.value = this.config.alertCooldown;
+                
+                // Set timeframe checkboxes
+                this.config.enabledTimeframes.forEach(tf => {
+                    const checkbox = document.querySelector(`input[data-tf="${tf}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+            
+            initEventListeners() {
+                this.elements.search.addEventListener('input', () => this.updateTable());
+                this.elements.timeframe.addEventListener('change', () => this.handleTimeframeChange());
+                this.elements.entriesPerPage.addEventListener('change', () => {
+                    this.visibleRows = this.elements.entriesPerPage.value === 'all' 
+                        ? Infinity 
+                        : parseInt(this.elements.entriesPerPage.value);
+                    this.updateTable();
+                });
+                
+                this.elements.tableHeaders.forEach(header => {
+                    header.addEventListener('click', () => this.handleSort(header.dataset.sort));
+                });
+                
+                this.elements.retryButton.addEventListener('click', () => this.manualRetry());
+                this.elements.settingsButton.addEventListener('click', () => this.showSettingsModal());
+                this.elements.cancelSettings.addEventListener('click', () => this.hideSettingsModal());
+                this.elements.saveSettings.addEventListener('click', () => this.saveNewSettings());
+            }
+            
+            showSettingsModal() {
+                this.elements.settingsModal.style.display = 'flex';
+            }
+            
+            hideSettingsModal() {
+                this.elements.settingsModal.style.display = 'none';
+            }
+            
+            saveNewSettings() {
+                // Save API settings
+                this.config.apiBaseUrl = this.elements.apiUrl.value.trim() || 'https://api.binance.com';
+                this.config.websocketUrl = this.elements.websocketUrl.value.trim() || 'wss://stream.binance.com:9443';
+                this.config.futuresApiUrl = this.elements.futuresApiUrl.value.trim() || 'https://fapi.binance.com';
+                this.config.futuresWebsocketUrl = this.elements.futuresWebsocketUrl.value.trim() || 'wss://fstream.binance.com';
+                
+                // Save notification settings
+                this.config.enableSound = this.elements.enableSound.checked;
+                this.config.alertCooldown = parseInt(this.elements.alertCooldown.value);
+                
+                // Save enabled timeframes
+                this.config.enabledTimeframes = Array.from(
+                    document.querySelectorAll('input[data-tf]:checked')
+                ).map(el => el.dataset.tf);
+                
+                this.saveConfig();
+                this.hideSettingsModal();
+            }
+            
+            async init() {
+                try {
+                    await this.loadInitialData();
+                    this.initWebSocket();
+                    this.scheduleNextPivotUpdate();
+                    this.initialLoad = false;
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.showError('Failed to initialize. Please check connection.');
+                    this.scheduleRetry();
+                }
+            }
+            
+            async loadInitialData() {
+                this.showLoading();
+                const coins = await this.getPerpetualCoins();
+                const pivotPointsData = await this.fetchPivotPointsForTimeframe(this.selectedTimeframe);
+                
+                this.coinsData = coins.map(coin => ({
+                    symbol: coin,
+                    price: null,
+                    prevPrice: null,
+                    pivotPoints: pivotPointsData.find(p => p.symbol === coin)?.pivotPoints || null,
+                    distanceInfo: null,
+                    activeLevel: null,
+                    timeToTouch: null,
+                    velocity: 0,
+                    touchedStatus: false
+                }));
+                
+                coins.forEach(coin => {
+                    this.levelTouchHistory[coin] = {
+                        supports: { S1: 0, S2: 0, S3: 0 },
+                        resistances: { R1: 0, R2: 0, R3: 0 }
+                    };
+                    this.activeLevels[coin] = null;
+                    this.priceHistory[coin] = [];
+                });
+                
+                this.updateStats();
+                this.updateTable();
+                this.hideLoading();
+            }
+            
+            async getPerpetualCoins() {
+                try {
+                    const response = await fetch(`${this.config.futuresApiUrl}/fapi/v1/exchangeInfo`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    
+                    const data = await response.json();
+                    return data.symbols
+                        .filter(s => s.quoteAsset === 'USDT' && s.contractType === 'PERPETUAL')
+                        .map(s => s.symbol)
+                        .sort();
+                } catch (error) {
+                    console.error('Error fetching perpetual coins:', error);
+                    throw error;
+                }
+            }
+            
+            async getKlines(symbol, interval) {
+                try {
+                    const response = await fetch(
+                        `${this.config.futuresApiUrl}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=2`
+                    );
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Error fetching klines for ${symbol}:`, error);
+                    return null;
+                }
+            }
+            
+            calculatePivotPoints(high, low, close) {
+                const P = (high + low + close) / 3;
+                const S1 = 2 * P - high;
+                const S2 = P - (high - low);
+                const S3 = low - 2 * (high - P);
+                const R1 = 2 * P - low;
+                const R2 = P + (high - low);
+                const R3 = high + 2 * (P - low);
+                return { P, S1, S2, S3, R1, R2, R3 };
+            }
+            
+            async fetchPivotPointsForTimeframe(timeframe) {
+                const coins = this.coinsData.length > 0 
+                    ? this.coinsData.map(c => c.symbol)
+                    : await this.getPerpetualCoins();
+                
+                const klinesPromises = coins.map(coin => this.getKlines(coin, timeframe));
+                const klinesData = await Promise.all(klinesPromises);
+                
+                return coins.map((coin, index) => {
+                    const data = klinesData[index];
+                    if (!data || data.length < 2) return { symbol: coin, pivotPoints: null };
+                    
+                    const candle = data[0];
+                    return {
+                        symbol: coin,
+                        pivotPoints: this.calculatePivotPoints(
+                            parseFloat(candle[2]),
+                            parseFloat(candle[3]),
+                            parseFloat(candle[4])
+                        )
+                    };
+                });
+            }
+            
+            getNextCloseTime(timeframe) {
+                const now = new Date();
+                const currentTime = now.getTime();
+                let intervalMs;
+                
+                switch (timeframe) {
+                    case '15m': intervalMs = 15 * 60 * 1000; break;
+                    case '30m': intervalMs = 30 * 60 * 1000; break;
+                    case '1h': intervalMs = 60 * 60 * 1000; break;
+                    case '4h': intervalMs = 4 * 60 * 60 * 1000; break;
+                    case '1d': intervalMs = 24 * 60 * 60 * 1000; break;
+                    case '1w': intervalMs = 7 * 24 * 60 * 60 * 1000; break;
+                    case '1M': intervalMs = 30 * 24 * 60 * 60 * 1000; break;
+                    default: intervalMs = 60 * 60 * 1000;
+                }
+                
+                if (['15m', '30m', '1h', '4h'].includes(timeframe)) {
+                    const minutes = now.getUTCMinutes() + now.getUTCSeconds() / 60;
+                    const intervalMinutes = intervalMs / (60 * 1000);
+                    const minutesUntilNext = intervalMinutes - (minutes % intervalMinutes);
+                    return currentTime + minutesUntilNext * 60 * 1000;
+                } else if (timeframe === '1d') {
+                    return new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1).getTime();
+                } else if (timeframe === '1w') {
+                    const day = now.getUTCDay();
+                    const daysUntilSunday = (7 - day) % 7 || 7;
+                    const nextSunday = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysUntilSunday);
+                    nextSunday.setUTCHours(0, 0, 0, 0);
+                    return nextSunday.getTime();
+                } else if (timeframe === '1M') {
+                    return new Date(now.getUTCFullYear(), now.getUTCMonth() + 1, 1).getTime();
+                }
+            }
+            
+            async updatePivotPoints() {
+                try {
+                    if (this.initialLoad) return;
+                    
+                    this.showLoading();
+                    const pivotPointsData = await this.fetchPivotPointsForTimeframe(this.selectedTimeframe);
+                    
+                    this.coinsData.forEach(coin => {
+                        const newData = pivotPointsData.find(p => p.symbol === coin.symbol);
+                        if (newData) coin.pivotPoints = newData.pivotPoints;
+                    });
+                    
+                    this.updateTable();
+                    this.scheduleNextPivotUpdate();
+                    this.hideLoading();
+                } catch (error) {
+                    console.error('Error updating pivot points:', error);
+                    this.scheduleNextPivotUpdate();
+                }
+            }
+            
+            scheduleNextPivotUpdate() {
+                if (this.pivotUpdateTimeout) clearTimeout(this.pivotUpdateTimeout);
+                
+                const nextCloseTime = this.getNextCloseTime(this.selectedTimeframe);
+                const delay = Math.max(1000, nextCloseTime - Date.now() + 1000);
+                
+                this.pivotUpdateTimeout = setTimeout(
+                    () => this.updatePivotPoints(), 
+                    delay
+                );
+            }
+            
+            initWebSocket() {
+                if (this.ws) {
+                    this.ws.close();
+                    this.ws = null;
+                }
+                
+                if (this.coinsData.length === 0) {
+                    console.warn('No coins data available for WebSocket connection');
+                    this.scheduleRetry();
+                    return;
+                }
+                
+                const streams = this.coinsData
+                    .map(coin => `${coin.symbol.toLowerCase()}@ticker`)
+                    .join('/');
+                
+                const wsUrl = `${this.config.futuresWebsocketUrl}/stream?streams=${streams}`;
+                
+                try {
+                    this.ws = new WebSocket(wsUrl);
+                    this.updateConnectionStatus('connecting', 'Connecting to WebSocket...');
+                    
+                    this.ws.onopen = () => {
+                        this.retryCount = 0;
+                        this.updateConnectionStatus('connected', 'Live data connected');
+                        this.elements.connectionStatusStat.textContent = 'Connected';
+                        this.elements.connectionStatusStat.style.color = 'var(--success-color)';
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const message = JSON.parse(event.data);
+                        if (message.stream && message.data) {
+                            this.handleWsMessage(message);
+                        }
+                    };
+                    
+                    this.ws.onclose = () => {
+                        this.updateConnectionStatus('disconnected', 'Connection lost. Reconnecting...');
+                        this.elements.connectionStatusStat.textContent = 'Disconnected';
+                        this.elements.connectionStatusStat.style.color = 'var(--danger-color)';
+                        this.scheduleRetry();
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error('WebSocket error:', error);
+                        this.updateConnectionStatus('error', 'Connection error');
+                        this.elements.connectionStatusStat.textContent = 'Error';
+                        this.elements.connectionStatusStat.style.color = 'var(--danger-color)';
+                        this.scheduleRetry();
+                    };
+                } catch (error) {
+                    console.error('WebSocket initialization error:', error);
+                    this.updateConnectionStatus('error', 'Connection failed');
+                    this.elements.connectionStatusStat.textContent = 'Failed';
+                    this.elements.connectionStatusStat.style.color = 'var(--danger-color)';
+                    this.scheduleRetry();
+                }
+            }
+            
+            handleWsMessage(message) {
+                const symbol = message.data.s;
+                const price = parseFloat(message.data.c);
+                const now = Date.now();
+                this.lastUpdateTime = now;
+                
+                // Update last update time display
+                this.elements.lastUpdateTime.textContent = new Date(now).toLocaleTimeString();
+                
+                // Initialize price history if not exists
+                if (!this.priceHistory[symbol]) {
+                    this.priceHistory[symbol] = [];
+                }
+                
+                // Add current price to history
+                this.priceHistory[symbol].push({ price, time: now });
+                
+                // Keep only the last N data points
+                if (this.priceHistory[symbol].length > this.historyLength) {
+                    this.priceHistory[symbol].shift();
+                }
+                
+                const coinIndex = this.coinsData.findIndex(c => c.symbol === symbol);
+                if (coinIndex !== -1) {
+                    this.coinsData[coinIndex].prevPrice = this.coinsData[coinIndex].price;
+                    this.coinsData[coinIndex].price = price;
+                    
+                    this.updateLevelTracking(symbol, price);
+                    
+                    if (!this.updateThrottle) {
+                        this.updateThrottle = setTimeout(() => {
+                            this.updateTable();
+                            this.updateStats();
+                            this.updateThrottle = null;
+                        }, this.config.updateThrottleInterval);
+                    }
+                }
+            }
+            
+            updateStats() {
+                // Update total coins stat
+                this.elements.totalCoinsStat.textContent = this.coinsData.length;
+                
+                // Update active signals stat
+                const activeSignals = this.coinsData.filter(coin => coin.touchedStatus).length;
+                this.elements.activeSignalsStat.textContent = activeSignals;
+                
+                // Update nearest pivot stat
+                let nearestCoin = null;
+                let minDistance = Infinity;
+                
+                this.coinsData.forEach(coin => {
+                    if (coin.distanceInfo) {
+                        const distance = parseFloat(coin.distanceInfo.percent);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestCoin = coin;
+                        }
+                    }
+                });
+                
+                if (nearestCoin) {
+                    this.elements.nearestPivotStat.textContent = `${nearestCoin.symbol} ${nearestCoin.activeLevel}`;
+                    this.elements.nearestPivotDistance.textContent = `${nearestCoin.distanceInfo.percent}% away`;
+                    
+                    if (minDistance <= 0.5) {
+                        this.elements.nearestPivotDistance.style.color = 'var(--danger-color)';
+                    } else if (minDistance <= 1.0) {
+                        this.elements.nearestPivotDistance.style.color = 'var(--warning-color)';
+                    } else {
+                        this.elements.nearestPivotDistance.style.color = 'var(--success-color)';
+                    }
+                } else {
+                    this.elements.nearestPivotStat.textContent = '-';
+                    this.elements.nearestPivotDistance.textContent = '-';
+                }
+            }
+            
+            calculateVelocity(priceHistory) {
+                if (priceHistory.length < 2) return 0;
+                
+                // Calculate price change and time change
+                const oldest = priceHistory[0];
+                const latest = priceHistory[priceHistory.length - 1];
+                
+                const priceChange = latest.price - oldest.price;
+                const timeChange = (latest.time - oldest.time) / 1000; // in seconds
+                
+                // Avoid division by zero
+                if (timeChange === 0) return 0;
+                
+                // Return price change per second
+                return priceChange / timeChange;
+            }
+            
+            updateLevelTracking(symbol, price) {
+                const coin = this.coinsData.find(c => c.symbol === symbol);
+                if (!coin?.pivotPoints) return;
+
+                const levels = [
+                    { type: 'S3', value: coin.pivotPoints.S3 },
+                    { type: 'S2', value: coin.pivotPoints.S2 },
+                    { type: 'S1', value: coin.pivotPoints.S1 },
+                    { type: 'R1', value: coin.pivotPoints.R1 },
+                    { type: 'R2', value: coin.pivotPoints.R2 },
+                    { type: 'R3', value: coin.pivotPoints.R3 }
+                ];
+
+                // Calculate distances
+                levels.forEach(level => {
+                    level.distance = Math.abs(price - level.value);
+                    level.distancePercent = ((level.distance / price) * 100).toFixed(2);
+                });
+
+                // Check for level touches
+                levels.forEach(level => {
+                    const distancePercent = parseFloat(level.distancePercent);
+                    
+                    if (distancePercent <= this.config.touchThreshold) {
+                        const now = Date.now();
+                        const lastTouch = level.type.startsWith('S') 
+                            ? this.levelTouchHistory[symbol].supports[level.type]
+                            : this.levelTouchHistory[symbol].resistances[level.type];
+                            
+                        if (!lastTouch || (now - lastTouch) > (this.config.alertCooldown * 60 * 1000)) {
+                            this.levelTouchHistory[symbol][level.type] = now;
+                        }
+                    }
+                });
+
+                // Determine active support level
+                const supportLevels = ['S1', 'S2', 'S3'];
+                let activeSupport = null;
+                
+                for (let i = 0; i < supportLevels.length; i++) {
+                    const level = supportLevels[i];
+                    const distancePercent = parseFloat(
+                        levels.find(l => l.type === level).distancePercent
+                    );
+                    
+                    if (distancePercent <= 1.0) {
+                        let higherSupportTouched = false;
+                        for (let j = 0; j < i; j++) {
+                            const higherLevel = supportLevels[j];
+                            if (this.levelTouchHistory[symbol].supports[higherLevel] > 0) {
+                                higherSupportTouched = true;
+                                break;
+                            }
+                        }
+                        
+                        if (i === 0 || higherSupportTouched) {
+                            activeSupport = level;
+                            break;
+                        }
+                    }
+                }
+
+                // Determine active resistance level
+                const resistanceLevels = ['R1', 'R2', 'R3'];
+                let activeResistance = null;
+                
+                for (let i = 0; i < resistanceLevels.length; i++) {
+                    const level = resistanceLevels[i];
+                    const distancePercent = parseFloat(
+                        levels.find(l => l.type === level).distancePercent
+                    );
+                    
+                    if (distancePercent <= 1.0) {
+                        let lowerResistanceTouched = false;
+                        for (let j = 0; j < i; j++) {
+                            const lowerLevel = resistanceLevels[j];
+                            if (this.levelTouchHistory[symbol].resistances[lowerLevel] > 0) {
+                                lowerResistanceTouched = true;
+                                break;
+                            }
+                        }
+                        
+                        if (i === 0 || lowerResistanceTouched) {
+                            activeResistance = level;
+                            break;
+                        }
+                    }
+                }
+
+                // Determine which level is more relevant
+                if (activeSupport && activeResistance) {
+                    const supportDistance = parseFloat(
+                        levels.find(l => l.type === activeSupport).distancePercent
+                    );
+                    const resistanceDistance = parseFloat(
+                        levels.find(l => l.type === activeResistance).distancePercent
+                    );
+                    
+                    coin.activeLevel = supportDistance < resistanceDistance ? 
+                        activeSupport : activeResistance;
+                } else if (activeSupport) {
+                    coin.activeLevel = activeSupport;
+                } else if (activeResistance) {
+                    coin.activeLevel = activeResistance;
+                } else {
+                    const closestLevel = levels.reduce((prev, curr) => 
+                        parseFloat(prev.distancePercent) < parseFloat(curr.distancePercent) ? prev : curr
+                    );
+                    coin.activeLevel = closestLevel.type;
+                }
+
+                // Store the active level
+                this.activeLevels[symbol] = coin.activeLevel;
+
+                // Store distance info for display
+                const activeLevelData = levels.find(l => l.type === coin.activeLevel);
+                coin.distanceInfo = {
+                    level: coin.activeLevel,
+                    percent: activeLevelData.distancePercent,
+                    value: activeLevelData.value
+                };
+
+                // Calculate time to touch based on momentum
+                if (this.priceHistory[symbol] && this.priceHistory[symbol].length >= 2) {
+                    const velocity = this.calculateVelocity(this.priceHistory[symbol]);
+                    const levelValue = activeLevelData.value;
+                    const distanceToLevel = levelValue - price;
+                    
+                    if (velocity !== 0) {
+                        const secondsToTouch = Math.abs(distanceToLevel / velocity);
+                        coin.timeToTouch = this.formatTimeEstimate(secondsToTouch * 1000);
+                        coin.velocity = velocity;
+                    } else {
+                        coin.timeToTouch = "N/A";
+                        coin.velocity = 0;
+                    }
+                } else {
+                    coin.timeToTouch = "N/A";
+                    coin.velocity = 0;
+                }
+
+                // Update touched status
+                coin.touchedStatus = parseFloat(coin.distanceInfo.percent) <= this.config.touchThreshold;
+
+                // Trigger alarm if very close to a level
+                if (parseFloat(activeLevelData.distancePercent) <= this.config.alarmThreshold) {
+                    this.triggerAlarm(symbol, coin.activeLevel);
+                }
+            }
+            
+            formatTimeEstimate(ms) {
+                if (ms <= 0) return "Now";
+                
+                const seconds = Math.abs(ms) / 1000;
+                const minutes = seconds / 60;
+                const hours = minutes / 60;
+                const days = hours / 24;
+                
+                let result = [];
+                
+                if (days >= 1) {
+                    const fullDays = Math.floor(days);
+                    result.push(`${fullDays}day${fullDays !== 1 ? 's' : ''}`);
+                    const remainingHours = (days - fullDays) * 24;
+                    if (remainingHours >= 1) {
+                        const fullHours = Math.floor(remainingHours);
+                        result.push(`${fullHours}hr${fullHours !== 1 ? 's' : ''}`);
+                    }
+                } 
+                else if (hours >= 1) {
+                    const fullHours = Math.floor(hours);
+                    result.push(`${fullHours}hr${fullHours !== 1 ? 's' : ''}`);
+                    const remainingMinutes = (hours - fullHours) * 60;
+                    if (remainingMinutes >= 1) {
+                        const fullMinutes = Math.floor(remainingMinutes);
+                        result.push(`${fullMinutes}min`);
+                    }
+                }
+                else if (minutes >= 1) {
+                    const fullMinutes = Math.floor(minutes);
+                    result.push(`${fullMinutes}min`);
+                    const remainingSeconds = (minutes - fullMinutes) * 60;
+                    if (remainingSeconds >= 1) {
+                        result.push(`${Math.floor(remainingSeconds)}sec`);
+                    }
+                }
+                else {
+                    result.push(`${Math.round(seconds)}sec`);
+                }
+                
+                return result.join(' ');
+            }
+            
+            triggerAlarm(symbol, level) {
+                this.elements.alarmStatus.textContent = `ALARM: ${symbol} touched ${level}!`;
+                this.elements.alarmStatus.style.color = 'var(--danger-color)';
+                
+                if (document.visibilityState === 'visible' && this.config.enableSound) {
+                    this.alarmSound.currentTime = 0;
+
+                    // this.alarmSound.play().catch(e => console.log('Audio play failed:', e));
+                }
+                
+                setTimeout(() => {
+                    this.elements.alarmStatus.textContent = 'Alarm: Ready';
+                    this.elements.alarmStatus.style.color = '';
+                }, 5000);
+            }
+            
+            getDistanceClass(percent) {
+                const p = parseFloat(percent);
+                if (p <= 0.5) return 'distance-close';
+                if (p <= 1.5) return 'distance-medium';
+                return 'distance-far';
+            }
+            
+            handleSort(sortKey) {
+                if (this.sortConfig.key === sortKey) {
+                    this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortConfig.key = sortKey;
+                    this.sortConfig.direction = 'asc';
+                }
+                
+                this.elements.tableHeaders.forEach(header => {
+                    header.classList.remove('sorted-asc', 'sorted-desc');
+                    if (header.dataset.sort === this.sortConfig.key) {
+                        header.classList.add(`sorted-${this.sortConfig.direction}`);
+                    }
+                });
+                
+                this.updateTable();
+            }
+            
+            updateTable() {
+                if (!this.elements.tableBody) return;
+                
+                const searchTerm = this.elements.search.value.toLowerCase();
+                let filteredData = this.coinsData.filter(coin => 
+                    coin.symbol.toLowerCase().includes(searchTerm)
+                );
+                
+                // Sort by touched status first (touched coins on top)
+                filteredData.sort((a, b) => {
+                    if (a.touchedStatus && !b.touchedStatus) return -1;
+                    if (!a.touchedStatus && b.touchedStatus) return 1;
+                    return 0;
+                });
+                
+                if (this.visibleRows !== Infinity) {
+                    filteredData = filteredData.slice(0, this.visibleRows);
+                }
+                
+                this.elements.totalCoins.textContent = this.coinsData.length;
+                this.elements.filteredCoins.textContent = filteredData.length;
+                
+                // Apply the selected sort after the touched status sort
+                filteredData.sort((a, b) => {
+                    const getValue = (item, key) => {
+                        if (key === 'symbol') return item.symbol;
+                        if (key === 'price') return item.price || 0;
+                        if (key === 'pivot') return item.pivotPoints?.P || 0;
+                        if (key.startsWith('s')) return item.pivotPoints?.[`S${key.substring(1)}`] || 0;
+                        if (key.startsWith('r')) return item.pivotPoints?.[`R${key.substring(1)}`] || 0;
+                        if (key === 'timeToTouch') {
+                            if (item.timeToTouch === "N/A") return Infinity;
+                            const timeStr = item.timeToTouch;
+                            if (timeStr.includes('day')) return parseFloat(timeStr);
+                            if (timeStr.includes('hr')) return parseFloat(timeStr) / 24;
+                            if (timeStr.includes('min')) return parseFloat(timeStr) / (24 * 60);
+                            return parseFloat(timeStr) / (24 * 60 * 60);
+                        }
+                        if (key === 'touchedStatus') return item.touchedStatus ? 1 : 0;
+                        return 0;
+                    };
+                    
+                    const valueA = getValue(a, this.sortConfig.key);
+                    const valueB = getValue(b, this.sortConfig.key);
+                    
+                    return this.sortConfig.direction === 'asc' 
+                        ? valueA > valueB ? 1 : -1
+                        : valueA < valueB ? 1 : -1;
+                });
+                
+                this.elements.tableBody.innerHTML = filteredData.map(coin => {
+                    const priceChangeClass = coin.prevPrice 
+                        ? coin.price > coin.prevPrice ? 'price-up' 
+                          : coin.price < coin.prevPrice ? 'price-down' 
+                          : ''
+                        : '';
+                    
+                    const pivotClass = coin.pivotPoints && coin.price 
+                        ? coin.price > coin.pivotPoints.P ? 'resistance' : 'support'
+                        : '';
+                    
+                    const getLevelClass = (level) => 
+                        coin.activeLevel === level ? 'active-level' : '';
+                    
+                    const distanceClass = coin.distanceInfo ? 
+                        this.getDistanceClass(coin.distanceInfo.percent) : '';
+                    const distanceDisplay = coin.distanceInfo ? 
+                        `${coin.distanceInfo.percent}%` : 'N/A';
+                    
+                    const timeEstimateClass = coin.touchedStatus ? 'active' : 
+                        parseFloat(coin.distanceInfo?.percent || 100) <= 1 ? 'soon' : '';
+                    
+                    const velocityClass = coin.velocity > 0 ? 'velocity-up' : 'velocity-down';
+                    const velocityIcon = coin.velocity > 0 ? '▲' : '▼';
+                    
+                    
+                    return `
+                        <tr>
+                            <td><strong>${coin.symbol}</strong></td>
+                            <td class="${priceChangeClass}">
+                                ${coin.price ? coin.price.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="pivot-cell ${pivotClass}">
+                                ${coin.pivotPoints ? coin.pivotPoints.P.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="support ${getLevelClass('S1')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.S1.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="support ${getLevelClass('S2')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.S2.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="support ${getLevelClass('S3')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.S3.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="resistance ${getLevelClass('R1')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.R1.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="resistance ${getLevelClass('R2')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.R2.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="resistance ${getLevelClass('R3')}">
+                                ${coin.pivotPoints ? coin.pivotPoints.R3.toFixed(8) : 'N/A'}
+                            </td>
+                            <td class="time-estimate ${timeEstimateClass}">
+                                ${coin.timeToTouch || 'N/A'}
+                                ${coin.velocity !== 0 ? `<span class="velocity-indicator ${velocityClass}">${velocityIcon}</span>` : ''}
+                            </td>
+                            <td>
+                                <span class="touched-status ${coin.touchedStatus ? 'active' : 'inactive'}">
+                                    ${coin.touchedStatus ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td class="level-info">
+                                <span class="active-level">${coin.activeLevel || 'N/A'}</span>
+                                <span class="distance-percent ${distanceClass}">
+                                    ${distanceDisplay}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            async handleTimeframeChange() {
+                this.selectedTimeframe = this.elements.timeframe.value;
+                await this.updatePivotPoints();
+            }
+            
+            manualRetry() {
+                if (this.reconnectTimeout) {
+                    clearTimeout(this.reconnectTimeout);
+                    this.reconnectTimeout = null;
+                }
+                this.retryCount = 0;
+                this.initWebSocket();
+            }
+            
+            scheduleRetry() {
+                if (this.reconnectTimeout) return;
+                
+                this.retryCount++;
+                
+                if (this.retryCount > this.config.maxRetries) {
+                    this.updateConnectionStatus('error', `Connection failed after ${this.config.maxRetries} attempts`);
+                    return;
+                }
+                
+                const delay = this.retryCount * this.config.retryInterval;
+                this.updateConnectionStatus('reconnecting', `Retrying in ${delay/1000} seconds... (Attempt ${this.retryCount}/${this.config.maxRetries})`);
+                
+                this.reconnectTimeout = setTimeout(() => {
+                    this.initWebSocket();
+                    this.reconnectTimeout = null;
+                }, delay);
+            }
+            
+            updateConnectionStatus(status, message) {
+                const statusMap = {
+                    'connected': { class: 'online', text: 'Connected' },
+                    'connecting': { class: 'reconnecting', text: 'Connecting...' },
+                    'reconnecting': { class: 'reconnecting', text: message },
+                    'disconnected': { class: 'offline', text: 'Disconnected' },
+                    'error': { class: 'offline', text: message }
+                };
+                
+                const statusInfo = statusMap[status] || statusMap['error'];
+                this.elements.statusIndicator.className = `status-indicator ${statusInfo.class}`;
+                this.elements.statusText.textContent = statusInfo.text;
+            }
+            
+            showLoading() {
+                this.elements.loading.style.display = 'block';
+                this.elements.tableBody.innerHTML = '';
+            }
+            
+            hideLoading() {
+                this.elements.loading.style.display = 'none';
+            }
+            
+            showError(message) {
+                this.updateConnectionStatus('error', message);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new SmartPivotTracker();
+        });
+    </script>
+</body>
+</html>

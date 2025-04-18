@@ -168,12 +168,12 @@
       const r = (cvd/total)*100;
       if (cvd>0 && r>10)  return '<span class="sig-bull">Bull 📈</span>';
       if (cvd<0 && r<-10) return '<span class="sig-bear">Bear 📉</span>';
-      if (cvd<0 && buy>sell) return '<span class="sig-fake-pump">Fake Pump 🎭</span>';
-      if (cvd>0 && sell>buy) return '<span class="sig-fake-dump">Fake Dump 🎭</span>';
+      if (cvd<0 && buy>sell) return '<span class="sig-fake-pump">Fake Bull 🎭</span>';
+      if (cvd>0 && sell>buy) return '<span class="sig-fake-dump">Fake Bear 🎭</span>';
       const priceMovePct = (Math.abs(delta)/openPrice)*100;
-      if (priceMovePct<0.2 && r>15)  return '<span class="sig-spike-up">Vol Spike Up 🔼</span>';
-      if (priceMovePct<0.2 && r< -15) return '<span class="sig-spike-down">Vol Spike Down 🔽</span>';
-      return '<span class="sig-sideways">Sideways ↔️</span>';
+      if (priceMovePct<0.2 && r>15)  return '<span class="sig-spike-up">Volume-Up 🔼</span>';
+      if (priceMovePct<0.2 && r< -15) return '<span class="sig-spike-down">Volume-Down 🔽</span>';
+      return '<span class="sig-sideways">Stable ↔️</span>';
     }
 
     function tfLabel(m) {

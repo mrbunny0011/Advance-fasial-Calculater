@@ -3,83 +3,32 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multi-TF Volume, CVD, Divergence, Spike & ZeroCross — USDT Perps</title>
+  <title>Volume · CVD · Divergence · Spike · ZeroCross — USDT Perps</title>
   <style>
-    body { 
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-      background: #f8f9fa; 
-      color: #2d3748; 
-      margin: 0; 
-      padding: 20px; 
-      line-height: 1.5;
-    }
-    h1 { 
-      text-align: center; 
-      margin-bottom: 20px; 
-      color: #2b6cb0;
-      font-weight: 600;
-      font-size: 1.8rem;
-    }
-    #picker { 
-      display: flex; 
-      gap: 10px; 
-      align-items: center; 
-      margin-bottom: 20px; 
-      background: white;
-      padding: 14px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      max-width: 600px;
-      margin: 0 auto 25px;
-    }
-    #coinInput { 
-      width: 180px; 
-      padding: 10px 12px; 
-      background: white; 
-      color: #2d3748; 
-      border: 1px solid #e2e8f0; 
-      border-radius: 8px; 
-      font-weight: 500;
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #2d3748; margin: 0; padding: 20px; }
+    h1 { text-align: center; margin-bottom: 20px; color: #2b6cb0; font-weight: 600; font-size: 1.8rem; }
+    #picker { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; max-width: 700px; margin: 0 auto 25px; }
+    #searchInput, #coinSelect {
+      padding: 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
       font-size: 0.95rem;
       transition: all 0.2s;
+      background: white;
     }
-    #coinInput:focus {
+    #searchInput { flex: 1; }
+    #coinSelect { width: 160px; }
+    #searchInput:focus, #coinSelect:focus {
       border-color: #4299e1;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+      box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
     }
-    #livePrice { 
-      min-width: 100px; 
-      margin-left: 10px;
-      font-weight: bold;
-      color: #2b6cb0;
-      font-size: 1.05rem;
-    }
-    table { 
-      width: 100%; 
-      border-collapse: separate; 
-      border-spacing: 0;
-      margin-top: 10px; 
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-    th, td { 
-      padding: 14px 12px; 
-      text-align: left; 
-      border-bottom: 1px solid #edf2f7;
-    }
-    tbody tr:nth-child(odd) { background: rgba(247, 250, 252, 0.7); }
-    tbody tr:nth-child(even) { background: white; }
-    th { 
-      background: #ebf8ff;
-      color: #2b6cb0;
-      font-weight: 900;
-      text-transform: uppercase;
-      font-size: 0.8rem;
-      letter-spacing: 0.5px;
-    }
+    #livePrice { min-width: 100px; font-weight: bold; color: #2b6cb0; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #edf2f7; }
+    th { background: #ebf8ff; color: #2b6cb0; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+    tbody tr:nth-child(odd) { background: rgba(247,250,252,0.7); }
+   
     .sell {
         color: #c53030;
         font-weight: 600;
@@ -95,53 +44,63 @@
     .cvd , .avg ,td{
         font-weight: 600;
     }
+    .green{
+        color: green;
+        font-weight: 600;
+    }
+    .red{
+        color: red;
+        font-weight: 600;
+    }
+    .black{
+        color: black;
+    }
+
     .bullDiv { color: #38a169; font-weight: 600; }
     .bearDiv { color: #e53e3e; font-weight: 600; }
-    /* New signal styles */
     .sig-bull { color: #25855a; font-weight: 600; }
     .sig-bear { color: #c53030; font-weight: 600; }
     .sig-fake-pump { color: #d69e2e; font-weight: 600; }
     .sig-fake-dump { color: #ed8936; font-weight: 600; }
     .sig-spike-up { color: #3182ce; font-weight: 600; }
     .sig-spike-down { color: #805ad5; font-weight: 600; }
-    .sig-sideways { color: #a0aec0; font-weight: 500; }
-    /* Zero cross styles */
+    .sig-sideways { color: #101011; font-weight: 500; }
     .zero-bull { color: #38b2ac; font-weight: 600; }
     .zero-bear { color: #f56565; font-weight: 600; }
-    /* Hover effects */
-    tbody tr:hover {
-      background: #ebf8ff !important;
-      transform: translateY(-1px);
-      transition: all 0.2s ease;
-      box-shadow: inset 0 0 0 1px #bee3f8;
-    }
-    /* Scrollbar styling */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #edf2f7; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
-    /* Responsive */
-    @media (max-width: 768px) {
-      body { padding: 15px; }
-      h1 { font-size: 1.5rem; }
+    tbody tr:hover { background: #ebf8ff !important; transform: translateY(-1px); transition: all 0.2s ease; box-shadow: inset 0 0 0 1px #bee3f8; }
+    .extra-sigs { font-size: 0.85rem; white-space: nowrap; }
+    .sig-dryup { color: #9f7aea; }
+    .sig-divrev { color: #4299e1; }
+    .sig-cluster { color: #667eea; }
+    .sig-imb { color: #d53f8c; }
+    .sig-cvdtc { color: #f6ad55; }
+    .sig-vspike { color: #68d391; }
+    .sig-vdrop { color: #fc8181; }
+    .sig-vpdiv { color: #f687b3; }
+    .ai { font-weight: 600; min-width: 120px; }
+    @media (max-width: 768px){
       #picker { flex-direction: column; align-items: stretch; }
-      #livePrice { margin-left: 0; margin-top: 8px; }
-      th, td { padding: 10px 8px; font-size: 0.9rem; }
+      #coinSelect { width: 100%; }
+      #livePrice { margin-top: 10px; }
+      .extra-sigs { font-size: 0.7rem; }
+      .ai { min-width: 80px; font-size: 0.8rem; }
     }
   </style>
 </head>
 <body>
   <h1>Volume Analysis With CVD System</h1>
   <div id="picker">
-    <input id="coinInput" list="coinList" placeholder="BTCUSDT" />
-    <datalist id="coinList"></datalist>
-    <span id="livePrice" style="font-size: 30px;">-</span>
+    <input id="searchInput" placeholder="Search coins… (e.g. ETH)" />
+    <select id="coinSelect"></select>
+    <span id="livePrice">-</span>
   </div>
 
   <table>
     <thead>
       <tr>
-        <th>Time Frame</th><th>Total Volume</th><th>Buy Volume</th><th>Sell Volume</th><th>Avg %</th><th>CVD</th><th>Signal</th><th>Divergence</th><th>ZeroCross</th>
+        <th>TF</th><th>Total</th><th>Buy</th><th>Sell</th><th>Avg %</th><th>CVD</th>
+        <th>Signal</th><th><strong>AI Analysis</strong></th><th>Divergence</th><th>ZeroCross</th>
+        <th>Extra Signals</th>
       </tr>
     </thead>
     <tbody id="volBody"></tbody>
@@ -149,135 +108,422 @@
 
   <script>
     const api = 'https://fapi.binance.com';
-    const tfs = [15, 30, 60, 240, 1440, 10080, 43200];
+    const tfs = [15,30,60,240,1440,10080,43200];
     const buckets = {};
-    let perps = [], tradeWS = null, tickerWS = null, lastPrice = 0;
+    let perps = [], tradeWS = null, lastPrice = 0, currentSymbol = 'btcusdt';
 
-    function pretty(n) {
-      if (!n) return '0';
-      const a = Math.abs(n);
-      if (a >= 1e12) return (n/1e12).toFixed(2)+' T';
-      if (a >= 1e9)  return (n/1e9).toFixed(2)+' B';
-      if (a >= 1e6)  return (n/1e6).toFixed(2)+' M';
-      if (a >= 1e3)  return (n/1e3).toFixed(2)+' K';
+    // Signal Category Mapping
+    const signalCategories = {
+      bull: [
+        'sig-bull', 'sig-fake-dump', 'sig-spike-up',
+        'bullDiv', 'zero-bull', 'sig-dryup', 'sig-divrev',
+        'sig-cluster', 'sig-cvdtc', 'sig-vspike'
+      ],
+      bear: [
+        'sig-bear', 'sig-fake-pump', 'sig-spike-down',
+        'bearDiv', 'zero-bear', 'sig-imb',
+        'sig-cvdtc', 'sig-vdrop'
+      ],
+      neutral: ['sig-sideways'],
+      ignore: ['sig-vpdiv']
+    };
+
+    // Helper functions
+    function pretty(n){ 
+      if(!n) return '0'; 
+      const a=Math.abs(n);
+      if(a>=1e12) return (n/1e12).toFixed(2)+' T';
+      if(a>=1e9)  return (n/1e9).toFixed(2)+' B';
+      if(a>=1e6)  return (n/1e6).toFixed(2)+' M';
+      if(a>=1e3)  return (n/1e3).toFixed(2)+' K';
       return n.toFixed(2);
     }
 
-    function sig(cvd, total, buy, sell, delta, openPrice) {
-      if (!total) return '…';
-      const r = (cvd/total)*100;
-      if (cvd>0 && r>10)  return '<span class="sig-bull">Bull 📈</span>';
-      if (cvd<0 && r<-10) return '<span class="sig-bear">Bear 📉</span>';
-      if (cvd<0 && buy>sell) return '<span class="sig-fake-pump">Fake Bull 🎭</span>';
-      if (cvd>0 && sell>buy) return '<span class="sig-fake-dump">Fake Bear 🎭</span>';
-      const priceMovePct = (Math.abs(delta)/openPrice)*100;
-      if (priceMovePct<0.2 && r>15)  return '<span class="sig-spike-up">Volume-Up 🔼</span>';
-      if (priceMovePct<0.2 && r< -15) return '<span class="sig-spike-down">Volume-Down 🔽</span>';
-      return '<span class="sig-sideways">Stable ↔️</span>';
+    function sig(cvd,total,buy,sell,delta,openPrice){
+      if(!total) return '…';
+      const r=(cvd/total)*100;
+      
+      if(cvd>0 && delta<0) return '<span class="sig-bull">Bull 📈</span>';
+      if(cvd<0 && delta>0) return '<span class="sig-bear">Bear 📉</span>';
+      if(cvd>0 && r>10)  return '<span class="sig-bull">Bull 📈</span>';
+      if(cvd<0 && r<-10) return '<span class="sig-bear">Bear 📉</span>';
+      if(cvd<0 && buy>sell) return '<span class="sig-fake-pump">Fake Bull 🎭</span>';
+      if(cvd>0 && sell>buy) return '<span class="sig-fake-dump">Fake Bear 🎭</span>';
+      
+      const pPct=(Math.abs(delta)/openPrice)*100;
+      if(pPct<0.2 && r>15) return '<span class="sig-spike-up">Vol Spike Up 🔼</span>';
+      if(pPct<0.2 && r<-15) return '<span class="sig-spike-down">Vol Spike Down 🔽</span>';
+      
+      return '<span class="sig-sideways">Sideways ↔️</span>';
     }
 
-    function tfLabel(m) {
-      if (m<60) return m+'m';
-      if (m<1440) return (m/60)+'h';
-      if (m<10080) return (m/1440)+'d';
-      if (m===43200) return '1M';
-      return '1w';
+    function tfLabel(m){ 
+      if(m<60) return m+'m'; 
+      if(m<1440) return (m/60)+'h'; 
+      if(m<10080) return (m/1440)+'d'; 
+      if(m===43200) return '1M'; 
+      return '1w'; 
     }
 
-    function calcNext(ms) {
-      return Math.floor(Date.now()/ms)*ms + ms;
+    function calcNext(ms){ 
+      return Math.floor(Date.now()/ms)*ms + ms; 
     }
 
+    // AI Analyzer Function (Updated as per your request)
+    function analyzeAI(row) {
+      try {
+        const signals = Array.from(row.querySelector('.extra-sigs').querySelectorAll('span'))
+          .map(s => s.className.trim());
+
+        const mainSig = row.querySelector('.sig span')?.className.trim();
+        const divSig = row.querySelector('.div span')?.className.trim();
+        const zeroSig = row.querySelector('.zero span')?.className.trim();
+
+        if (mainSig) signals.push(mainSig);
+        if (divSig) signals.push(divSig);
+        if (zeroSig) signals.push(zeroSig);
+
+        const bullSignals = signalCategories.bull;
+        const bearSignals = signalCategories.bear;
+
+        let activeBull = 0;
+        let activeBear = 0;
+
+        bullSignals.forEach(bs => {
+          if (signals.some(s => s.includes(bs))) activeBull++;
+        });
+
+        bearSignals.forEach(bs => {
+          if (signals.some(s => s.includes(bs))) activeBear++;
+        });
+
+        const bullPct = Math.round((activeBull / bullSignals.length) * 100);
+        const bearPct = Math.round((activeBear / bearSignals.length) * 100);
+        const aiCell = row.querySelector('.ai');
+
+        if (bullPct >= 100) {
+          aiCell.innerHTML = `<span class="sig-bull">Strong Bull 🟢 (${bullPct}%)</span>`;
+        } else if (bullPct >= 60) {
+          aiCell.innerHTML = `<span class="sig-bull">Bullish 🟢 (${bullPct}%)</span>`;
+        } else if (bearPct >= 100) {
+          aiCell.innerHTML = `<span class="sig-bear">Strong Bear 🔴 (${bearPct}%)</span>`;
+        } else if (bearPct >= 60) {
+          aiCell.innerHTML = `<span class="sig-bear">Bearish 🔴 (${bearPct}%)</span>`;
+        } else if (Math.abs(bullPct - bearPct) <= 10) {
+          aiCell.innerHTML = `<span class="sig-sideways">Balanced ↔️ (<span class="green"> Bull: ${bullPct}%</span>, <span class="red"> Bear: ${bearPct}%</span>)</span>`;
+        } else {
+          aiCell.innerHTML = `<span class="sig-sideways">Mixed 🔄 (<span class="green"> Bull: ${bullPct}%</span>, <span class="red"> Bear: ${bearPct}%</span>)</span>`;
+        }
+      } catch(e) {
+        console.error("AI analysis error:", e);
+        row.querySelector('.ai').textContent = 'Error';
+      }
+    }
+
+    // Build table & buckets
     const volBody = document.getElementById('volBody');
     tfs.forEach(m => {
-      const ms = m*60000;
-      buckets[ms] = { buy:0, sell:0, total:0, next:calcNext(ms), openPrice:0, prevCvd:0};
-      const tr = document.createElement('tr'); tr.id = 'tf'+m;
-      tr.innerHTML = `<td>${tfLabel(m)}</td><td class="tot">-</td><td class="buy">-</td><td class="sell">-</td> <td class="avg">-</td> <td class="cvd">-</td><td class="sig">-</td><td class="div">-</td><td class="zero">-</td>`;
+      const ms = m * 60000;
+      buckets[ms] = {buy:0, sell:0, total:0, next:calcNext(ms), openPrice:0, prevCvd:0};
+      const tr = document.createElement('tr'); 
+      tr.id = 'tf'+m;
+      tr.innerHTML = `
+        <td>${tfLabel(m)}</td>
+        <td class="tot">-</td><td class="buy">-</td><td class="sell">-</td> <td class="avg">-</td> 
+        <td class="cvd">-</td><td class="sig">-</td><td class="ai">-</td><td class="div">-</td><td class="zero">-</td>
+        <td class="extra-sigs">-</td>
+      `;
       volBody.appendChild(tr);
     });
 
-    fetch(api + '/fapi/v1/exchangeInfo')
-      .then(r=>r.json()).then(d=>{
-        perps = d.symbols.filter(s=>s.quoteAsset==='USDT'&&s.contractType==='PERPETUAL').map(s=>s.symbol.toLowerCase()).sort();
-        const dl = document.getElementById('coinList');
-        perps.forEach(sym=>{const o=document.createElement('option');o.value=sym.toUpperCase();dl.appendChild(o);});
-        document.getElementById('coinInput').value='BTCUSDT';
-        startStreams('btcusdt');
-      });
+    // Signal detection functions
+    const signalFns = {
+      dryUpRev: (b, i, arr) => {
+        if (i < 5 || !b.total) return false;
+        const lowSlice = arr.slice(Math.max(0, i-5), i);
+        const avgVol = lowSlice.reduce((a,x) => a + x.total, 0) / lowSlice.length;
+        return avgVol > 0 && lowSlice.every(x => x.total < avgVol * 0.7) && 
+               b.total > avgVol * 1.2 && 
+               Math.abs(b.buy - b.sell) / b.total > 0.15;
+      },
+      divWithReversal: (b, i, arr) => {
+        if (i < 1) return false;
+        const dp = (b.buy + b.sell) / b.total - (arr[i-1].buy + arr[i-1].sell) / arr[i-1].total;
+        const dc = (b.buy - b.sell) - (arr[i-1].buy - arr[i-1].sell);
+        return dp * dc < 0 && Math.abs(dc) > 0.1 * b.total;
+      },
+      clusterTop: (b, i, arr) => {
+        if (i < 10 || !b.total) return false;
+        const topPrices = arr.slice(Math.max(0,i-10),i+1).map(x => x.openPrice);
+        const maxPrice = Math.max(...topPrices);
+        const topThresh = maxPrice * 0.98;
+        const avgVol = arr.slice(Math.max(0,i-10),i+1)
+                         .reduce((sum, x) => sum + x.total, 0) / 10;
+        return b.openPrice >= topThresh && b.total > 2 * avgVol && 
+               Math.abs(b.buy - b.sell) / b.total < 0.15;
+      },
+      imbalanceShift: (() => {
+        const state = { above: false, below: false };
+        return (b) => {
+          const ratio = b.buy / (b.buy + b.sell);
+          let triggered = false;
+          if (!state.above && ratio > 0.6) {
+            state.above = true; state.below = false;
+            triggered = true;
+          } else if (!state.below && ratio < 0.4) {
+            state.below = true; state.above = false;
+            triggered = true;
+          }
+          return triggered;
+        };
+      })(),
+      cvdTrendChange: (b, i, arr) => {
+        if (i < 2) return false;
+        const curr = b.buy - b.sell, prev = arr[i-1].buy - arr[i-1].sell;
+        return curr * prev < 0 && Math.abs(curr) > 0.1 * b.total;
+      },
+      volSpike: (b, i, arr) => {
+        if (i < 5 || !b.total) return false;
+        const avg = arr.slice(Math.max(0,i-5),i).reduce((a,x) => a + x.total, 0) / 5;
+        return avg > 0 && b.total > avg * 1.5;
+      },
+      volDrop: (b, i, arr) => {
+        if (i < 3 || !b.total) return false;
+        return arr.slice(i-2,i+1).every(x => x.total < (x.buy + x.sell) / 2 * 0.5);
+      },
+      volPriceDiv: (b, i, arr) => {
+        if (i < 1 || !b.total) return false;
+        return b.openPrice > arr[i-1].openPrice && b.total < arr[i-1].total;
+      }
+    };
 
-    document.getElementById('coinInput').addEventListener('change', e=>{const sym=e.target.value.trim().toLowerCase(); if(perps.includes(sym)) startStreams(sym);});
+    // Bucket history tracking
+    const bucketHistory = {};
+    tfs.forEach(m => { bucketHistory[m*60000] = []; });
 
-    async function startStreams(sym) {
-      if(tradeWS) tradeWS.close();
-      await initBuckets(sym);
-      if(!tickerWS) startTicker();
-      tradeWS=new WebSocket(`wss://fstream.binance.com/ws/${sym}@trade`);
-      tradeWS.onmessage=e=>{
-        const t=JSON.parse(e.data);
-        const price=parseFloat(t.p); lastPrice=price;
-        const usd=parseFloat(t.q)*price;
-        for(const key in buckets){const b=buckets[key]; if(Date.now()>=b.next){b.buy=b.sell=b.total=0; b.openPrice=price; b.next=calcNext(+key);} if(t.m) b.sell+=usd; else b.buy+=usd; b.total=b.buy+b.sell;}
-      };
-      tradeWS.onclose=()=>setTimeout(()=>startStreams(sym),1000);
-    }
-
-    async function initBuckets(sym) {
-      const tasks = tfs.map(m=>{
-        const intv = m<60 ? m+'m' : m<1440 ? (m/60)+'h' : m<10080 ? (m/1440)+'d' : m===43200 ? '1M' : '1w';
-        return fetch(`${api}/fapi/v1/klines?symbol=${sym.toUpperCase()}&interval=${intv}&limit=200`)
-          .then(r=>r.json()).then(k=>{
-            const c=k.slice(-1)[0]; const ms=m*60000, b=buckets[ms]; const total=parseFloat(c[7]), buy=parseFloat(c[10]); b.buy=buy; b.total=total; b.sell=total-buy; b.openPrice=parseFloat(c[1]); b.next=+c[6]; b.prevCvd=b.buy-b.sell;
-          });
-      });
-      await Promise.all(tasks);
-    }
-
-    function startTicker() {
-      tickerWS=new WebSocket('wss://fstream.binance.com/stream?streams=!ticker@arr');
-      tickerWS.onmessage=e=>{const data=JSON.parse(e.data).data; (Array.isArray(data)?data:[data]).forEach(t=>{ if(t.s.toLowerCase()===document.getElementById('coinInput').value.toLowerCase()){ lastPrice=parseFloat(t.c); document.getElementById('livePrice').textContent=lastPrice.toLocaleString(undefined,{ minimumFractionDigits: 7,
-        maximumFractionDigits: 7});}});
-      };
-      tickerWS.onclose=()=>setTimeout(startTicker,1000);
-    }
-
-    setInterval(()=>{
-      tfs.forEach(m=>{
-        const ms=m*60000, b=buckets[ms]; if(Date.now()>=b.next){b.buy=b.sell=b.total=0; b.openPrice=lastPrice; b.next=calcNext(ms); b.prevCvd=0;} const oldCvd=b.prevCvd; const cvd=b.buy-b.sell; b.prevCvd=cvd;
-        const vrow=document.getElementById('tf'+m);
-        vrow.querySelector('.tot').textContent=pretty(b.total);
-        vrow.querySelector('.buy').textContent=pretty(b.buy);
-        vrow.querySelector('.sell').textContent=pretty(b.sell);
+    // Load symbols & populate select
+    async function loadSymbols() {
+      try {
+        const response = await fetch(api+'/fapi/v1/exchangeInfo');
+        const data = await response.json();
+        perps = data.symbols
+          .filter(s => s.quoteAsset === 'USDT' && s.contractType === 'PERPETUAL')
+          .map(s => s.symbol.toLowerCase())
+          .sort();
         
+        const sel = document.getElementById('coinSelect');
+        sel.innerHTML = '';
+        perps.forEach(sym => sel.add(new Option(sym.toUpperCase(), sym)));
+        sel.value = currentSymbol;
+        startStreams(currentSymbol);
+      } catch(e) {
+        console.error("Failed to load symbols:", e);
+        document.getElementById('livePrice').textContent = "API Error";
+      }
+    }
+
+    // Init from candles
+    async function initBuckets(sym) {
+      try {
+        await Promise.all(tfs.map(async m => {
+          const intv = m<60 ? m+'m' : m<1440 ? (m/60)+'h' : m<10080 ? (m/1440)+'d' : m===43200 ? '1M' : '1w';
+          const response = await fetch(`${api}/fapi/v1/klines?symbol=${sym.toUpperCase()}&interval=${intv}&limit=200`);
+          const k = await response.json();
+          const c = k.slice(-1)[0];
+          const ms = m*60000;
+          const b = buckets[ms];
+          const total = parseFloat(c[7]);
+          const buy = parseFloat(c[10]);
+          
+          b.buy = buy;
+          b.total = total;
+          b.sell = total - buy;
+          b.openPrice = parseFloat(c[1]);
+          b.next = +c[6];
+          b.prevCvd = b.buy - b.sell;
+          bucketHistory[ms] = Array(20).fill({...b});
+        }));
+      } catch(e) {
+        console.error("Bucket init failed:", e);
+      }
+    }
+
+    // Start trade stream
+    async function startStreams(sym) {
+      currentSymbol = sym;
+      
+      // Close existing connection
+      if(tradeWS) {
+        tradeWS.onclose = null;
+        tradeWS.close();
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      // Reset buckets
+      Object.keys(buckets).forEach(k => {
+        buckets[k] = {buy:0, sell:0, total:0, next:calcNext(+k), openPrice:0, prevCvd:0};
+        bucketHistory[k] = [];
+      });
+
+      // Initialize with historical data
+      await initBuckets(sym);
+      
+      // Create new WebSocket
+      tradeWS = new WebSocket(`wss://fstream.binance.com/ws/${sym.toLowerCase()}@trade`);
+      
+      tradeWS.onopen = () => {
+        console.log(`Connected to ${sym} stream`);
+        document.getElementById('livePrice').textContent = "Connecting...";
+      };
+      
+      tradeWS.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        document.getElementById('livePrice').textContent = "Error";
+        setTimeout(() => startStreams(sym), 1000);
+      };
+      
+      tradeWS.onclose = () => {
+        console.log("WebSocket closed, reconnecting...");
+        setTimeout(() => startStreams(sym), 1000);
+      };
+      
+      tradeWS.onmessage = e => {
+        try {
+          const t = JSON.parse(e.data);
+          const price = parseFloat(t.p);
+          const usd = parseFloat(t.q) * price;
+          
+          lastPrice = price;
+          document.getElementById('livePrice').textContent = price.toLocaleString(undefined, { minimumFractionDigits: 7,
+            maximumFractionDigits: 7});
+          
+          for(const k in buckets) {
+            const b = buckets[k];
+            if(Date.now() >= b.next) { 
+              bucketHistory[k].push({...b});
+              if(bucketHistory[k].length > 20) bucketHistory[k].shift();
+              b.buy = b.sell = b.total = 0;
+              b.openPrice = price;
+              b.next = calcNext(+k);
+            }
+            if(t.m) b.sell += usd; 
+            else b.buy += usd;
+            b.total = b.buy + b.sell;
+          }
+        } catch(e) {
+          console.error("Message processing error:", e);
+        }
+      };
+    }
+
+    // Render loop
+    setInterval(() => {
+      tfs.forEach(m => {
+        const ms = m * 60000;
+        const b = buckets[ms];
+        
+        if(Date.now() >= b.next) { 
+          bucketHistory[ms].push({...b});
+          if(bucketHistory[ms].length > 20) bucketHistory[ms].shift();
+          b.buy = b.sell = b.total = 0;
+          b.openPrice = lastPrice;
+          b.next = calcNext(ms);
+          b.prevCvd = 0;
+        }
+        
+        const oldCvd = b.prevCvd;
+        const cvd = b.buy - b.sell;
+        b.prevCvd = cvd;
+        
+        const row = document.getElementById('tf'+m);
+        const delta = lastPrice - b.openPrice;
+        
+        // Update basic metrics
+        row.querySelector('.tot').textContent = pretty(b.total);
+        row.querySelector('.buy').textContent = pretty(b.buy);
+        row.querySelector('.sell').textContent = pretty(b.sell);
+        row.querySelector('.cvd').textContent = pretty(cvd);
+
         let avg = ((b.buy - b.sell)/((b.buy + b.sell)/2))*100;
-        vrow.querySelector('.avg').textContent=pretty(avg);
+        row.querySelector('.avg').textContent=pretty(avg);
         if (avg > 0 ) {
-        vrow.querySelector(".avg").style.color = "green";
+        row.querySelector(".avg").style.color = "green";
         } else {
-        vrow.querySelector(".avg").style.color = "red";
+        row.querySelector(".avg").style.color = "red";
         }
         if (cvd > 0) {
-        vrow.querySelector(".cvd").style.color = "green";
+        row.querySelector(".cvd").style.color = "green";
         } else {
-        vrow.querySelector(".cvd").style.color = "red";
+        row.querySelector(".cvd").style.color = "red";
         }
 
 
-        vrow.querySelector('.cvd').textContent=pretty(cvd);
-        const delta=lastPrice-b.openPrice;
-        vrow.querySelector('.sig').innerHTML=sig(cvd,b.total,b.buy,b.sell,delta,b.openPrice);
-
-        const dcell=vrow.querySelector('.div'); dcell.classList.remove('bullDiv','bearDiv');
-        if(delta>0&&cvd<0){ dcell.innerHTML='<span class="bearDiv">Bear Div 🔴</span>'; }
-        else if(delta<0&&cvd>0){ dcell.innerHTML='<span class="bullDiv">Bull Div 🟢</span>'; }
-        else{ dcell.textContent='—'; }
-
-        const zcell=vrow.querySelector('.zero');
-        if(oldCvd<=0&&cvd>0) zcell.innerHTML='<span class="zero-bull">Zero Bull ⏫</span>';
-        else if(oldCvd>=0&&cvd<0) zcell.innerHTML='<span class="zero-bear">Zero Bear ⏬</span>';
-        else zcell.textContent='—';
+        
+        // Main signal
+        row.querySelector('.sig').innerHTML = sig(cvd, b.total, b.buy, b.sell, delta, b.openPrice);
+        
+        // Divergence
+        const dcell = row.querySelector('.div');
+        dcell.classList.remove('bullDiv', 'bearDiv');
+        if(delta > 0 && cvd < 0) {
+          dcell.innerHTML = '<span class="bearDiv">Bear Div 🔴</span>';
+        } else if(delta < 0 && cvd > 0) {
+          dcell.innerHTML = '<span class="bullDiv">Bull Div 🟢</span>';
+        } else {
+          dcell.textContent = '—';
+        }
+        
+        // ZeroCross
+        const zcell = row.querySelector('.zero');
+        if(oldCvd <= 0 && cvd > 0) {
+          zcell.innerHTML = '<span class="zero-bull">Zero Bull ⏫</span>';
+        } else if(oldCvd >= 0 && cvd < 0) {
+          zcell.innerHTML = '<span class="zero-bear">Zero Bear ⏬</span>';
+        } else {
+          zcell.textContent = '—';
+        }
+        
+        // Extra signals
+        const idx = bucketHistory[ms].length - 1;
+        const signals = [];
+        
+        if (signalFns.dryUpRev(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-dryup">Dry-Up 🔄</span>');
+        if (signalFns.divWithReversal(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-divrev">Div+Rev ⚡</span>');
+        if (signalFns.clusterTop(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-cluster">Cluster ☁️</span>');
+        if (signalFns.imbalanceShift(b)) 
+          signals.push('<span class="sig-imb">Imbalance ⚖️</span>');
+        if (signalFns.cvdTrendChange(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-cvdtc">CVD Trend 🔀</span>');
+        if (signalFns.volSpike(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-vspike">Spike 📊</span>');
+        if (signalFns.volDrop(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-vdrop">Drop 🔻</span>');
+        if (signalFns.volPriceDiv(b, idx, bucketHistory[ms])) 
+          signals.push('<span class="sig-vpdiv">V-P Div ↗️</span>');
+        
+        row.querySelector('.extra-sigs').innerHTML = signals.join(' ') || '-';
+        
+        // AI Analysis
+        analyzeAI(row);
       });
-    },1000);
+    }, 1000);
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      Array.from(document.getElementById('coinSelect').options)
+        .forEach(opt => opt.style.display = opt.value.includes(q) ? '' : 'none');
+    });
+
+    document.getElementById('coinSelect').addEventListener('change', e => {
+      startStreams(e.target.value);
+    });
+
+    // Initialize
+    loadSymbols();
   </script>
 </body>
 </html>

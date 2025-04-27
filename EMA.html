@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EMA Analysis With RSI</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #f8f9fa; 
+      margin: 20px; 
+      color: #333;
+    }
+    #controls { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 15px; 
+      align-items: center; 
+      margin-bottom: 20px; 
+      padding: 15px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    #settings-button { 
+      background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); 
+      color: white; 
+      border: none; 
+      padding: 10px 20px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      margin-left: auto;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    #settings-button:hover { 
+      background: linear-gradient(135deg, #43A047 0%, #1B5E20 100%); 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .header-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 20px; 
+      padding: 15px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    h2 {
+      color: #2E7D32;
+      margin: 0;
+      font-weight: 600;
+    }
+    input, select { 
+      padding: 8px 12px; 
+      font-size: 1rem; 
+      border-radius: 6px; 
+      border: 1px solid #ddd; 
+      background: #fff;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0;
+      background: #fff; 
+      margin-top: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    }
+    th, td { 
+      padding: 12px; 
+      border: 1px solid #e0e0e0; 
+      text-align: center; 
+      font-weight: 700;
+    }
+    th { 
+      background: linear-gradient(135deg, #2196F3 0%, #0D47A1 100%);
+      color: white;
+      font-weight: 500;
+      border-color: #e0e0e0;
+    }
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    tr:hover {
+      background-color: #f1f8e9;
+    }
+    .bullish { 
+      color: #2E7D32; 
+      font-weight: bold; 
+      background-color: rgba(46, 125, 50, 0.1);
+    }
+    .bearish { 
+      color: #C62828; 
+      font-weight: bold; 
+      background-color: rgba(198, 40, 40, 0.1);
+    }
+    .neutral { 
+      color: #FF8F00; 
+      font-weight: bold; 
+      background-color: rgba(255, 143, 0, 0.1);
+    }
+    .regular-bullish { 
+      color: #1B5E20; 
+      font-weight: bold; 
+      background-color: rgba(27, 94, 32, 0.15);
+    }
+    .regular-bearish { 
+      color: #B71C1C; 
+      font-weight: bold; 
+      background-color: rgba(183, 28, 28, 0.15);
+    }
+    .hidden-bullish { 
+      color: #388E3C; 
+      font-weight: bold; 
+      background-color: rgba(56, 142, 60, 0.15);
+    }
+    .hidden-bearish { 
+      color: #D32F2F; 
+      font-weight: bold; 
+      background-color: rgba(211, 47, 47, 0.15);
+    }
+    
+    /* Popup Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      width: 80%;
+      max-width: 600px;
+      animation: modalopen 0.4s;
+    }
+    @keyframes modalopen {
+      from {opacity: 0; transform: translateY(-50px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .modal-header h3 {
+      color: #2196F3;
+      margin: 0;
+      font-weight: 600;
+    }
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .close:hover {
+      color: #333;
+    }
+    .setting-group {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      border-left: 4px solid #2196F3;
+    }
+    .setting-group h4 {
+      margin-top: 0;
+      color: #0D47A1;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    .setting-item {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+    }
+    .setting-item label {
+      width: 120px;
+      font-weight: 500;
+      color: #555;
+    }
+    .setting-item input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+    #applySettings {
+      background: linear-gradient(135deg, #2196F3 0%, #0D47A1 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 15px;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #applySettings:hover {
+      background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .green{
+      color: green;
+    }
+    .red{
+      color: red;
+    }
+    .blue{
+      color: blue;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      #controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      #settings-button {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+      table {
+        font-size: 0.9rem;
+      }
+      th, td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-row">
+    <h2>EMA Analysis With RSI</h2>
+    <button id="settings-button">⚙️ Settings</button>
+  </div>
+
+  <!-- The Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Indicator Settings</h3>
+        <span class="close">&times;</span>
+      </div>
+      
+      <div class="setting-group">
+        <h4>EMA Settings</h4>
+        <div class="setting-item">
+          <label for="ema1">EMA 1:</label>
+          <input type="number" id="ema1" value="9" min="1" max="200">
+        </div>
+        <div class="setting-item">
+          <label for="ema2">EMA 2:</label>
+          <input type="number" id="ema2" value="33" min="1" max="200">
+        </div>
+        <div class="setting-item">
+          <label for="ema3">EMA 3:</label>
+          <input type="number" id="ema3" value="50" min="1" max="200">
+        </div>
+        <div class="setting-item">
+          <label for="ema4">EMA 4:</label>
+          <input type="number" id="ema4" value="200" min="1" max="500">
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>RSI Settings</h4>
+        <div class="setting-item">
+          <label for="rsiPeriod">RSI Period:</label>
+          <input type="number" id="rsiPeriod" value="14" min="1" max="50">
+        </div>
+        <div class="setting-item">
+          <label for="rsiOverbought">Overbought:</label>
+          <input type="number" id="rsiOverbought" value="70" min="50" max="90">
+        </div>
+        <div class="setting-item">
+          <label for="rsiOversold">Oversold:</label>
+          <input type="number" id="rsiOversold" value="30" min="10" max="50">
+        </div>
+      </div>
+      
+      <button id="applySettings">Apply Settings</button>
+    </div>
+  </div>
+
+  <div id="controls">
+    <label for="search">Search Coin:</label>
+    <input type="text" id="search" placeholder="Type to filter symbols...">
+
+    <label for="symbol">Symbol:</label>
+    <select id="symbol"></select>
+  </div>
+
+  <div id="ema-container"></div>
+
+  <script>
+  (function() {
+    const apiBase = 'https://fapi.binance.com/fapi/v1';
+    const timeframes = ['15m','30m','1h','4h','1d','1w','1M'];
+    const historyLimit = 800; // ensure full EMA200 convergence
+    let updateInterval;
+    
+    // Current settings
+    let settings = {
+      ema1: 9,
+      ema2: 33,
+      ema3: 50,
+      ema4: 200,
+      rsiPeriod: 14,
+      rsiOverbought: 70,
+      rsiOversold: 30
+    };
+
+    // ===== RSI Divergence Detection Functions =====
+    function findSwingLows(lows) {
+      const res = [];
+      for (let i = 1; i < lows.length - 1; i++) {
+        if (lows[i] < lows[i - 1] && lows[i] < lows[i + 1]) res.push(i);
+      }
+      return res;
+    }
+    
+    function findSwingHighs(highs) {
+      const res = [];
+      for (let i = 1; i < highs.length - 1; i++) {
+        if (highs[i] > highs[i - 1] && highs[i] > highs[i + 1]) res.push(i);
+      }
+      return res;
+    }
+    
+    function detectDivergence(sw1, sw2, priceCmp, rsiCmp, label, priceArr, rsiArr) {
+      const signals = [];
+      sw1.forEach(i => {
+        for (const j of sw2) {
+          if (j <= i) continue;
+          if (priceCmp(priceArr[i], priceArr[j]) && rsiCmp(rsiArr[i], rsiArr[j])) {
+            signals.push({ type: label, index: j });
+            break;
+          }
+        }
+      });
+      return signals;
+    }
+    
+    function detectRSIDivergences(candles, rsi) {
+      const highs = candles.map(k => parseFloat(k[2])); // high prices
+      const lows = candles.map(k => parseFloat(k[3]));  // low prices
+      const sl = findSwingLows(lows);
+      const sh = findSwingHighs(highs);
+      
+      return [
+        ...detectDivergence(sl, sl, (p1,p2)=>p2<p1, (r1,r2)=>r2>r1, 'Regular Bullish', lows, rsi),
+        ...detectDivergence(sh, sh, (p1,p2)=>p2>p1, (r1,r2)=>r2<r1, 'Regular Bearish', highs, rsi),
+        ...detectDivergence(sl, sl, (p1,p2)=>p2>p1, (r1,r2)=>r2<r1, 'Hidden Bullish', lows, rsi),
+        ...detectDivergence(sh, sh, (p1,p2)=>p2<p1, (r1,r2)=>r2>r1, 'Hidden Bearish', highs, rsi)
+      ];
+    }
+    
+    function getLatestDivergence(candles, rsi) {
+      if (candles.length < 10 || rsi.length < 10) return 'None'; // Need enough data
+      
+      const divergences = detectRSIDivergences(candles, rsi);
+      const latestIdx = candles.length - 1;
+      const latestSignal = divergences.find(s => s.index === latestIdx);
+      
+      return latestSignal ? latestSignal.type : 'None';
+    }
+
+    // ===== EMA Crossover Functions =====
+    function detectLastEMACrossover(shortEMA, longEMA) {
+      for (let i = shortEMA.length - 1; i > 0; i--) {
+        if (shortEMA[i] > longEMA[i] && shortEMA[i - 1] <= longEMA[i - 1]) {
+          return {
+            type: 'Bullish',
+            price: shortEMA[i],
+            index: i
+          };
+        }
+        if (shortEMA[i] < longEMA[i] && shortEMA[i - 1] >= longEMA[i - 1]) {
+          return {
+            type: 'Bearish',
+            price: shortEMA[i],
+            index: i
+          };
+        }
+      }
+      return { type: 'None', price: null, index: null };
+    }
+
+    function projectNextEMACrossover(prevShortEMA, prevLongEMA, periodShort, periodLong) {
+      const k1 = 2 / (periodShort + 1);
+      const k2 = 2 / (periodLong + 1);
+
+      if (k1 === k2) return null;
+
+      const numerator = prevLongEMA * (1 - k2) - prevShortEMA * (1 - k1);
+      const denominator = k1 - k2;
+      const x = numerator / denominator;
+
+      return x;
+    }
+
+    // Load all USDT-perpetual symbols
+    async function loadSymbols() {
+      const res = await fetch(`${apiBase}/exchangeInfo`);
+      const data = await res.json();
+      const list = data.symbols
+        .filter(s => s.contractType === 'PERPETUAL' && s.symbol.endsWith('USDT'))
+        .map(s => s.symbol)
+        .sort();
+      const sel = document.getElementById('symbol');
+      list.forEach(sym => {
+        const o = document.createElement('option'); o.value = sym; o.textContent = sym;
+        sel.appendChild(o);
+      });
+      // Default to first symbol
+      if (list.length) sel.value = list[0];
+    }
+
+    // Show/hide options based on search term
+    function filterSymbols() {
+      const term = document.getElementById('search').value.trim().toUpperCase();
+      const sel = document.getElementById('symbol');
+      Array.from(sel.options).forEach(o => {
+        o.style.display = o.value.includes(term) ? '' : 'none';
+      });
+      // Select first visible option
+      const first = Array.from(sel.options).find(o => o.style.display === '');
+      if (first) sel.value = first.value;
+    }
+
+    // Fetch klines
+    async function getKlines(symbol, interval, limit = historyLimit) {
+      const url = `${apiBase}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    // EMA calculation with seed = first close
+    function calculateEMA(closes, period) {
+      const k = 2 / (period + 1);
+      const ema = [closes[0]];
+      for (let i = 1; i < closes.length; i++) {
+        ema[i] = closes[i] * k + ema[i - 1] * (1 - k);
+      }
+      return ema;
+    }
+
+    // RSI calculation
+    function calculateRSI(closes, period = 14) {
+      if (closes.length < period + 1) return Array(closes.length).fill(50);
+      
+      const gains = [];
+      const losses = [];
+      
+      // Calculate initial gains/losses
+      for (let i = 1; i < closes.length; i++) {
+        const diff = closes[i] - closes[i - 1];
+        gains.push(diff > 0 ? diff : 0);
+        losses.push(diff < 0 ? Math.abs(diff) : 0);
+      }
+      
+      // Calculate first RSI value
+      let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+      let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+      
+      const rsi = [];
+      rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss))));
+      
+      // Calculate subsequent RSI values
+      for (let i = period; i < gains.length; i++) {
+        avgGain = ((avgGain * (period - 1)) + gains[i]) / period;
+        avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
+        const rs = avgGain / avgLoss;
+        rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + rs)));
+      }
+      
+      // Pad beginning with 50 (neutral)
+      return Array(closes.length - rsi.length).fill(50).concat(rsi);
+    }
+
+    // Detect last EMA crossover
+    function detectEMACrossover(shortEMA, longEMA) {
+      for (let i = shortEMA.length - 1; i > 0; i--) {
+        if (shortEMA[i] > longEMA[i] && shortEMA[i - 1] <= longEMA[i - 1])
+          return { type: 'Bullish', price: shortEMA[i].toFixed(8) };
+        if (shortEMA[i] < longEMA[i] && shortEMA[i - 1] >= longEMA[i - 1])
+          return { type: 'Bearish', price: shortEMA[i].toFixed(8) };
+      }
+      return { type: 'None', price: '-' };
+    }
+
+    // Determine RSI trend
+    function determineRSITrend(rsiValue, overbought = 70, oversold = 30) {
+      if (rsiValue >= overbought) return 'Overbought';
+      if (rsiValue <= oversold) return 'Oversold';
+      if (rsiValue > 50) return 'Bullish';
+      if (rsiValue < 50) return 'Bearish';
+      return 'Neutral';
+    }
+
+    // Simple trend based on EMA order
+    function determineEMATrend(e1, e2, e3, e4) {
+      if (e1 > e2 && e2 > e3 && e3 > e4) return 'Strong Bullish';
+      if (e1 < e2 && e2 < e3 && e3 < e4) return 'Strong Bearish';
+      return 'Neutral';
+    }
+
+    // Render table of current EMAs, RSI and crossovers
+    async function renderLiveIndicators() {
+      const symbol = document.getElementById('symbol').value;
+      let html = '<table>' +
+       '<tr><th>Timeframe</th>' +
+        `<th>EMA-${settings.ema1}</th><th>EMA-${settings.ema2}</th><th>EMA-${settings.ema3}</th><th>EMA-${settings.ema4}</th>` +
+        '<th>EMA Crossover</th><th>EMA Trend</th><th>Next EMA Crossover</th>' +
+        `<th>RSI-${settings.rsiPeriod}</th><th>RSI Trend</th><th>RSI Divergence</th></tr>`;
+
+
+      for (const tf of timeframes) {
+        const klines = await getKlines(symbol, tf);
+        const closes = klines.map(k => parseFloat(k[4]));
+        
+        // Calculate EMAs
+        const e1Arr = calculateEMA(closes, settings.ema1);
+        const e2Arr = calculateEMA(closes, settings.ema2);
+        const e3Arr = calculateEMA(closes, settings.ema3);
+        const e4Arr = calculateEMA(closes, settings.ema4);
+        
+        // Calculate RSI
+        const rsiArr = calculateRSI(closes, settings.rsiPeriod);
+        
+        const idx = closes.length - 1;
+        const e1 = e1Arr[idx]?.toFixed(8) || '-';
+        const e2 = e2Arr[idx]?.toFixed(8) || '-';
+        const e3 = e3Arr[idx]?.toFixed(8) || '-';
+        const e4 = e4Arr[idx]?.toFixed(8) || '-';
+        const rsi = rsiArr[idx]?.toFixed(2) || '-';
+        
+        const emaCross = detectEMACrossover(e1Arr, e2Arr);
+        const emaTrend = determineEMATrend(+e1, +e2, +e3, +e4);
+        const rsiTrend = determineRSITrend(+rsi, settings.rsiOverbought, settings.rsiOversold);
+        const rsiDivergence = getLatestDivergence(klines, rsiArr);
+
+        // Get last EMA crossover details
+        const lastCrossover = detectLastEMACrossover(e1Arr, e2Arr);
+        const lastXoverText = lastCrossover.type !== 'None' 
+          ? `${lastCrossover.type} ${lastCrossover.price.toFixed(8)}` 
+          : 'None';
+        
+        // Project next EMA crossover price
+        const nextXoverPrice = projectNextEMACrossover(
+          e1Arr[e1Arr.length - 1], 
+          e2Arr[e2Arr.length - 1],
+          settings.ema1,
+          settings.ema2
+        );
+        const nextXoverText = nextXoverPrice !== null 
+          ? nextXoverPrice.toFixed(8) 
+          : 'N/A';
+
+        // Determine divergence class
+        let divClass = '';
+        if (rsiDivergence.includes('Regular Bullish')) divClass = 'regular-bullish';
+        else if (rsiDivergence.includes('Regular Bearish')) divClass = 'regular-bearish';
+        else if (rsiDivergence.includes('Hidden Bullish')) divClass = 'hidden-bullish';
+        else if (rsiDivergence.includes('Hidden Bearish')) divClass = 'hidden-bearish';
+
+        html += `<tr>
+         <td>${tf}</td>
+          <td class="green">${e1}</td><td class="red">${e2}</td><td class="blue">${e3}</td><td>${e4}</td>
+        
+          <td class="${lastCrossover.type === 'Bullish' ? 'bullish' : lastCrossover.type === 'Bearish' ? 'bearish' : ''}">${lastXoverText}</td>
+          
+          <td class="${emaTrend.includes('Bullish') ? 'bullish' : emaTrend.includes('Bearish') ? 'bearish' : 'neutral'}">${emaTrend}</td>
+          <td class="next_ema">${nextXoverText}</td>
+          <td class="rsi">${rsi}</td>
+          <td class="${rsiTrend === 'Overbought' ? 'bearish' : rsiTrend === 'Oversold' ? 'bullish' : rsiTrend === 'Bullish' ? 'bullish' : rsiTrend === 'Bearish' ? 'bearish' : 'neutral'}">${rsiTrend}</td>
+          <td class="${divClass}">${rsiDivergence}</td>
+          </tr>`;
+         
+          document.querySelectorAll(".rsi").forEach((e)=>{
+            
+            if(e.textContent >= 80 ){
+              e.style.color = "green";
+            }else if(e.textContent <= 20){
+              e.style.color = "red";
+            }else{
+              e.style.color="black";
+            }
+          })
+
+          document.querySelectorAll("tr").forEach(row => {
+              const typeCell = row.querySelector("td.bullish, td.bearish");
+              const nextEmaCell = row.querySelector(".next_ema");
+
+              if (typeCell && nextEmaCell) {
+                  let ans = typeCell.classList.contains('bullish') ? 'bullish' : 'bearish';
+                  let color = ans === 'bullish' ? 'red' : 'green'; // green for bullish, red for bearish
+                  nextEmaCell.style.color = color;
+              }
+          });
+
+      }
+
+      html += '</table>';
+      document.getElementById('ema-container').innerHTML = html;
+
+      
+    }
+
+    // Update settings from UI
+    function updateSettings() {
+      settings = {
+        ema1: parseInt(document.getElementById('ema1').value),
+        ema2: parseInt(document.getElementById('ema2').value),
+        ema3: parseInt(document.getElementById('ema3').value),
+        ema4: parseInt(document.getElementById('ema4').value),
+        rsiPeriod: parseInt(document.getElementById('rsiPeriod').value),
+        rsiOverbought: parseInt(document.getElementById('rsiOverbought').value),
+        rsiOversold: parseInt(document.getElementById('rsiOversold').value)
+      };
+    }
+
+    // Start periodic updates
+    function startLiveUpdates() {
+      clearInterval(updateInterval);
+      renderLiveIndicators();
+      updateInterval = setInterval(renderLiveIndicators, 1000);
+    }
+
+    // Initialize modal functionality
+    function initModal() {
+      const modal = document.getElementById("settingsModal");
+      const btn = document.getElementById("settings-button");
+      const span = document.getElementsByClassName("close")[0];
+      const applyBtn = document.getElementById("applySettings");
+
+      btn.onclick = function() {
+        modal.style.display = "block";
+      }
+
+      span.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      applyBtn.onclick = function() {
+        updateSettings();
+        startLiveUpdates();
+        modal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+    }
+
+    // Initialize
+    window.addEventListener('load', async () => {
+      await loadSymbols();
+      filterSymbols();
+      initModal();
+      startLiveUpdates();
+      
+      // Event listeners
+      document.getElementById('search').addEventListener('input', () => { 
+        filterSymbols(); 
+        startLiveUpdates(); 
+      });
+      
+      document.getElementById('symbol').addEventListener('change', startLiveUpdates);
+    });
+  })();
+  </script>
+
+</body>
+</html>

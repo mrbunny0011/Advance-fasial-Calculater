@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Volume Momentum Trend Analysis</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4f0fb 100%);
+      margin: 20px;
+      color: #333;
+    }
+    #controls { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+      align-items: center; 
+      margin-bottom: 15px; 
+      background: rgba(255,255,255,0.8);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    #settings-button { 
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+      color: white; 
+      border: none; 
+      padding: 10px 20px; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      margin-left: auto;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    #settings-button:hover { 
+      background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .header-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 25px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 25px;
+      border-radius: 12px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    input, select { 
+      padding: 8px 15px; 
+      font-size: 1rem; 
+      border-radius: 8px; 
+      border: 1px solid #ddd;
+      background: white;
+      transition: all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4facfe;
+      box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+    }
+    table { 
+      width: 100%; 
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white; 
+      margin-top: 20px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    th, td { 
+      padding: 12px; 
+      border: 1px solid #e0e6ed; 
+      text-align: center; 
+      font-weight: 800;
+    }
+    th { 
+      background: linear-gradient(135deg, #f6f9fc 0%, #e6f0f9 100%);
+      font-weight: 600;
+      color: #4a5568;
+    }
+    
+    /* Beautiful Indicator Classes */
+    .bullish { 
+      color: #10b981; 
+      font-weight: bold; 
+      background-color: rgba(16, 185, 129, 0.1);
+    }
+    .bearish { 
+      color: #ef4444; 
+      font-weight: bold; 
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+    .neutral { 
+      color: #f59e0b; 
+      font-weight: bold; 
+      background-color: rgba(245, 158, 11, 0.1);
+    }
+    .regular-bullish { 
+      color: #059669; 
+      font-weight: bold; 
+      background-color: rgba(5, 150, 105, 0.1);
+    }
+    .regular-bearish { 
+      color: #dc2626; 
+      font-weight: bold; 
+      background-color: rgba(220, 38, 38, 0.1);
+    }
+    .hidden-bullish { 
+      color: #065f46; 
+      font-weight: bold; 
+      background-color: rgba(6, 95, 70, 0.1);
+    }
+    .hidden-bearish { 
+      color: #991b1b; 
+      font-weight: bold; 
+      background-color: rgba(153, 27, 27, 0.1);
+    }
+    .strong { 
+      color: #047857; 
+      font-weight: bold; 
+      background-color: rgba(4, 120, 87, 0.1);
+    }
+    .weak { 
+      color: #b91c1c; 
+      font-weight: bold; 
+      background-color: rgba(185, 28, 28, 0.1);
+    }
+    .very-strong { 
+      color: #064e3b; 
+      font-weight: bold; 
+      background-color: rgba(6, 78, 59, 0.1);
+    }
+    .moderate { 
+      color: #d97706; 
+      font-weight: bold; 
+      background-color: rgba(217, 119, 6, 0.1);
+    }
+    .risky { 
+      color: #9f1239; 
+      font-weight: bold; 
+      background-color: rgba(159, 18, 57, 0.1);
+    }
+    .trend-very-strong { 
+      background: linear-gradient(135deg, rgba(110, 231, 183, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+    }
+    .trend-strong { 
+      background: linear-gradient(135deg, rgba(167, 243, 208, 0.2) 0%, rgba(110, 231, 183, 0.2) 100%);
+    }
+    .trend-moderate { 
+      background: linear-gradient(135deg, rgba(253, 230, 138, 0.2) 0%, rgba(252, 211, 77, 0.2) 100%);
+    }
+    .trend-weak { 
+      background: linear-gradient(135deg, rgba(254, 202, 202, 0.2) 0%, rgba(252, 165, 165, 0.2) 100%);
+    }
+    
+    /* Beautiful Popup Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+    }
+    .modal-content {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      margin: 10% auto;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 80%;
+      max-width: 600px;
+      animation: modalopen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    @keyframes modalopen {
+      from {opacity: 0; transform: translateY(-50px) scale(0.95);}
+      to {opacity: 1; transform: translateY(0) scale(1);}
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .modal-header h3 {
+      color: #4c51bf;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .close {
+      color: #94a3b8;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .close:hover {
+      color: #64748b;
+      transform: rotate(90deg);
+    }
+    .setting-group {
+      margin-bottom: 25px;
+      padding: 20px;
+      background: rgba(241, 245, 249, 0.5);
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+    .setting-group h4 {
+      margin-top: 0;
+      color: #4c51bf;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+    .setting-group h4::before {
+      content: "•";
+      color: #4c51bf;
+      margin-right: 10px;
+    }
+    .setting-item {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+    }
+    .setting-item label {
+      width: 150px;
+      font-weight: 500;
+      color: #475569;
+    }
+    .setting-item input {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+    }
+    #applySettings {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 15px;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    #applySettings:hover {
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .timeframe-header {
+      background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%) !important;
+      font-weight: 600 !important;
+      color: #0369a1 !important;
+      font-size: 1.05rem;
+    }
+    
+    /* Beautiful RR Calculator */
+    #rr-calculator {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+    #rr-calculator h3 {
+      margin-top: 0;
+      color: #4c51bf;
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .rr-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .rr-controls div {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 150px;
+    }
+    .rr-controls label {
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    #rrResult {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border: 1px solid #e2e8f0;
+      font-size: 1.05rem;
+    }
+    #rrResult p {
+      margin: 8px 0;
+    }
+    #rrResult b {
+      color: #4c51bf;
+    }
+    .rr-search-container {
+      display: flex;
+      flex-direction: column;
+    }
+    #entryPrice {
+      font-weight: bold;
+      color: #4c51bf;
+      font-size: 1.1rem;
+    }
+    
+    /* Additional Beautiful Elements */
+    h2 {
+      color: white;
+      margin: 0;
+      font-size: 1.8rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    tr:hover {
+      background-color: rgba(241, 245, 249, 0.5);
+    }
+    td {
+      transition: all 0.2s ease;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .rr-controls div {
+        min-width: 100%;
+      }
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .setting-item label {
+        margin-bottom: 8px;
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-row">
+    <h2>🌈Volume Momentum Trend Analysis</h2>
+    <button id="settings-button">⚙️ Settings</button>
+  </div>
+
+  <!-- Risk to Reward Calculator -->
+  <div id="rr-calculator">
+    <h3>✨ Risk to Reward Calculator</h3>
+    <div class="rr-controls">
+      <div class="rr-search-container">
+        <label for="rrSearch">Search Coin:</label>
+        <input type="text" id="rrSearch" placeholder="Type to filter symbols...">
+      </div>
+      <div>
+        <label for="rrSymbol">Symbol:</label>
+        <select id="rrSymbol"></select>
+      </div>
+      <div>
+        <label for="rrTimeframe">Timeframe:</label>
+        <select id="rrTimeframe">
+          <option value="15m">15m</option>
+          <option value="30m">30m</option>
+          <option value="1h">1h</option>
+          <option value="4h">4h</option>
+          <option value="1d">1d</option>
+          <option value="1w">1w</option>
+          <option value="1M">1M</option>
+        </select>
+      </div>
+      <div>
+        <label>Entry Price:</label>
+        <span id="entryPrice">-</span>
+      </div>
+      <div>
+        <label for="target">Target Price:</label>
+        <input type="number" id="target" step="0.0001" placeholder="Target price">
+      </div>
+      <div>
+        <label for="stop">Stop Price:</label>
+        <input type="number" id="stop" step="0.0001" placeholder="Stop price">
+      </div>
+    </div>
+    <div id="rrResult"></div>
+  </div>
+
+  <!-- The Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🎨 Indicator Settings</h3>
+        <span class="close">&times;</span>
+      </div>
+      
+      <div class="setting-group">
+        <h4>RSI Settings</h4>
+        <div class="setting-item">
+          <label for="rsiPeriod">RSI Period:</label>
+          <input type="number" id="rsiPeriod" value="14" min="1" max="50">
+        </div>
+        <div class="setting-item">
+          <label for="rsiOverbought">Overbought:</label>
+          <input type="number" id="rsiOverbought" value="70" min="50" max="90">
+        </div>
+        <div class="setting-item">
+          <label for="rsiOversold">Oversold:</label>
+          <input type="number" id="rsiOversold" value="30" min="10" max="50">
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>ROC Settings</h4>
+        <div class="setting-item">
+          <label for="rocPeriod">ROC Period:</label>
+          <input type="number" id="rocPeriod" value="14" min="1" max="50">
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>RVOL Settings</h4>
+        <div class="setting-item">
+          <label for="rvolStrong">Strong Volume:</label>
+          <input type="number" id="rvolStrong" value="1.5" min="1" max="5" step="0.1">
+        </div>
+        <div class="setting-item">
+          <label for="rvolWeak">Weak Volume:</label>
+          <input type="number" id="rvolWeak" value="0.8" min="0.1" max="1" step="0.1">
+        </div>
+      </div>
+      
+      <div class="setting-group">
+        <h4>ADX Settings</h4>
+        <div class="setting-item">
+          <label for="adxThreshold">ADX Threshold:</label>
+          <input type="number" id="adxThreshold" value="25" min="10" max="50">
+        </div>
+      </div>
+      
+      <button id="applySettings">💾 Apply Settings</button>
+    </div>
+  </div>
+
+  <div id="controls">
+    <label for="search">Search Coin:</label>
+    <input type="text" id="search" placeholder="Type to filter symbols...">
+
+    <label for="symbol">Symbol:</label>
+    <select id="symbol"></select>
+  </div>
+
+  <div id="indicators-container"></div>
+
+  <script>
+  (function() {
+    const apiBase = 'https://fapi.binance.com/fapi/v1';
+    const timeframes = ['15m','30m','1h','4h','1d','1w','1M'];
+    const historyLimit = 800;
+    let updateInterval;
+    let ws;
+    let rrSocket;
+    
+    // Current settings
+    let settings = {
+      rsiPeriod: 14,
+      rsiOverbought: 70,
+      rsiOversold: 30,
+      rocPeriod: 14,
+      rvolStrong: 1.5,
+      rvolWeak: 0.8,
+      adxThreshold: 25
+    };
+
+    // ===== RSI Divergence Detection Functions =====
+    function findSwingLows(lows) {
+      const res = [];
+      for (let i = 1; i < lows.length - 1; i++) {
+        if (lows[i] < lows[i - 1] && lows[i] < lows[i + 1]) res.push(i);
+      }
+      return res;
+    }
+    
+    function findSwingHighs(highs) {
+      const res = [];
+      for (let i = 1; i < highs.length - 1; i++) {
+        if (highs[i] > highs[i - 1] && highs[i] > highs[i + 1]) res.push(i);
+      }
+      return res;
+    }
+    
+    function detectDivergence(sw1, sw2, priceCmp, rsiCmp, label, priceArr, rsiArr) {
+      const signals = [];
+      sw1.forEach(i => {
+        for (const j of sw2) {
+          if (j <= i) continue;
+          if (priceCmp(priceArr[i], priceArr[j]) && rsiCmp(rsiArr[i], rsiArr[j])) {
+            signals.push({ type: label, index: j });
+            break;
+          }
+        }
+      });
+      return signals;
+    }
+    
+    function detectRSIDivergences(candles, rsi) {
+      const highs = candles.map(k => parseFloat(k[2])); // high prices
+      const lows = candles.map(k => parseFloat(k[3]));  // low prices
+      const sl = findSwingLows(lows);
+      const sh = findSwingHighs(highs);
+      
+      return [
+        ...detectDivergence(sl, sl, (p1,p2)=>p2<p1, (r1,r2)=>r2>r1, 'Regular Bullish', lows, rsi),
+        ...detectDivergence(sh, sh, (p1,p2)=>p2>p1, (r1,r2)=>r2<r1, 'Regular Bearish', highs, rsi),
+        ...detectDivergence(sl, sl, (p1,p2)=>p2>p1, (r1,r2)=>r2<r1, 'Hidden Bullish', lows, rsi),
+        ...detectDivergence(sh, sh, (p1,p2)=>p2<p1, (r1,r2)=>r2>r1, 'Hidden Bearish', highs, rsi)
+      ];
+    }
+    
+    function getLatestDivergence(candles, rsi) {
+      if (candles.length < 10 || rsi.length < 10) return 'None'; // Need enough data
+      
+      const divergences = detectRSIDivergences(candles, rsi);
+      const latestIdx = candles.length - 1;
+      const latestSignal = divergences.find(s => s.index === latestIdx);
+      
+      return latestSignal ? latestSignal.type : 'None';
+    }
+
+    // ===== ROC Calculation =====
+    function calculateROC(closes, period) {
+      const roc = [];
+      for (let i = period; i < closes.length; i++) {
+        const change = closes[i] - closes[i - period];
+        const rocValue = (change / closes[i - period]) * 100;
+        roc.push(rocValue);
+      }
+      // Pad beginning with zeros
+      return Array(closes.length - roc.length).fill(0).concat(roc);
+    }
+
+    // ===== RVOL Calculation =====
+    function calculateRVOL(volumes) {
+      const rvol = [];
+      for (let i = 15; i < volumes.length; i++) {
+        const currentVolume = volumes[i];
+        const previousVolumes = volumes.slice(i - 15, i);
+        const avgVolume = previousVolumes.reduce((a, b) => a + b, 0) / previousVolumes.length;
+        rvol.push(currentVolume / avgVolume);
+      }
+      // Pad beginning with zeros
+      return Array(volumes.length - rvol.length).fill(0).concat(rvol);
+    }
+
+    // ===== ADX Calculation =====
+    function calculateADX(candles) {
+      const tr=[], plusDM=[], minusDM=[];
+      for (let i=1;i<candles.length;i++){
+        const prev=candles[i-1], curr=candles[i];
+        const up=curr.high-prev.high, down=prev.low-curr.low;
+        plusDM.push(up>down && up>0?up:0);
+        minusDM.push(down>up && down>0?down:0);
+        tr.push(Math.max(curr.high-curr.low, Math.abs(curr.high-prev.close), Math.abs(curr.low-prev.close)));
+      }
+      const period=14;
+      let atr=tr.slice(0,period).reduce((a,b)=>a+b)/period;
+      let smPlus=plusDM.slice(0,period).reduce((a,b)=>a+b)/period;
+      let smMinus=minusDM.slice(0,period).reduce((a,b)=>a+b)/period;
+      const pdi=[(smPlus/atr)*100], mdi=[(smMinus/atr)*100], adx=[];
+      for (let i=period;i<tr.length;i++){
+        atr=(atr*(period-1)+tr[i])/period;
+        smPlus=(smPlus*(period-1)+plusDM[i])/period;
+        smMinus=(smMinus*(period-1)+minusDM[i])/period;
+        pdi.push((smPlus/atr)*100);
+        mdi.push((smMinus/atr)*100);
+      }
+      for (let i=0;i<pdi.length;i++){
+        const dx = Math.abs(pdi[i]-mdi[i])/(pdi[i]+mdi[i])*100;
+        if (i<period) adx.push(dx);
+        else adx.push((adx[i-1]*(period-1)+dx)/period);
+      }
+      const pad = candles.length - adx.length;
+      return {
+        adx: Array(pad).fill(0).concat(adx),
+        pdi: Array(pad).fill(0).concat(pdi),
+        mdi: Array(pad).fill(0).concat(mdi)
+      };
+    }
+
+    // ===== Trend Strength Calculation =====
+    function calculateTrendStrength(rsi, roc, rvol, adxData) {
+      // Get the latest values
+      const rsiValue = rsi[rsi.length - 1];
+      const rocValue = roc[roc.length - 1];
+      const rvolValue = rvol[rvol.length - 1];
+      const adxValue = adxData.adx[adxData.adx.length - 1];
+      const pdiValue = adxData.pdi[adxData.pdi.length - 1];
+      const mdiValue = adxData.mdi[adxData.mdi.length - 1];
+      
+      // Determine direction
+      const isBullish = pdiValue > mdiValue;
+      
+      // Calculate strength score (0-100)
+      let strengthScore = 0;
+      
+      // ADX contributes 40% to strength
+      const adxStrength = Math.min(100, (adxValue / settings.adxThreshold) * 100);
+      strengthScore += adxStrength * 0.4;
+      
+      // RSI contributes 20%
+      const rsiStrength = rsiValue > 50 ? 
+        (rsiValue - 50) * 2 : 
+        (50 - rsiValue) * 2;
+      strengthScore += rsiStrength * 0.2;
+      
+      // ROC contributes 20%
+      const rocStrength = Math.min(100, Math.abs(rocValue) * 10);
+      strengthScore += rocStrength * 0.2;
+      
+      // RVOL contributes 20%
+      const rvolStrength = rvolValue > 1 ? 
+        Math.min(100, (rvolValue - 1) * 100) : 
+        Math.max(0, (rvolValue - 0.5) * 100);
+      strengthScore += rvolStrength * 0.2;
+      
+      // Determine trend category
+      let trendCategory = '';
+      let trendClass = '';
+      
+      if (strengthScore > 80) {
+        trendCategory = isBullish ? 'Very Strong Bullish' : 'Very Strong Bearish';
+        trendClass = 'trend-very-strong';
+      } else if (strengthScore > 60) {
+        trendCategory = isBullish ? 'Strong Bullish' : 'Strong Bearish';
+        trendClass = 'trend-strong';
+      } else if (strengthScore > 40) {
+        trendCategory = isBullish ? 'Moderate Bullish' : 'Moderate Bearish';
+        trendClass = 'trend-moderate';
+      } else {
+        trendCategory = isBullish ? 'Weak Bullish' : 'Weak Bearish';
+        trendClass = 'trend-weak';
+      }
+      
+      return {
+        category: trendCategory,
+        class: trendClass,
+        score: strengthScore.toFixed(0)
+      };
+    }
+
+    // ===== Risk to Reward Calculation =====
+    function calculateRR() {
+      const target = parseFloat(document.getElementById('target').value);
+      const stop = parseFloat(document.getElementById('stop').value);
+      const entryPrice = parseFloat(document.getElementById('entryPrice').textContent.replace('$',''));
+      
+      if (!entryPrice || isNaN(target) || isNaN(stop)) return;
+
+      const reward = Math.abs(target - entryPrice);
+      const risk = Math.abs(entryPrice - stop);
+      const rr = reward / risk;
+      const rewardPct = ((reward / entryPrice) * 100).toFixed(2);
+      const riskPct = ((risk / entryPrice) * 100).toFixed(2);
+
+      let strength = "", cls = "";
+      if (rr > 2.0)         { strength = "💚 Very Strong Setup"; cls = "very-strong"; }
+      else if (rr >= 1.6)   { strength = "✅ Strong Setup";       cls = "strong";      }
+      else if (rr >= 1.3)   { strength = "🟡 Moderate Setup";     cls = "moderate";    }
+      else if (rr >= 1.1)   { strength = "⚠️ Weak Setup";         cls = "weak";        }
+      else                  { strength = "❌ Risky Setup";        cls = "risky";       }
+
+      document.getElementById('rrResult').innerHTML = `
+        <p><b>RR Ratio:</b> ${rr.toFixed(2)}</p>
+        <p><b>Reward:</b> ${rewardPct}% | <b>Risk:</b> ${riskPct}%</p>
+        <p class="${cls}">${strength}</p>
+      `;
+      
+      return {
+        ratio: rr.toFixed(2),
+        rewardPct,
+        riskPct,
+        strength,
+        class: cls
+      };
+    }
+
+    // Start RR WebSocket
+    function startRRWebSocket(symbol, interval) {
+      if (rrSocket) rrSocket.close();
+      
+      rrSocket = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@kline_${interval}`);
+      
+      rrSocket.onmessage = event => {
+        const msg = JSON.parse(event.data);
+        const k = msg.k;
+        if (k.x) {  // candle closed
+          const entryPrice = parseFloat(k.c);
+          document.getElementById('entryPrice').textContent = `$${entryPrice.toFixed(4)}`;
+          calculateRR();
+        }
+      };
+    }
+
+    // Get RR signal for indicator table
+    function getRRSignal(closePrice, candles) {
+      if (!closePrice || candles.length < 20) return 'N/A';
+      
+      // Calculate recent volatility (ATR-like)
+      let sum = 0;
+      for (let i = candles.length - 14; i < candles.length; i++) {
+        const candle = candles[i];
+        sum += Math.max(
+          candle[2] - candle[3], // high - low
+          Math.abs(candle[2] - candle[4]), // high - close
+          Math.abs(candle[3] - candle[4])  // low - close
+        );
+      }
+      const atr = sum / 14;
+      
+      // Calculate potential RR
+      const target1 = closePrice + atr;
+      const target2 = closePrice + (atr * 2);
+      const stop = closePrice - atr;
+      
+      const rr1 = (target1 - closePrice) / (closePrice - stop);
+      const rr2 = (target2 - closePrice) / (closePrice - stop);
+      
+      if (rr2 > 2.0) return '💚 Excellent (1:2+)';
+      if (rr1 > 1.5) return '✅ Good (1:1.5+)';
+      if (rr1 > 1.2) return '🟡 Fair (1:1.2+)';
+      return '⚠️ Poor (<1:1.2)';
+    }
+
+    // Load all USDT-perpetual symbols
+    async function loadSymbols() {
+      const res = await fetch(`${apiBase}/exchangeInfo`);
+      const data = await res.json();
+      const list = data.symbols
+        .filter(s => s.contractType === 'PERPETUAL' && s.symbol.endsWith('USDT'))
+        .map(s => s.symbol)
+        .sort();
+      
+      // Populate main symbol selector
+      const sel = document.getElementById('symbol');
+      list.forEach(sym => {
+        const o = document.createElement('option'); o.value = sym; o.textContent = sym;
+        sel.appendChild(o);
+      });
+      
+      // Populate RR symbol selector
+      const rrSel = document.getElementById('rrSymbol');
+      list.forEach(sym => {
+        const o = document.createElement('option'); o.value = sym; o.textContent = sym;
+        rrSel.appendChild(o);
+      });
+      
+      // Default to first symbol
+      if (list.length) {
+        sel.value = list[0];
+        rrSel.value = list[0];
+      }
+    }
+
+    // Filter symbols in RR calculator
+    function filterRRSymbols() {
+      const term = document.getElementById('rrSearch').value.trim().toUpperCase();
+      const sel = document.getElementById('rrSymbol');
+      Array.from(sel.options).forEach(o => {
+        o.style.display = o.value.includes(term) ? '' : 'none';
+      });
+      // Select first visible option
+      const first = Array.from(sel.options).find(o => o.style.display === '');
+      if (first) sel.value = first.value;
+    }
+
+    // Show/hide options based on search term in main dashboard
+    function filterSymbols() {
+      const term = document.getElementById('search').value.trim().toUpperCase();
+      const sel = document.getElementById('symbol');
+      Array.from(sel.options).forEach(o => {
+        o.style.display = o.value.includes(term) ? '' : 'none';
+      });
+      // Select first visible option
+      const first = Array.from(sel.options).find(o => o.style.display === '');
+      if (first) sel.value = first.value;
+    }
+
+    // Fetch klines
+    async function getKlines(symbol, interval, limit = historyLimit) {
+      const url = `${apiBase}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    // RSI calculation
+    function calculateRSI(closes, period = 14) {
+      if (closes.length < period + 1) return Array(closes.length).fill(50);
+      
+      const gains = [];
+      const losses = [];
+      
+      // Calculate initial gains/losses
+      for (let i = 1; i < closes.length; i++) {
+        const diff = closes[i] - closes[i - 1];
+        gains.push(diff > 0 ? diff : 0);
+        losses.push(diff < 0 ? Math.abs(diff) : 0);
+      }
+      
+      // Calculate first RSI value
+      let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+      let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+      
+      const rsi = [];
+      rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + (avgGain / avgLoss))));
+      
+      // Calculate subsequent RSI values
+      for (let i = period; i < gains.length; i++) {
+        avgGain = ((avgGain * (period - 1)) + gains[i]) / period;
+        avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
+        const rs = avgGain / avgLoss;
+        rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + rs)));
+      }
+      
+      // Pad beginning with 50 (neutral)
+      return Array(closes.length - rsi.length).fill(50).concat(rsi);
+    }
+
+    // Determine RSI trend
+    function determineRSITrend(rsiValue, overbought = 70, oversold = 30) {
+      if (rsiValue >= overbought) return 'Overbought';
+      if (rsiValue <= oversold) return 'Oversold';
+      if (rsiValue > 50) return 'Bullish';
+      if (rsiValue < 50) return 'Bearish';
+      return 'Neutral';
+    }
+
+    // Determine ROC trend
+    function determineROCTrend(rocValue) {
+      if (rocValue > 2) return 'Strong Momentum';
+      if (rocValue < -2) return 'Weak Momentum';
+      return 'Neutral Momentum';
+    }
+
+    // Determine RVOL trend
+    function determineRVOLTrend(rvolValue) {
+      if (rvolValue > settings.rvolStrong) return 'Strong Volume';
+      if (rvolValue < settings.rvolWeak) return 'Weak Volume';
+      return 'Normal Volume';
+    }
+
+    // Determine ADX trend
+    function determineADXTrend(adxValue, pdiValue, mdiValue) {
+      const dir = pdiValue > mdiValue ? 'Bullish' : 'Bearish';
+      let str;
+      if (adxValue >= settings.adxThreshold*1.6) str='Very Strong';
+      else if (adxValue >= settings.adxThreshold) str='Strong';
+      else if (adxValue >= settings.adxThreshold*0.6) str='Moderate';
+      else str='Weak';
+      return { dir, str };
+    }
+
+    // Render table of all indicators for all timeframes
+    async function renderLiveIndicators() {
+      const symbol = document.getElementById('symbol').value;
+      
+      let html = '<table>' +
+        '<tr><th>Timeframe</th>' +
+        `<th>RSI-${settings.rsiPeriod}</th><th>RSI Trend</th><th>RSI Divergence</th>` +
+        `<th>ROC-${settings.rocPeriod}</th><th>Momentum ROC</th>` +
+        `<th>Volume RVOL</th><th>Volume Trend</th>` +
+        `<th>ADX/+DI/-DI</th><th>ADX Trend</th>` +
+        `<th>Risk Reward Ratio</th>` +
+        `</tr>`;
+
+      // Process each timeframe
+      for (const timeframe of timeframes) {
+        const klines = await getKlines(symbol, timeframe);
+        const closes = klines.map(k => parseFloat(k[4]));
+        const volumes = klines.map(k => parseFloat(k[5]));
+        const highs = klines.map(k => parseFloat(k[2]));
+        const lows = klines.map(k => parseFloat(k[3]));
+        
+        // Format candles for ADX calculation
+        const candles = klines.map(k => ({
+          high: parseFloat(k[2]),
+          low: parseFloat(k[3]),
+          close: parseFloat(k[4])
+        }));
+        
+        // Calculate all indicators
+        const rsiArr = calculateRSI(closes, settings.rsiPeriod);
+        const rocArr = calculateROC(closes, settings.rocPeriod);
+        const rvolArr = calculateRVOL(volumes);
+        const adxData = calculateADX(candles);
+        
+        const idx = closes.length - 1;
+        const rsi = rsiArr[idx]?.toFixed(2) || '-';
+        const roc = rocArr[idx]?.toFixed(2) || '-';
+        const rvol = rvolArr[idx]?.toFixed(2) || '-';
+        const adx = adxData.adx[idx]?.toFixed(2) || '-';
+        const pdi = adxData.pdi[idx]?.toFixed(2) || '-';
+        const mdi = adxData.mdi[idx]?.toFixed(2) || '-';
+        const closePrice = closes[idx];
+        
+        // Determine trends
+        const rsiTrend = determineRSITrend(+rsi, settings.rsiOverbought, settings.rsiOversold);
+        const rocTrend = determineROCTrend(+roc);
+        const rvolTrend = determineRVOLTrend(+rvol);
+        const rsiDivergence = getLatestDivergence(klines, rsiArr);
+        const adxTrend = determineADXTrend(+adx, +pdi, +mdi);
+        const rrSignal = getRRSignal(closePrice, klines);
+        
+        // Calculate combined trend strength
+        const trendStrength = calculateTrendStrength(rsiArr, rocArr, rvolArr, adxData);
+
+        // Determine classes for coloring
+        const rsiClass = rsiTrend === 'Overbought' ? 'bearish' : 
+                         rsiTrend === 'Oversold' ? 'bullish' : 
+                         rsiTrend === 'Bullish' ? 'bullish' : 
+                         rsiTrend === 'Bearish' ? 'bearish' : 'neutral';
+        
+        const rocClass = rocTrend.includes('Strong') ? 'bullish' : 
+                         rocTrend.includes('Weak') ? 'bearish' : 'neutral';
+        
+        const rvolClass = rvolTrend.includes('Strong') ? 'bullish' : 
+                          rvolTrend.includes('Weak') ? 'bearish' : 'neutral';
+        
+        const adxClass = adxTrend.str.toLowerCase().replace(' ', '-');
+        
+        let divClass = '';
+        if (rsiDivergence.includes('Regular Bullish')) divClass = 'regular-bullish';
+        else if (rsiDivergence.includes('Regular Bearish')) divClass = 'regular-bearish';
+        else if (rsiDivergence.includes('Hidden Bullish')) divClass = 'hidden-bullish';
+        else if (rsiDivergence.includes('Hidden Bearish')) divClass = 'hidden-bearish';
+
+        // // Add timeframe header row
+        // html += `<tr class="timeframe-header">
+        //   <td colspan="11">${timeframe} Timeframe</td>
+        // </tr>`;
+        
+        // Add data row
+        html += `<tr>
+          <td>${timeframe}</td>
+          <td class="rsi">${rsi}</td>
+          <td class="${rsiClass}">${rsiTrend}</td>
+          <td class="${divClass}">${rsiDivergence}</td>
+          <td>${roc}%</td>
+          <td class="${rocClass}">${rocTrend}</td>
+          <td>${rvol}</td>
+          <td class="${rvolClass}">${rvolTrend}</td>
+          <td>ADX: ${adx}<br>+DI: ${pdi}<br>-DI: ${mdi}</td>
+          <td class="${trendStrength.class}">
+            ${trendStrength.category}<br>
+            (Score: ${trendStrength.score})
+          </td>
+          <td>${rrSignal}</td>
+        </tr>`;
+            document.querySelectorAll(".rsi").forEach((e)=>{
+                
+                if(e.textContent >= 80 ){
+                e.style.color = "green";
+                }else if(e.textContent <= 20){
+                e.style.color = "red";
+                }else{
+                    e.style.color="black";
+                }
+            })
+      }
+
+      html += '</table>';
+      document.getElementById('indicators-container').innerHTML = html;
+    }
+
+    // Update settings from UI
+    function updateSettings() {
+      settings = {
+        rsiPeriod: parseInt(document.getElementById('rsiPeriod').value),
+        rsiOverbought: parseInt(document.getElementById('rsiOverbought').value),
+        rsiOversold: parseInt(document.getElementById('rsiOversold').value),
+        rocPeriod: parseInt(document.getElementById('rocPeriod').value),
+        rvolStrong: parseFloat(document.getElementById('rvolStrong').value),
+        rvolWeak: parseFloat(document.getElementById('rvolWeak').value),
+        adxThreshold: parseInt(document.getElementById('adxThreshold').value)
+      };
+    }
+
+    // Start periodic updates
+    function startLiveUpdates() {
+      clearInterval(updateInterval);
+      renderLiveIndicators();
+      updateInterval = setInterval(renderLiveIndicators, 5000); // Update every 5 seconds
+    }
+
+    // Initialize modal functionality
+    function initModal() {
+      const modal = document.getElementById("settingsModal");
+      const btn = document.getElementById("settings-button");
+      const span = document.getElementsByClassName("close")[0];
+      const applyBtn = document.getElementById("applySettings");
+
+      btn.onclick = function() {
+        modal.style.display = "block";
+      }
+
+      span.onclick = function() {
+        modal.style.display = "none";
+      }
+
+      applyBtn.onclick = function() {
+        updateSettings();
+        startLiveUpdates();
+        modal.style.display = "none";
+      }
+
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      }
+    }
+
+    // Initialize RR Calculator
+    function initRRCalculator() {
+      const rrSymbol = document.getElementById('rrSymbol');
+      const rrTimeframe = document.getElementById('rrTimeframe');
+      const targetInput = document.getElementById('target');
+      const stopInput = document.getElementById('stop');
+      const rrSearch = document.getElementById('rrSearch');
+      
+      // Start WebSocket for RR calculator
+      startRRWebSocket(rrSymbol.value, rrTimeframe.value);
+      
+      // Event listeners
+      rrSymbol.addEventListener('change', () => {
+        startRRWebSocket(rrSymbol.value, rrTimeframe.value);
+      });
+      
+      rrTimeframe.addEventListener('change', () => {
+        startRRWebSocket(rrSymbol.value, rrTimeframe.value);
+      });
+      
+      targetInput.addEventListener('input', calculateRR);
+      stopInput.addEventListener('input', calculateRR);
+      
+      // Search functionality for RR calculator
+      rrSearch.addEventListener('input', filterRRSymbols);
+    }
+
+    // Initialize
+    window.addEventListener('load', async () => {
+      await loadSymbols();
+      filterSymbols();
+      initModal();
+      initRRCalculator();
+      startLiveUpdates();
+      
+      // Event listeners
+      document.getElementById('search').addEventListener('input', () => { 
+        filterSymbols(); 
+        startLiveUpdates(); 
+      });
+      
+      document.getElementById('symbol').addEventListener('change', startLiveUpdates);
+    });
+  })();
+  </script>
+</body>
+</html>

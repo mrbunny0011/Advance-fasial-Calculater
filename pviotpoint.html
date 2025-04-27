@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gold Calculation Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #FFD700;
+      --secondary-color: #1E1E1E;
+      --accent-color: #4169E1;
+      --light-bg: #FAFAFA;
+      --card-bg: #FFFFFF;
+      --text-dark: #333333;
+      --text-light: #777777;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--light-bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+    
+    .dashboard {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    header h1 {
+      font-size: 2.5rem;
+      margin: 0;
+      color: var(--secondary-color);
+      font-weight: 600;
+      background: linear-gradient(135deg, #FFD700, #D4AF37);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+    
+    header::after {
+      content: '';
+      display: block;
+      width: 100px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      margin: 10px auto;
+      border-radius: 2px;
+    }
+    
+    #updateTime {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      margin-top: 5px;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .controls select, .controls input, .controls button {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .controls select {
+      min-width: 150px;
+      background-color: var(--card-bg);
+      cursor: pointer;
+    }
+    
+    .controls input {
+      min-width: 200px;
+      padding: 10px 15px;
+    }
+    
+    .controls button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .controls button:hover {
+      background-color: #2a52be;
+      transform: translateY(-2px);
+    }
+    
+    .dashboard-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    
+    .panel {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+      flex: 1 1 45%;
+      min-width: 300px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .panel:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    .panel h2 {
+      font-size: 1.5rem;
+      margin: 0 0 20px 0;
+      color: var(--secondary-color);
+      position: relative;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+    
+    .panel h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      border-radius: 3px;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    th {
+      background-color: var(--secondary-color);
+      color: white;
+      font-weight: 500;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+    
+    td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    tr:last-child td {
+      border-bottom: none;
+    }
+    
+    tr:hover td {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .settings-btn {
+      background-color: var(--primary-color);
+      color: var(--secondary-color);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 20px auto 0;
+      transition: all 0.3s ease;
+    }
+    
+    .settings-btn:hover {
+      background-color: #e6c200;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 10% auto;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .close {
+      color: var(--text-light);
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .close:hover, .close:focus {
+      color: var(--secondary-color);
+    }
+    
+    .modal h3 {
+      font-size: 1.5rem;
+      margin: 0 0 20px 0;
+      color: var(--secondary-color);
+      text-align: center;
+    }
+    
+    .setting-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.02);
+      border-radius: 8px;
+    }
+    
+    .setting-item label {
+      flex: 1 1 150px;
+      font-weight: 500;
+      color: var(--secondary-color);
+    }
+    
+    .setting-item input[type="color"] {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 0 10px;
+      transition: transform 0.2s ease;
+    }
+    
+    .setting-item input[type="color"]:hover {
+      transform: scale(1.1);
+    }
+    
+    .color-label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin-right: 5px;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      
+      .panel {
+        width: 100%;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .controls select, .controls input, .controls button {
+        width: 100%;
+      }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #e6c200;
+    }
+    
+    /* Tooltip for table cells */
+    [data-tooltip] {
+      position: relative;
+    }
+    
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 100;
+      margin-bottom: 5px;
+    }
+    
+    /* Live price animation */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    #livePriceRow {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header>
+      <h1>Gold Calculation Dashboard</h1>
+      <p id="updateTime">Loading market data...</p>
+    </header>
+    
+    <div class="controls">
+      <select id="coinSelector"></select>
+      <select id="timeFrame">
+        <option value="15m">15 Minutes</option>
+        <option value="30m">30 Minutes</option>
+        <option value="1h">1 Hour</option>
+        <option value="4h">4 Hours</option>
+        <option value="1d">1 Day</option>
+        <option value="1w">1 Week</option>
+        <option value="1M">1 Month</option>
+      </select>
+      <input type="text" id="coinSearch" placeholder="Search coin..." />
+      <button onclick="searchCoin()"><i class="fas fa-search"></i> Search</button>
+    </div>
+
+    <div class="dashboard-container">
+      <div class="panel" id="pivotPanel">
+        <h2>Gold Calculation (Pivot Point)</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="row-resistance3" style="background-color: #FF6666;">
+              <td data-tooltip="Strong resistance level">Resistance 3</td>
+              <td id="resistance3">-</td>
+            </tr>
+            <tr id="row-midR3R2" style="background-color: #FF9966;">
+              <td data-tooltip="Midpoint between R3 and R2">Mid (R3-R2)</td>
+              <td id="midR3R2">-</td>
+            </tr>
+            <tr id="row-resistance2" style="background-color: #FFCC66;">
+              <td data-tooltip="Medium resistance level">Resistance 2</td>
+              <td id="resistance2">-</td>
+            </tr>
+            <tr id="row-midR2R1" style="background-color: #FFE066;">
+              <td data-tooltip="Midpoint between R2 and R1">Mid (R2-R1)</td>
+              <td id="midR2R1">-</td>
+            </tr>
+            <tr id="row-resistance1" style="background-color: #FFFF66;">
+              <td data-tooltip="First resistance level">Resistance 1</td>
+              <td id="resistance1">-</td>
+            </tr>
+            <tr id="row-midR1PP" style="background-color: #CCFF66;">
+              <td data-tooltip="Midpoint between R1 and Pivot">Mid (R1-PP)</td>
+              <td id="midR1PP">-</td>
+            </tr>
+            <tr id="row-pivotPoint" style="background-color: #66FF66;">
+              <td data-tooltip="Central pivot point">Pivot Point</td>
+              <td id="pivotPoint">-</td>
+            </tr>
+            <tr id="row-midPPS1" style="background-color: #66FFCC;">
+              <td data-tooltip="Midpoint between Pivot and S1">Mid (PP-S1)</td>
+              <td id="midPPS1">-</td>
+            </tr>
+            <tr id="row-support1" style="background-color: #66FFFF;">
+              <td data-tooltip="First support level">Support 1</td>
+              <td id="support1">-</td>
+            </tr>
+            <tr id="row-midS1S2" style="background-color: #66CCFF;">
+              <td data-tooltip="Midpoint between S1 and S2">Mid (S1-S2)</td>
+              <td id="midS1S2">-</td>
+            </tr>
+            <tr id="row-support2" style="background-color: #6699FF;">
+              <td data-tooltip="Medium support level">Support 2</td>
+              <td id="support2">-</td>
+            </tr>
+            <tr id="row-midS2S3" style="background-color: #9966FF;">
+              <td data-tooltip="Midpoint between S2 and S3">Mid (S2-S3)</td>
+              <td id="midS2S3">-</td>
+            </tr>
+            <tr id="row-support3" style="background-color: #CC66FF;">
+              <td data-tooltip="Strong support level">Support 3</td>
+              <td id="support3">-</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="settings-btn" onclick="openSettings()"><i class="fas fa-cog"></i> Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal for Pivot Panel -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSettings()">&times;</span>
+      <h3>Customize Dashboard</h3>
+      
+      <div class="setting-item">
+        <label>Resistance 3:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-resistance3" value="#FF6666" onchange="updateRowColor('resistance3')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-resistance3" value="#000000" onchange="updateRowColor('resistance3')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (R3-R2):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midR3R2" value="#FF9966" onchange="updateRowColor('midR3R2')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midR3R2" value="#000000" onchange="updateRowColor('midR3R2')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Resistance 2:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-resistance2" value="#FFCC66" onchange="updateRowColor('resistance2')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-resistance2" value="#000000" onchange="updateRowColor('resistance2')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (R2-R1):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midR2R1" value="#FFE066" onchange="updateRowColor('midR2R1')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midR2R1" value="#000000" onchange="updateRowColor('midR2R1')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Resistance 1:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-resistance1" value="#FFFF66" onchange="updateRowColor('resistance1')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-resistance1" value="#000000" onchange="updateRowColor('resistance1')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (R1-PP):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midR1PP" value="#CCFF66" onchange="updateRowColor('midR1PP')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midR1PP" value="#000000" onchange="updateRowColor('midR1PP')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Pivot Point:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-pivotPoint" value="#66FF66" onchange="updateRowColor('pivotPoint')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-pivotPoint" value="#000000" onchange="updateRowColor('pivotPoint')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (PP-S1):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midPPS1" value="#66FFCC" onchange="updateRowColor('midPPS1')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midPPS1" value="#000000" onchange="updateRowColor('midPPS1')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Support 1:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-support1" value="#66FFFF" onchange="updateRowColor('support1')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-support1" value="#000000" onchange="updateRowColor('support1')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (S1-S2):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midS1S2" value="#66CCFF" onchange="updateRowColor('midS1S2')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midS1S2" value="#000000" onchange="updateRowColor('midS1S2')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Support 2:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-support2" value="#6699FF" onchange="updateRowColor('support2')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-support2" value="#000000" onchange="updateRowColor('support2')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Mid (S2-S3):</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-midS2S3" value="#9966FF" onchange="updateRowColor('midS2S3')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-midS2S3" value="#000000" onchange="updateRowColor('midS2S3')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Support 3:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-support3" value="#CC66FF" onchange="updateRowColor('support3')">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-support3" value="#000000" onchange="updateRowColor('support3')">
+      </div>
+      
+      <div class="setting-item">
+        <label>Live Price:</label>
+        <span class="color-label">BG:</span>
+        <input type="color" id="bg-livePrice" value="#d1ecf1" onchange="updateLivePriceColor()">
+        <span class="color-label">Font:</span>
+        <input type="color" id="font-livePrice" value="#0c5460" onchange="updateLivePriceColor()">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global Variables
+    let tickerWS;
+    let allCoins = [];
+    let latestLivePrice = 0;
+    
+    // Fetch USDT Perpetual pairs from Binance and populate coin selector
+    async function fetchFuturesPairs() {
+      try {
+        let response = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+        let data = await response.json();
+        const coinSelector = document.getElementById("coinSelector");
+        allCoins = data.symbols.filter(sym => sym.symbol.endsWith("USDT")).map(sym => sym.symbol);
+        allCoins.forEach(symbol => {
+          const option = document.createElement("option");
+          option.value = symbol;
+          option.textContent = symbol.replace("USDT", "");
+          coinSelector.appendChild(option);
+        });
+        // Set default coin if BTC exists
+        if(allCoins.includes("BTCUSDT")){
+          coinSelector.value = "BTCUSDT";
+          updatePivotAndTradingSignals("BTCUSDT");
+          setupTickerWebSocket("BTCUSDT");
+        }
+      } catch (err) {
+        console.error("Error fetching futures pairs:", err);
+      }
+    }
+    
+    // Update Pivot Point and Trading Signals for the selected coin
+    async function updatePivotAndTradingSignals(symbol) {
+      const timeFrame = document.getElementById("timeFrame").value || "15m";
+      try {
+        let data = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${timeFrame}&limit=20`)
+          .then(res => res.json());
+        if(data.length < 2) return;
+        // Use 2nd last candle for calculation
+        let pivotCandle = data[data.length - 2];
+        let high = parseFloat(pivotCandle[2]);
+        let low = parseFloat(pivotCandle[3]);
+        let close = parseFloat(pivotCandle[4]);
+        let pivot = (high + low + close) / 3;
+        let s1 = pivot * 2 - high;
+        let s2 = pivot - (high - low);
+        let s3 = low - 2 * (high - pivot);
+        let r1 = pivot * 2 - low;
+        let r2 = pivot + (high - low);
+        let r3 = high + 2 * (pivot - low);
+        
+        document.getElementById("pivotPoint").textContent = pivot.toFixed(7);
+        document.getElementById("support1").textContent = s1.toFixed(7);
+        document.getElementById("support2").textContent = s2.toFixed(7);
+        document.getElementById("support3").textContent = s3.toFixed(7);
+        document.getElementById("resistance1").textContent = r1.toFixed(7);
+        document.getElementById("resistance2").textContent = r2.toFixed(7);
+        document.getElementById("resistance3").textContent = r3.toFixed(7);
+        document.getElementById("midR3R2").textContent = ((r3 + r2) / 2).toFixed(7);
+        document.getElementById("midR2R1").textContent = ((r2 + r1) / 2).toFixed(7);
+        document.getElementById("midR1PP").textContent  = ((r1 + pivot) / 2).toFixed(7);
+        document.getElementById("midPPS1").textContent  = ((pivot + s1) / 2).toFixed(7);
+        document.getElementById("midS1S2").textContent  = ((s1 + s2) / 2).toFixed(7);
+        document.getElementById("midS2S3").textContent  = ((s2 + s3) / 2).toFixed(7);
+        updateTime();
+        updatePivotPanelLivePricePosition();
+      } catch (err) {
+        console.error("Error updating pivot values:", err);
+      }
+    }
+    
+    // Dynamically reposition the live price row in the pivot panel based on live price vs. levels
+    function updatePivotPanelLivePricePosition() {
+      let livePrice = latestLivePrice;
+      let levelOrder = [
+        { id: "resistance3", value: parseFloat(document.getElementById("resistance3").textContent) },
+        { id: "midR3R2", value: parseFloat(document.getElementById("midR3R2").textContent) },
+        { id: "resistance2", value: parseFloat(document.getElementById("resistance2").textContent) },
+        { id: "midR2R1", value: parseFloat(document.getElementById("midR2R1").textContent) },
+        { id: "resistance1", value: parseFloat(document.getElementById("resistance1").textContent) },
+        { id: "midR1PP", value: parseFloat(document.getElementById("midR1PP").textContent) },
+        { id: "pivotPoint", value: parseFloat(document.getElementById("pivotPoint").textContent) },
+        { id: "midPPS1", value: parseFloat(document.getElementById("midPPS1").textContent) },
+        { id: "support1", value: parseFloat(document.getElementById("support1").textContent) },
+        { id: "midS1S2", value: parseFloat(document.getElementById("midS1S2").textContent) },
+        { id: "support2", value: parseFloat(document.getElementById("support2").textContent) },
+        { id: "midS2S3", value: parseFloat(document.getElementById("midS2S3").textContent) },
+        { id: "support3", value: parseFloat(document.getElementById("support3").textContent) }
+      ];
+      let tbody = document.querySelector("#pivotPanel tbody");
+      let oldLiveRow = document.getElementById("livePriceRow");
+      if(oldLiveRow) { oldLiveRow.remove(); }
+      let liveRow = document.createElement("tr");
+      liveRow.id = "livePriceRow";
+      let tdLabel = document.createElement("td");
+      tdLabel.textContent = "Live Price";
+      let tdValue = document.createElement("td");
+      tdValue.textContent = livePrice.toFixed(7);
+      liveRow.appendChild(tdLabel);
+      liveRow.appendChild(tdValue);
+      let liveBG = document.getElementById("bg-livePrice").value || "#d1ecf1";
+      let liveFont = document.getElementById("font-livePrice").value || "#0c5460";
+      liveRow.style.backgroundColor = liveBG;
+      liveRow.style.color = liveFont;
+      liveRow.style.fontWeight = "bold";
+      let inserted = false;
+      for (let i = 0; i < levelOrder.length; i++) {
+         if (livePrice >= levelOrder[i].value) {
+           let rowElement = document.getElementById("row-" + levelOrder[i].id);
+           tbody.insertBefore(liveRow, rowElement);
+           inserted = true;
+           break;
+         }
+      }
+      if(!inserted){
+        tbody.appendChild(liveRow);
+      }
+    }
+    
+    // Update last updated time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById("updateTime").textContent = `Last Updated: ${now.toLocaleString()}`;
+    }
+    
+    // Setup WebSocket for live ticker updates (for pivot panel live price)
+    function setupTickerWebSocket(symbol) {
+      if(tickerWS) { tickerWS.close(); }
+      tickerWS = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@ticker`);
+      tickerWS.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        latestLivePrice = parseFloat(data.c);
+        updatePivotPanelLivePricePosition();
+      };
+    }
+    
+    // General coin search for coin selector
+    function searchCoin() {
+      const searchTerm = document.getElementById("coinSearch").value.toUpperCase();
+      if(!searchTerm) return;
+      const coinSelector = document.getElementById("coinSelector");
+      const options = coinSelector.options;
+      for(let i = 0; i < options.length; i++){
+         if(options[i].text.toUpperCase().includes(searchTerm) || options[i].value.toUpperCase().includes(searchTerm)){
+            coinSelector.value = options[i].value;
+            updatePivotAndTradingSignals(options[i].value);
+            setupTickerWebSocket(options[i].value);
+            return;
+         }
+      }
+      alert("Coin not found. Please try another search term.");
+    }
+    
+    // Utility: Update row color based on settings modal input (for pivot panel rows)
+    function updateRowColor(rowKey) {
+      const bgColor = document.getElementById("bg-" + rowKey).value;
+      const fontColor = document.getElementById("font-" + rowKey).value;
+      const rowElement = document.getElementById("row-" + rowKey);
+      if(rowElement) {
+         rowElement.style.backgroundColor = bgColor;
+         rowElement.style.color = fontColor;
+      }
+    }
+    
+    // Utility: Update live price row colors from settings
+    function updateLivePriceColor() {
+      const bgColor = document.getElementById("bg-livePrice").value;
+      const fontColor = document.getElementById("font-livePrice").value;
+      const liveRow = document.getElementById("livePriceRow");
+      if(liveRow) {
+         liveRow.style.backgroundColor = bgColor;
+         liveRow.style.color = fontColor;
+      }
+    }
+    
+    // Modal functions
+    function openSettings() {
+      document.getElementById("settingsModal").style.display = "block";
+    }
+    function closeSettings() {
+      document.getElementById("settingsModal").style.display = "none";
+    }
+    
+    // Event listeners for coin selector and time frame changes
+    document.getElementById("timeFrame").addEventListener("change", () => {
+      const selectedCoin = document.getElementById("coinSelector").value;
+      updatePivotAndTradingSignals(selectedCoin);
+    });
+    document.getElementById("coinSelector").addEventListener("change", () => {
+      const selectedCoin = document.getElementById("coinSelector").value;
+      updatePivotAndTradingSignals(selectedCoin);
+      setupTickerWebSocket(selectedCoin);
+    });
+    
+    // Initialize the coin selector and pivot panel
+    fetchFuturesPairs();
+  </script>
+</body>
+</html>

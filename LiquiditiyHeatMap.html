@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PRO Trading Dashboard (Enhanced Model)</title>
+  <style>
+    :root {
+      --primary-bg: #0a0e17;
+      --panel-bg: #1a2035;
+      --control-bg: #252d45;
+      --border-color: #2d3a5a;
+      --text-color: #e0e0e0;
+      --accent-color: #4fc3f7;
+      --buy-color: #44ff44;
+      --sell-color: #ff4444;
+      --warning-color: #ffcc44;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--primary-bg);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+    
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .panel {
+      background: var(--panel-bg);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    h1, h2, h3 {
+      color: var(--accent-color);
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    
+    .control-panel {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: var(--control-bg);
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      align-items: center;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      table-layout: fixed;
+    }
+    
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    th {
+      background-color: var(--control-bg);
+      color: var(--text-color);
+      position: sticky;
+      top: 0;
+    }
+    
+    .live-price {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 15px 0;
+      color: var(--accent-color);
+      padding: 10px;
+      background: var(--control-bg);
+      border-radius: 8px;
+    }
+    
+    select, input, button {
+      background: var(--control-bg);
+      color: white;
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 4px;
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+      font-size: 14px;
+    }
+    
+    button {
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+    
+    button:hover {
+      background: #3a4b75;
+    }
+    
+    /* Advanced Features */
+    .heatmap-cell {
+      height: 20px;
+      transition: background 0.3s;
+      cursor: pointer;
+      margin: 2px 0;
+      padding: 3px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .flash-alert {
+      background: rgba(255, 68, 68, 0.2);
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 3px solid var(--sell-color);
+    }
+    
+    .iceberg-alert {
+      background: rgba(68, 136, 255, 0.2);
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 3px solid #4488ff;
+    }
+    
+    .frequent-alert {
+      background: rgba(255, 204, 68, 0.2);
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 3px solid var(--warning-color);
+    }
+    
+    #imbalanceMeter {
+      height: 10px;
+      background: linear-gradient(to right, var(--sell-color), var(--buy-color));
+      margin: 10px 0;
+      border-radius: 5px;
+      width: 100%;
+    }
+    
+    .alert-panel {
+      max-height: 300px;
+      overflow-y: auto;
+      flex-grow: 1;
+      padding-right: 5px;
+    }
+    
+    .alert-item {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      word-break: break-word;
+    }
+    
+    .progress-container {
+      display: flex;
+      margin: 10px 0;
+      height: 30px;
+      border-radius: 5px;
+      overflow: hidden;
+      width: 100%;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      transition: width 0.5s;
+      font-size: 12px;
+      min-width: fit-content;
+    }
+    
+    .order-flow-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--accent-color);
+    }
+    
+    .flow-indicator {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    
+    .buy-heavy {
+      background: rgba(0, 200, 0, 0.2);
+      color: var(--buy-color);
+    }
+    
+    .sell-heavy {
+      background: rgba(200, 0, 0, 0.2);
+      color: var(--sell-color);
+    }
+    
+    .balanced {
+      background: rgba(200, 200, 0, 0.2);
+      color: var(--warning-color);
+    }
+    
+    .price-level {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      align-items: center;
+      width: 100%;
+    }
+    
+    .price-level-bar {
+      height: 10px;
+      border-radius: 5px;
+      min-width: 5px;
+      position: relative;
+    }
+    
+    .volume-tooltip {
+      position: absolute;
+      background: var(--control-bg);
+      padding: 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      display: none;
+      z-index: 100;
+      white-space: nowrap;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .blink {
+      animation: blink-animation 0.5s steps(2, start) infinite;
+    }
+    
+    @keyframes blink-animation {
+      to { visibility: hidden; }
+    }
+    
+    #connectionStatus {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 14px;
+      padding: 8px;
+      background: var(--control-bg);
+      border-radius: 8px;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 5px;
+      background: gray;
+    }
+    
+    .connected { background: var(--buy-color); }
+    .connecting { background: var(--warning-color); }
+    .disconnected { background: gray; }
+    .error { background: var(--sell-color); }
+    
+    .chart-container {
+      height: 200px;
+      margin-top: 10px;
+      position: relative;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    
+    .price-level-container {
+      position: relative;
+      margin: 3px 0;
+      height: 20px;
+      width: 100%;
+    }
+    
+    .price-label {
+      position: absolute;
+      left: 5px;
+      z-index: 2;
+      font-size: 12px;
+      background: rgba(0,0,0,0.5);
+      padding: 0 3px;
+      border-radius: 2px;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--control-bg);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #4fc3f7;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3da8d6;
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .control-panel {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      select, input, button {
+        font-size: 12px;
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  
+  <!-- Order Book Panel -->
+  <div class="panel" id="orderBookPanel">
+    <h1>Live Order Book</h1>
+    <div class="control-panel">
+      <select id="marketSelect">
+        <option value="spot">Spot</option>
+        <option value="future">Futures</option>
+      </select>
+      <input type="text" id="symbolSearch" placeholder="Search Symbol">
+      <select id="symbolSelect"></select>
+      <select id="priceStepSelect">
+        <option value="1" selected>1 USDT Step</option>
+      </select>
+      <button id="connectBtn">Connect</button>
+    </div>
+    
+    <div id="connectionStatus">
+      <span class="status-indicator disconnected"></span>
+      <span>Disconnected</span>
+    </div>
+    
+    <div id="livePrice" class="live-price">Price: --</div>
+    <div id="volumeProfile">
+        <h3>Volume Profile </h3>
+        <div id="volumeProfileChart" class="chart-container"></div>
+      </div>
+
+      <!-- panal ka code -->
+      
+    
+      <!-- Liquidity Heatmap -->
+      <div id="heatmapContainer">
+        <h3>Liquidity Heatmap</h3>
+        <div id="heatmap" class="chart-container"></div>
+      </div>
+      
+      <!-- Order Flow Analysis -->
+      <div id="imbalanceContainer">
+        <h3>Order Flow Analysis</h3>
+        <div class="order-flow-title">Bid/Ask Ratio: <span id="bidAskRatio">1.00</span></div>
+        <div id="imbalanceMeter"></div>
+        
+        <div class="progress-container">
+          <div id="buyPercentage" class="progress-bar" style="background: var(--buy-color); width: 50%;">Buy 50%</div>
+          <div id="sellPercentage" class="progress-bar" style="background: var(--sell-color); width: 50%;">Sell 50%</div>
+        </div>
+        
+        <div id="flowIndicator" class="flow-indicator balanced">
+          Market is Balanced
+        </div>
+        <div id="flowDirection"></div>
+      
+    
+
+      <!-- Zrorot nhi ha -->
+      <div id="orderBookContainer" style="overflow-x: auto; height: 50vh; overflow-y: auto;"></div>
+    
+    
+  </div>
+
+  
+  </div>
+
+  <!-- IceBer Detector -->
+  <div class="panel">
+    <h2>Iceberg Detector</h2>
+    <div id="alertsPanel" class="alert-panel">
+      <!-- Alerts will appear here permanently -->
+    </div>
+
+    <!-- Advanced Features Panel -->
+  <div class="panel">
+      
+    <h3>Frequent Price Levels</h3>
+    <div id="frequentLevels"></div>
+  </div>
+  </div>
+
+</div>
+
+<script>
+// ================== GLOBAL VARIABLES ==================
+let ws = null;
+let localOrderBook = { bids: {}, asks: {} };
+let currentLivePrice = 0;
+let icebergMap = {};
+let activeAlerts = new Set();
+let priceUpdateStats = {};
+let reconnectAttempts = 0;
+const maxReconnectAttempts = 5;
+const reconnectDelay = 5000;
+let pingInterval;
+let isManualDisconnect = false;
+let lastPriceUpdateTime = 0;
+let currentSymbol = '';
+
+// ================== INITIALIZATION ==================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById("connectBtn").addEventListener("click", toggleConnection);
+  loadSymbols();
+  
+  // Set up symbol search
+  document.getElementById("symbolSearch").addEventListener("input", function() {
+    filterSymbols(this.value.toLowerCase());
+  });
+});
+
+// ================== WEBSOCKET MANAGEMENT ==================
+function connectWebSocket(symbol) {
+  if (ws) {
+    cleanupWebSocket();
+  }
+
+  currentSymbol = symbol;
+  isManualDisconnect = false;
+  updateConnectionStatus('connecting');
+  
+  const wsUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth`;
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    reconnectAttempts = 0;
+    updateConnectionStatus('connected');
+    addAlertToPanel(`✅ Connected to ${symbol} WebSocket`, 'success');
+    
+    // Start ping to keep connection alive
+    pingInterval = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ ping: Date.now() }));
+        } catch (e) {
+          console.log("Ping error:", e);
+        }
+      }
+    }, 30000);
+  };
+
+  ws.onmessage = (e) => {
+    try {
+      const update = JSON.parse(e.data);
+      
+      if (update.e === 'depthUpdate') {
+        processOrderBookUpdate(update);
+        updateAnalytics();
+      }
+    } catch (error) {
+      console.error("Message processing error:", error);
+      addAlertToPanel(`⚠️ Error processing message: ${error.message}`, 'error');
+    }
+  };
+
+  ws.onclose = (e) => {
+    clearInterval(pingInterval);
+    if (!isManualDisconnect) {
+      updateConnectionStatus('disconnected');
+      addAlertToPanel(`⚠️ Connection closed: ${e.reason || 'Unknown reason'}`, 'error');
+      attemptReconnect();
+    }
+  };
+
+  ws.onerror = (e) => {
+    console.error("WebSocket error:", e);
+    updateConnectionStatus('error');
+    addAlertToPanel(`⚠️ WebSocket error: ${e.message || 'Unknown error'}`, 'error');
+    if (ws) ws.close();
+  };
+}
+
+function cleanupWebSocket() {
+  if (ws) {
+    ws.onopen = null;
+    ws.onmessage = null;
+    ws.onclose = null;
+    ws.onerror = null;
+    try {
+      ws.close();
+    } catch (e) {
+      console.log("Error closing previous connection:", e);
+    }
+    ws = null;
+  }
+  clearInterval(pingInterval);
+}
+
+function attemptReconnect() {
+  if (reconnectAttempts < maxReconnectAttempts && currentSymbol) {
+    reconnectAttempts++;
+    const delay = Math.min(reconnectAttempts * reconnectDelay, 30000);
+    addAlertToPanel(`⏳ Reconnecting attempt ${reconnectAttempts}/${maxReconnectAttempts} in ${delay/1000}s...`, 'warning');
+    
+    setTimeout(() => {
+      if (!isManualDisconnect && currentSymbol) {
+        connectWebSocket(currentSymbol);
+      }
+    }, delay);
+  } else {
+    updateConnectionStatus('error');
+    addAlertToPanel(`❌ Failed to reconnect after ${maxReconnectAttempts} attempts`, 'error');
+  }
+}
+
+function disconnectWebSocket() {
+  isManualDisconnect = true;
+  if (ws) {
+    cleanupWebSocket();
+    updateConnectionStatus('disconnected');
+    addAlertToPanel("WebSocket disconnected", 'info');
+  }
+}
+
+function toggleConnection() {
+  const btn = document.getElementById("connectBtn");
+  const symbol = document.getElementById("symbolSelect").value;
+  
+  if (!symbol) {
+    alert("Please select a symbol first");
+    return;
+  }
+  
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    disconnectWebSocket();
+    btn.textContent = "Connect";
+  } else {
+    connectToMarket();
+    btn.textContent = "Disconnect";
+  }
+}
+
+// ================== CORE FUNCTIONALITY ==================
+async function connectToMarket() {
+  const symbol = document.getElementById("symbolSelect").value;
+  
+  // Reset data
+  localOrderBook = { bids: {}, asks: {} };
+  icebergMap = {};
+  activeAlerts.clear();
+  priceUpdateStats = {};
+  document.getElementById("alertsPanel").innerHTML = '';
+  
+  // Disconnect existing connection
+  disconnectWebSocket();
+  
+  try {
+    // Fetch initial order book
+    const response = await fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=1000`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    
+    // Process initial order book
+    data.bids.forEach(b => {
+      localOrderBook.bids[b[0]] = parseFloat(b[1]);
+      trackPriceUpdate(b[0], parseFloat(b[1]));
+    });
+    
+    data.asks.forEach(a => {
+      localOrderBook.asks[a[0]] = parseFloat(a[1]);
+      trackPriceUpdate(a[0], parseFloat(a[1]));
+    });
+    
+    // Connect WebSocket
+    connectWebSocket(symbol);
+    
+    // Start price updates
+    setInterval(() => updatePrice(symbol), 1000);
+    updateAnalytics();
+    
+  } catch (error) {
+    console.error("Connection error:", error);
+    updateConnectionStatus('error');
+    addAlertToPanel(`⚠️ Connection failed: ${error.message}`, 'error');
+  }
+}
+
+function processOrderBookUpdate(update) {
+  update.b.forEach(b => {
+    if (parseFloat(b[1])) {
+      localOrderBook.bids[b[0]] = parseFloat(b[1]);
+      trackPriceUpdate(b[0], parseFloat(b[1]));
+    } else {
+      delete localOrderBook.bids[b[0]];
+    }
+  });
+  
+  update.a.forEach(a => {
+    if (parseFloat(a[1])) {
+      localOrderBook.asks[a[0]] = parseFloat(a[1]);
+      trackPriceUpdate(a[0], parseFloat(a[1]));
+    } else {
+      delete localOrderBook.asks[a[0]];
+    }
+  });
+}
+
+function updateAnalytics() {
+  detectIcebergs();
+  detectFlashOrders();
+  renderOrderBook();
+  analyzeImbalance();
+  updateVolumeProfile();
+  updateFrequentLevels();
+}
+
+// ================== ENHANCED FEATURES ==================
+
+// Track price level updates and volumes
+function trackPriceUpdate(price, qty) {
+  const priceKey = parseFloat(price).toFixed(2);
+  
+  if (!priceUpdateStats[priceKey]) {
+    priceUpdateStats[priceKey] = {
+      count: 0,
+      totalQty: 0,
+      usdValue: 0,
+      lastUpdated: Date.now()
+    };
+  }
+  
+  priceUpdateStats[priceKey].count++;
+  priceUpdateStats[priceKey].totalQty += qty;
+  priceUpdateStats[priceKey].usdValue += qty * parseFloat(price);
+  priceUpdateStats[priceKey].lastUpdated = Date.now();
+  lastPriceUpdateTime = Date.now();
+}
+
+// Enhanced Order Book Rendering
+function renderOrderBook() {
+  const bids = Object.entries(localOrderBook.bids)
+    .map(([p, q]) => [parseFloat(p), parseFloat(q)])
+    .sort((a, b) => b[0] - a[0]);
+  
+  const asks = Object.entries(localOrderBook.asks)
+    .map(([p, q]) => [parseFloat(p), parseFloat(q)])
+    .sort((a, b) => a[0] - b[0]);
+  
+  // Generate HTML
+  let html = `<table>
+    <tr>
+      <th style="width: 25%;">Price</th>
+      <th style="width: 20%;">Size</th>
+      <th style="width: 25%;">USD Value</th>
+      <th style="width: 15%;">Updates</th>
+      <th style="width: 15%;">Total Qty</th>
+    </tr>`;
+  
+  // Show top 10 bids and asks
+  [...bids.slice(0, 10), ...asks.slice(0, 10)].forEach(([price, qty]) => {
+    const priceKey = price.toFixed(2);
+    const stats = priceUpdateStats[priceKey] || { count: 0, totalQty: 0 };
+    const usdValue = price * qty;
+    
+    html += `<tr>
+      <td>${priceKey}</td>
+      <td>${qty.toFixed(4)}</td>
+      <td>$${usdValue.toFixed(2)}</td>
+      <td>${stats.count}</td>
+      <td>${stats.totalQty.toFixed(4)}</td>
+    </tr>`;
+  });
+  
+  html += `</table>`;
+  document.getElementById("orderBookContainer").innerHTML = html;
+  
+  // Generate Heatmap
+  generateHeatmap();
+}
+
+// Enhanced Liquidity Heatmap (Only shows significant levels)
+function generateHeatmap() {
+  const bids = Object.entries(localOrderBook.bids).map(([p, q]) => [parseFloat(p), q]);
+  const asks = Object.entries(localOrderBook.asks).map(([p, q]) => [parseFloat(p), q]);
+  const all = [...bids, ...asks];
+
+  if (all.length === 0) return;
+
+  const maxQty = Math.max(...all.map(x => x[1]));
+  const minPrice = Math.min(...all.map(x => x[0]));
+  const maxPrice = Math.max(...all.map(x => x[0]));
+  const priceRange = maxPrice - minPrice;
+  
+  // Only show levels with significant liquidity (top 10%)
+  const liquidityThreshold = maxQty * 0.1;
+
+  let heatmapHTML = '';
+  all
+    .filter(([_, qty]) => qty >= liquidityThreshold)
+    .forEach(([price, qty]) => {
+      const priceKey = price.toFixed(2);
+      const intensity = Math.floor((qty / maxQty) * 100);
+      const isBid = localOrderBook.bids[priceKey] !== undefined;
+      const hue = isBid ? 120 : 0; // Green for bids, red for asks
+      const lightness = 100 - (intensity / 1.5);
+      const positionPercent = ((price - minPrice) / priceRange) * 100;
+      
+      heatmapHTML += `
+      <div class="price-level-container">
+        <span class="price-label">${priceKey}</span>
+        <div class="price-level-bar" style="width: ${positionPercent}%; background: hsl(${hue}, 100%, ${lightness}%);">
+          <span class="volume-tooltip">${qty.toFixed(4)} ($${(price * qty).toFixed(2)})</span>
+        </div>
+      </div>`;
+    });
+
+  document.getElementById("heatmap").innerHTML = heatmapHTML;
+
+  // Add tooltip hover functionality
+  document.querySelectorAll('.price-level-bar').forEach(bar => {
+    bar.addEventListener('mouseover', function() {
+      const tooltip = this.querySelector('.volume-tooltip');
+      tooltip.style.display = 'block';
+    });
+    bar.addEventListener('mouseout', function() {
+      const tooltip = this.querySelector('.volume-tooltip');
+      tooltip.style.display = 'none';
+    });
+  });
+}
+
+// Flash Orders Detection with Visual Alert
+let lastOrderSnapshot = {};
+function detectFlashOrders() {
+  const now = Date.now();
+  Object.keys(lastOrderSnapshot).forEach(p => {
+    if ((!localOrderBook.bids[p] && !localOrderBook.asks[p]) && now - lastOrderSnapshot[p] < 2000) {
+      const alertMsg = `⚡ FLASH ORDER at ${p} (${priceUpdateStats[p]?.count || 1}x updates)`;
+      if (!activeAlerts.has(alertMsg)) {
+        activeAlerts.add(alertMsg);
+        addAlertToPanel(alertMsg, 'flash');
+        
+        // Visual flash effect
+        const flashDiv = document.createElement('div');
+        flashDiv.className = 'flash-alert blink';
+        flashDiv.textContent = `FLASH ORDER DETECTED AT ${p}`;
+        document.getElementById("orderBookPanel").prepend(flashDiv);
+        setTimeout(() => flashDiv.remove(), 2000);
+      }
+    }
+  });
+  lastOrderSnapshot = {...localOrderBook.bids, ...localOrderBook.asks};
+}
+
+// Enhanced Iceberg Order Detection
+function detectIcebergs() {
+  const threshold = 5;
+  const icebergCandidates = {};
+
+  Object.entries(localOrderBook.bids).forEach(([price, qty]) => {
+    const priceKey = parseFloat(price).toFixed(2);
+    if (!icebergMap[priceKey]) {
+      icebergMap[priceKey] = {
+        count: 0,
+        totalQty: 0,
+        usdValue: 0,
+        firstDetected: Date.now()
+      };
+    }
+    
+    icebergMap[priceKey].count++;
+    icebergMap[priceKey].totalQty += qty;
+    icebergMap[priceKey].usdValue += qty * parseFloat(price);
+    
+    if (icebergMap[priceKey].count >= threshold) {
+      icebergCandidates[priceKey] = icebergMap[priceKey];
+    }
+  });
+
+  Object.entries(localOrderBook.asks).forEach(([price, qty]) => {
+    const priceKey = parseFloat(price).toFixed(2);
+    if (!icebergMap[priceKey]) {
+      icebergMap[priceKey] = {
+        count: 0,
+        totalQty: 0,
+        usdValue: 0,
+        firstDetected: Date.now()
+      };
+    }
+    
+    icebergMap[priceKey].count++;
+    icebergMap[priceKey].totalQty += qty;
+    icebergMap[priceKey].usdValue += qty * parseFloat(price);
+    
+    if (icebergMap[priceKey].count >= threshold) {
+      icebergCandidates[priceKey] = icebergMap[priceKey];
+    }
+  });
+
+  // Display detailed iceberg information
+  Object.entries(icebergCandidates).forEach(([p, data]) => {
+    const alertMsg = `🧊 ICEBERG ORDER at ${p} | Updates: ${data.count} | Total Qty: ${data.totalQty.toFixed(4)} | Value: $${data.usdValue.toFixed(2)}`;
+    if (!activeAlerts.has(alertMsg)) {
+      activeAlerts.add(alertMsg);
+      addAlertToPanel(alertMsg, 'iceberg');
+    }
+  });
+}
+
+// Volume Profile Visualization (Only shows significant levels)
+function updateVolumeProfile() {
+  const bids = Object.entries(localOrderBook.bids).map(([p, q]) => [parseFloat(p), parseFloat(q)]);
+  const asks = Object.entries(localOrderBook.asks).map(([p, q]) => [parseFloat(p), parseFloat(q)]);
+  const all = [...bids, ...asks];
+  
+  if (all.length === 0) return;
+  
+  // Group by price levels
+  const priceLevels = {};
+  all.forEach(([price, qty]) => {
+    const priceKey = price.toFixed(2);
+    priceLevels[priceKey] = (priceLevels[priceKey] || 0) + qty;
+  });
+  
+  // Find max volume for scaling
+  const maxVolume = Math.max(...Object.values(priceLevels));
+  const volumeThreshold = maxVolume * 0.1; // Only show top 10% of volume levels
+  
+  // Generate profile chart - only show significant levels
+  let profileHTML = '';
+  Object.entries(priceLevels)
+    .filter(([_, volume]) => volume >= volumeThreshold)
+    .sort((a, b) => b[0] - a[0])
+    .forEach(([price, volume]) => {
+      const widthPercent = (volume / maxVolume) * 100;
+      const isBid = localOrderBook.bids[price] !== undefined;
+      
+      profileHTML += `
+      <div class="price-level-container">
+        <span class="price-label">${price}</span>
+        <div class="price-level-bar" style="width: ${widthPercent}%; background: ${isBid ? 'var(--buy-color)' : 'var(--sell-color)'};">
+          <span class="volume-tooltip">${volume.toFixed(4)} ($${(price * volume).toFixed(2)})</span>
+        </div>
+      </div>`;
+    });
+  
+  document.getElementById("volumeProfileChart").innerHTML = profileHTML;
+  
+  // Add tooltip hover functionality
+  document.querySelectorAll('.price-level-bar').forEach(bar => {
+    bar.addEventListener('mouseover', function() {
+      const tooltip = this.querySelector('.volume-tooltip');
+      tooltip.style.display = 'block';
+    });
+    bar.addEventListener('mouseout', function() {
+      const tooltip = this.querySelector('.volume-tooltip');
+      tooltip.style.display = 'none';
+    });
+  });
+}
+
+// Frequent Price Levels Tracking
+function updateFrequentLevels() {
+  // Get top 5 most frequently updated price levels
+  const frequentLevels = Object.entries(priceUpdateStats)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 5);
+  
+  let levelsHTML = '';
+  frequentLevels.forEach(([price, data]) => {
+    levelsHTML += `
+    <div class="alert-item frequent-alert">
+      🔁 ${price}: ${data.count} updates | ${data.totalQty.toFixed(4)} volume | $${data.usdValue.toFixed(2)}
+    </div>`;
+  });
+  
+  document.getElementById("frequentLevels").innerHTML = levelsHTML;
+}
+
+// Enhanced Order Flow Analysis
+function analyzeImbalance() {
+  const bidVol = Object.values(localOrderBook.bids).reduce((a, b) => a + b, 0);
+  const askVol = Object.values(localOrderBook.asks).reduce((a, b) => a + b, 0);
+  const totalVol = bidVol + askVol;
+  const ratio = bidVol / (askVol || 1); // Avoid division by zero
+  
+  // Update ratio display
+  document.getElementById("bidAskRatio").textContent = ratio.toFixed(2);
+  
+  // Update meter position
+  const meter = document.getElementById("imbalanceMeter");
+  if (ratio > 1) {
+    const percent = Math.min(100, (ratio - 1) * 50);
+    meter.style.background = `linear-gradient(to right, var(--buy-color) ${percent}%, var(--sell-color) ${percent}%)`;
+  } else {
+    const percent = Math.min(100, (1 - ratio) * 50);
+    meter.style.background = `linear-gradient(to right, var(--buy-color) ${percent}%, var(--sell-color) ${percent}%)`;
+  }
+  
+  // Calculate percentages
+  const buyPercent = totalVol > 0 ? Math.round((bidVol / totalVol) * 100) : 50;
+  const sellPercent = 100 - buyPercent;
+  
+  document.getElementById("buyPercentage").style.width = `${buyPercent}%`;
+  document.getElementById("buyPercentage").textContent = `Buy ${buyPercent}%`;
+  document.getElementById("sellPercentage").style.width = `${sellPercent}%`;
+  document.getElementById("sellPercentage").textContent = `Sell ${sellPercent}%`;
+  
+  // Update flow indicator
+  const flowIndicator = document.getElementById("flowIndicator");
+  const flowDirection = document.getElementById("flowDirection");
+  const now = new Date();
+  
+  if (ratio > 1.5) {
+    flowIndicator.textContent = `EXTREME BUYING PRESSURE (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator buy-heavy";
+    flowDirection.innerHTML = "↑↑↑ STRONG BUY FLOW ↑↑↑";
+    flowDirection.style.color = "var(--buy-color)";
+  } else if (ratio > 1.2) {
+    flowIndicator.textContent = `STRONG BUYING (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator buy-heavy";
+    flowDirection.innerHTML = "↑↑ BUY FLOW ↑↑";
+    flowDirection.style.color = "#88ff88";
+  } else if (ratio > 1.05) {
+    flowIndicator.textContent = `Buying Pressure (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator buy-heavy";
+    flowDirection.innerHTML = "↑ BUY FLOW ↑";
+    flowDirection.style.color = "#aaffaa";
+  } else if (ratio < 0.66) {
+    flowIndicator.textContent = `EXTREME SELLING PRESSURE (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator sell-heavy";
+    flowDirection.innerHTML = "↓↓↓ STRONG SELL FLOW ↓↓↓";
+    flowDirection.style.color = "var(--sell-color)";
+  } else if (ratio < 0.83) {
+    flowIndicator.textContent = `STRONG SELLING (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator sell-heavy";
+    flowDirection.innerHTML = "↓↓ SELL FLOW ↓↓";
+    flowDirection.style.color = "#ff8888";
+  } else if (ratio < 0.95) {
+    flowIndicator.textContent = `Selling Pressure (${ratio.toFixed(2)}x)`;
+    flowIndicator.className = "flow-indicator sell-heavy";
+    flowDirection.innerHTML = "↓ SELL FLOW ↓";
+    flowDirection.style.color = "#ffaaaa";
+  } else {
+    flowIndicator.textContent = "Market is Balanced";
+    flowIndicator.className = "flow-indicator balanced";
+    flowDirection.innerHTML = "↔ BALANCED FLOW ↔";
+    flowDirection.style.color = "var(--warning-color)";
+  }
+  
+  flowIndicator.textContent += ` (Updated: ${now.toLocaleTimeString()})`;
+}
+
+// Add alert to panel permanently
+function addAlertToPanel(message, type) {
+  const alertsPanel = document.getElementById("alertsPanel");
+  const alertDiv = document.createElement("div");
+  alertDiv.className = `alert-item ${type}-alert`;
+  alertDiv.textContent = message;
+  
+  // Add timestamp
+  const timeSpan = document.createElement("span");
+  timeSpan.style.float = "right";
+  timeSpan.style.color = "#888";
+  timeSpan.textContent = new Date().toLocaleTimeString();
+  alertDiv.appendChild(timeSpan);
+  
+  alertsPanel.prepend(alertDiv);
+  
+  // Limit to 50 alerts
+  if (alertsPanel.children.length > 50) {
+    alertsPanel.removeChild(alertsPanel.lastChild);
+  }
+}
+
+function updateConnectionStatus(state) {
+  const statusElem = document.getElementById("connectionStatus");
+  const indicator = statusElem.querySelector(".status-indicator");
+  const text = statusElem.querySelector("span:last-child");
+  
+  indicator.className = "status-indicator";
+  
+  switch(state) {
+    case 'connected':
+      indicator.classList.add('connected');
+      text.textContent = 'Connected';
+      break;
+    case 'connecting':
+      indicator.classList.add('connecting');
+      text.textContent = 'Connecting...';
+      break;
+    case 'error':
+      indicator.classList.add('error');
+      text.textContent = 'Connection Error';
+      break;
+    default:
+      indicator.classList.add('disconnected');
+      text.textContent = 'Disconnected';
+  }
+}
+
+// ================== UTILITIES ==================
+async function updatePrice(symbol) {
+  try {
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+    const data = await res.json();
+    const newPrice = parseFloat(data.price);
+    
+    document.getElementById("livePrice").textContent = `Price: ${newPrice.toFixed(2)}`;
+    document.getElementById("livePrice").style.color = 
+      newPrice > currentLivePrice ? "var(--buy-color)" : 
+      newPrice < currentLivePrice ? "var(--sell-color)" : 
+      "var(--accent-color)";
+    
+    currentLivePrice = newPrice;
+  } catch (error) {
+    console.error("Price update error:", error);
+  }
+}
+
+// Initialize symbol dropdown
+async function loadSymbols() {
+  try {
+    const res = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+    const data = await res.json();
+    const symbols = data.symbols
+      .filter(s => s.quoteAsset === 'USDT')
+      .map(s => s.symbol)
+      .sort();
+    
+    const select = document.getElementById("symbolSelect");
+    select.innerHTML = '';
+    symbols.forEach(s => select.innerHTML += `<option value="${s}">${s}</option>`);
+    
+  } catch (error) {
+    console.error("Symbol load error:", error);
+    addAlertToPanel(`⚠️ Failed to load symbols: ${error.message}`, 'error');
+  }
+}
+
+function filterSymbols(searchTerm) {
+  const select = document.getElementById("symbolSelect");
+  const options = select.options;
+  
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i];
+    option.style.display = option.text.toLowerCase().includes(searchTerm) ? '' : 'none';
+  }
+}
+</script>
+</body>
+</html>

@@ -136,22 +136,29 @@
     
     #orderBookContainer, #analysisResult {
       margin-top: 20px;
+      
+    }
+    #analysisResult p{
+      font-size: 18px;
     }
     
     .order-book {
       display: flex;
       justify-content: space-between;
-      gap: 20px;
+      gap: 5px;
     }
     
     .order-column {
-      width: 48%;
+      width: 55%;
       border: 1px solid var(--border-light);
       border-radius: 12px;
-      padding: 20px;
+      padding: 10px;
       background: white;
-      overflow-x: auto;
+      overflow-x: scroll;
       box-shadow: 0 2px 8px var(--shadow-light);
+      white-space: nowrap;
+      scroll-snap-type: none;
+     
     }
     
     table {
@@ -163,7 +170,7 @@
     
     th, td {
       border-bottom: 1px solid var(--border-light);
-      padding: 10px 12px;
+      padding: 10px 8px;
       text-align: right;
     }
     
@@ -944,7 +951,7 @@
         const usdValue = item[0] * item[1];
         html += `<tr>
                   <td>${item[0].toFixed(getPricePrecision(item[0]))}</td>
-                  <td>${item[1].toFixed(8)}</td>
+                  <td>${item[1].toFixed(2)}</td>
                   <td>${formatUSDValue(usdValue)}</td>
                 </tr>`;
       });
@@ -959,7 +966,7 @@
         const usdValue = item[0] * item[1];
         html += `<tr>
                   <td>${item[0].toFixed(getPricePrecision(item[0]))}</td>
-                  <td>${item[1].toFixed(8)}</td>
+                  <td>${item[1].toFixed(2)}</td>
                   <td>${formatUSDValue(usdValue)}</td>
                 </tr>`;
       });
@@ -1584,17 +1591,17 @@
       if (price >= 10) return 7;
       if (price >= 1) return 7;
       if (price >= 0.1) return 7;
-      return 8;
+      return 7;
     }
 
     function formatUSDValue(value) {
       if (isNaN(value)) return "$0";
       const absValue = Math.abs(value);
-      if (absValue >= 1e12) return `$${(value / 1e12).toFixed(7)}T`;
-      if (absValue >= 1e9) return `$${(value / 1e9).toFixed(7)}B`;
-      if (absValue >= 1e6) return `$${(value / 1e6).toFixed(7)}M`;
-      if (absValue >= 1e3) return `$${(value / 1e3).toFixed(7)}K`;
-      return `$${value.toFixed(7)}`;
+      if (absValue >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
+      if (absValue >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+      if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+      if (absValue >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+      return `$${value.toFixed(2)}`;
     }
 
     /* Pivot Settings Modal Functions */

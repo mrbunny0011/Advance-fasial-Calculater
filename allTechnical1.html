@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Faisal's Complete Trading Dashboard</title>
+  <style>
+    body {
+      background: #f0f8ff;
+      color: #2d3748;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    h1 {
+      text-align: center;
+      color: #2c6df8;
+      margin: 10px 0;
+      padding: 0;
+      font-size: 24px;
+      background: #e1f0ff;
+      padding: 10px;
+      border-radius: 8px;
+      width: calc(100% - 40px);
+      margin: 10px auto;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .dashboard-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px auto;
+      flex-wrap: wrap;
+      padding: 0 20px;
+    }
+    .dashboard-controls button {
+      padding: 8px 16px;
+      min-width: 120px;
+    }
+    .models-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+    .model-container {
+      border: 2px solid #c3dafe;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      flex-grow: 1;
+      min-width: calc(100% - 20px);
+      transition: all 0.3s ease;
+    }
+    .model-container.fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      margin: 0;
+      border-radius: 0;
+      min-width: 100%;
+    }
+    .model-header {
+      background: #d4e3ff;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #c3dafe;
+    }
+    .model-title {
+      font-size: 18px;
+      color: #2c6df8;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .model-controls {
+      display: flex;
+      gap: 8px;
+    }
+    .view-toggle {
+      display: flex;
+      gap: 5px;
+      background: rgba(255,255,255,0.7);
+      padding: 4px;
+      border-radius: 6px;
+    }
+    button {
+      padding: 6px 12px;
+      background: #4a8cff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      touch-action: manipulation;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      background: #3a7cff;
+      transform: translateY(-1px);
+    }
+    button.secondary {
+      background: #e1f0ff;
+      color: #2c6df8;
+      border: 1px solid #c3dafe;
+    }
+    button.active {
+      background: #00c3a5;
+      color: white;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 150px);
+      border: none;
+      background: white;
+    }
+    .cropped-view {
+      width: 100%;
+      height: calc(100vh - 150px);
+      overflow: hidden;
+      position: relative;
+      background: white;
+    }
+    .crop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(240, 248, 255, 0.9);
+      z-index: 1000;
+      display: none;
+    }
+    .crop-box {
+      position: absolute;
+      border: 2px dashed #00c3a5;
+      background: rgba(0, 195, 165, 0.1);
+      cursor: move;
+    }
+    .crop-handle {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #00c3a5;
+      border-radius: 50%;
+      z-index: 1001;
+      border: 2px solid white;
+    }
+    .handle-nw { top: -8px; left: -8px; cursor: nw-resize; }
+    .handle-ne { top: -8px; right: -8px; cursor: ne-resize; }
+    .handle-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
+    .handle-se { bottom: -8px; right: -8px; cursor: se-resize; }
+    .crop-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 1002;
+    }
+    .hidden {
+      display: none;
+    }
+    .cropped-iframe {
+      position: absolute;
+      border: 2px solid #00c3a5;
+      box-sizing: border-box;
+    }
+
+    /* View modes - FIXED TO WORK WITH ALL MODELS */
+    .single-view .model-container {
+      min-width: calc(100% - 20px);
+      height: auto;
+    }
+    .two-column-view .model-container {
+      min-width: calc(50% - 15px);
+      flex-basis: calc(50% - 15px);
+      height: auto;
+    }
+    .quadrant-view .model-container {
+      min-width: calc(50% - 15px);
+      flex-basis: calc(50% - 15px);
+      height: calc(50vh - 15px);
+    }
+    .quadrant-view iframe,
+    .quadrant-view .cropped-view {
+      height: calc(50vh - 80px);
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 20px;
+        padding: 0 10px;
+      }
+      
+      .dashboard-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .dashboard-controls button {
+        width: 100%;
+      }
+      
+      .model-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 8px 10px;
+      }
+      
+      .model-title {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      
+      .model-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      button {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 60px;
+      }
+      
+      .view-toggle {
+        flex-grow: 1;
+        justify-content: space-between;
+      }
+      
+      iframe, .cropped-view {
+        height: calc(100vh - 100px);
+      }
+      
+      .crop-handle {
+        width: 24px;
+        height: 24px;
+      }
+      
+      .handle-nw { top: -12px; left: -12px; }
+      .handle-ne { top: -12px; right: -12px; }
+      .handle-sw { bottom: -12px; left: -12px; }
+      .handle-se { bottom: -12px; right: -12px; }
+      
+      /* Force single column on mobile */
+      .two-column-view .model-container,
+      .quadrant-view .model-container {
+        min-width: calc(100% - 20px);
+        flex-basis: auto;
+        height: auto;
+      }
+      .quadrant-view iframe,
+      .quadrant-view .cropped-view {
+        height: calc(100vh - 100px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .model-controls {
+        flex-wrap: wrap;
+      }
+      
+      .view-toggle {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      
+      button {
+        flex-grow: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Faisal's Complete Trading Dashboard</h1>
+
+  <div class="dashboard-controls">
+    <button class="active" onclick="setViewMode('single')">Single View</button>
+    <button onclick="setViewMode('two-column')">2-Column Split</button>
+    <button onclick="setViewMode('quadrant')">4-Quadrant View</button>
+  </div>
+
+  <div class="models-container" id="models-container">
+    <!-- Model 1 -->
+    <div class="model-container" id="model1">
+      <div class="model-header">
+        <div class="model-title">📌 Model 1 – Legend: The Liquidity Zone</div>
+        <div class="model-controls">
+          <div class="view-toggle">
+            <button class="active" onclick="showFullView('model1')">Full</button>
+            <button onclick="showCroppedView('model1')">Cropped</button>
+          </div>
+          <button onclick="startPaint3DCrop('model1')">Crop</button>
+          <button onclick="toggleFullScreen('model1')">Full Screen</button>
+          <button class="secondary" onclick="resetModel('model1')">Reset</button>
+        </div>
+      </div>
+      <iframe id="model1-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/LegendTheliquidityZone.html"></iframe>
+      <div id="model1-cropped" class="cropped-view hidden"></div>
+    </div>
+
+    <!-- Model 2 -->
+    <div class="model-container" id="model2">
+      <div class="model-header">
+        <div class="model-title">📌 Model 2 – Multan Calculation</div>
+        <div class="model-controls">
+          <div class="view-toggle">
+            <button class="active" onclick="showFullView('model2')">Full</button>
+            <button onclick="showCroppedView('model2')">Cropped</button>
+          </div>
+          <button onclick="startPaint3DCrop('model2')">Crop</button>
+          <button onclick="toggleFullScreen('model2')">Full Screen</button>
+          <button class="secondary" onclick="resetModel('model2')">Reset</button>
+        </div>
+      </div>
+      <iframe id="model2-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/MultanCalculation.html"></iframe>
+      <div id="model2-cropped" class="cropped-view hidden"></div>
+    </div>
+
+    <!-- Model 3 -->
+    <div class="model-container" id="model3">
+      <div class="model-header">
+        <div class="model-title">📌 Model 3 – Gold Calculation</div>
+        <div class="model-controls">
+          <div class="view-toggle">
+            <button class="active" onclick="showFullView('model3')">Full</button>
+            <button onclick="showCroppedView('model3')">Cropped</button>
+          </div>
+          <button onclick="startPaint3DCrop('model3')">Crop</button>
+          <button onclick="toggleFullScreen('model3')">Full Screen</button>
+          <button class="secondary" onclick="resetModel('model3')">Reset</button>
+        </div>
+      </div>
+      <iframe id="model3-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/GoldClculation.html"></iframe>
+      <div id="model3-cropped" class="cropped-view hidden"></div>
+    </div>
+
+    <!-- Model 4 -->
+    <div class="model-container" id="model4">
+      <div class="model-header">
+        <div class="model-title">📌 Model 4 – Volume Profile</div>
+        <div class="model-controls">
+          <div class="view-toggle">
+            <button class="active" onclick="showFullView('model4')">Full</button>
+            <button onclick="showCroppedView('model4')">Cropped</button>
+          </div>
+          <button onclick="startPaint3DCrop('model4')">Crop</button>
+          <button onclick="toggleFullScreen('model4')">Full Screen</button>
+          <button class="secondary" onclick="resetModel('model4')">Reset</button>
+        </div>
+      </div>
+      <iframe id="model4-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/volumProfile.html"></iframe>
+      <div id="model4-cropped" class="cropped-view hidden"></div>
+    </div>
+  
+
+ <!-- Model 5 -->
+ <div class="model-container" id="model5">
+    <div class="model-header">
+      <div class="model-title">📌 Model 5 – Advance Dimand</div>
+      <div class="model-controls">
+        <div class="view-toggle">
+          <button class="active" onclick="showFullView('model5')">Full</button>
+          <button onclick="showCroppedView('model5')">Cropped</button>
+        </div>
+        <button onclick="startPaint3DCrop('model5')">Crop</button>
+        <button onclick="toggleFullScreen('model5')">Full Screen</button>
+        <button class="secondary" onclick="resetModel('model5')">Reset</button>
+      </div>
+    </div>
+    <iframe id="model5-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/Advance_diamond.html"></iframe>
+    <div id="model5-cropped" class="cropped-view hidden"></div>
+  </div>
+
+
+ <!-- Model 6 -->
+ <div class="model-container" id="model6">
+    <div class="model-header">
+      <div class="model-title">📌 Model 6 – Order Book</div>
+      <div class="model-controls">
+        <div class="view-toggle">
+          <button class="active" onclick="showFullView('model6')">Full</button>
+          <button onclick="showCroppedView('model6')">Cropped</button>
+        </div>
+        <button onclick="startPaint3DCrop('model6')">Crop</button>
+        <button onclick="toggleFullScreen('model6')">Full Screen</button>
+        <button class="secondary" onclick="resetModel('model6')">Reset</button>
+      </div>
+    </div>
+    <iframe id="model6-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/OrderBook.html"></iframe>
+    <div id="model6-cropped" class="cropped-view hidden"></div>
+  </div>
+
+
+
+
+
+
+<!-- Model 7 -->
+<div class="model-container" id="model7">
+  <div class="model-header">
+    <div class="model-title">📌 Model 7 – Liquidity</div>
+    <div class="model-controls">
+      <div class="view-toggle">
+        <button class="active" onclick="showFullView('model7')">Full</button>
+        <button onclick="showCroppedView('model7')">Cropped</button>
+      </div>
+      <button onclick="startPaint3DCrop('model7')">Crop</button>
+      <button onclick="toggleFullScreen('model7')">Full Screen</button>
+      <button class="secondary" onclick="resetModel('model7')">Reset</button>
+    </div>
+  </div>
+  <iframe id="model7-iframe" src="https://www.coinglass.com/pro/futures/LiquidationHeatMap"></iframe>
+  <div id="model7-cropped" class="cropped-view hidden"></div>
+</div>
+
+
+<!-- Model 8 -->
+<div class="model-container" id="model8">
+  <div class="model-header">
+    <div class="model-title">📌 Model 8 – Dimand</div>
+    <div class="model-controls">
+      <div class="view-toggle">
+        <button class="active" onclick="showFullView('model8')">Full</button>
+        <button onclick="showCroppedView('model8')">Cropped</button>
+      </div>
+      <button onclick="startPaint3DCrop('model8')">Crop</button>
+      <button onclick="toggleFullScreen('model8')">Full Screen</button>
+      <button class="secondary" onclick="resetModel('model8')">Reset</button>
+    </div>
+  </div>
+  <iframe id="model8-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/dimand.html"></iframe>
+  <div id="model8-cropped" class="cropped-view hidden"></div>
+</div>
+</div>
+
+
+
+  <!-- ?????????????????????????????????????????? -->
+
+  <!-- Paint 3D Style Crop Overlay -->
+  <div class="crop-overlay" id="crop-overlay">
+    <div class="drop-box" id="crop-box">
+      <div class="crop-handle handle-nw"></div>
+      <div class="crop-handle handle-ne"></div>
+      <div class="crop-handle handle-sw"></div>
+      <div class="crop-handle handle-se"></div>
+    </div>
+    <div class="crop-controls">
+      <button onclick="applyCrop()">Apply</button>
+      <button class="secondary" onclick="cancelCrop()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentModel = null;
+    let currentViewMode = 'single';
+    let fullScreenModel = null;
+    let cropData = {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      iframe: null
+    };
+    let isDragging = false;
+    let isMoving = false;
+    let resizeHandle = null;
+    let startX, startY;
+    let startWidth, startHeight;
+    let startCropX, startCropY;
+
+    // Set view mode (single, two-column, quadrant)
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      const container = document.getElementById('models-container');
+      const buttons = document.querySelectorAll('.dashboard-controls button');
+      
+      // Update active button
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      // Update container class
+      container.className = 'models-container';
+      if (mode === 'two-column') {
+        container.classList.add('two-column-view');
+      } else if (mode === 'quadrant') {
+        container.classList.add('quadrant-view');
+      } else {
+        container.classList.add('single-view');
+      }
+      
+      // Exit full screen if in that mode
+      if (fullScreenModel) {
+        toggleFullScreen(fullScreenModel);
+      }
+    }
+
+    // Improved full screen toggle function
+    function toggleFullScreen(model) {
+      const modelEl = document.getElementById(model);
+      const modelsContainer = document.getElementById('models-container');
+      
+      if (!modelEl.classList.contains('fullscreen')) {
+        // Enter full screen
+        // Store current view mode classes
+        modelEl.dataset.previousClasses = modelsContainer.className;
+        
+        // Remove all view mode classes from container
+        modelsContainer.className = 'models-container';
+        
+        // Hide other models
+        document.querySelectorAll('.model-container').forEach(m => {
+          if (m.id !== model) m.classList.add('hidden');
+        });
+        
+        modelEl.classList.add('fullscreen');
+        
+        // Update iframe height for full screen
+        const iframe = modelEl.querySelector('iframe');
+        if (iframe) {
+          iframe.style.height = 'calc(100vh - 60px)'; // Account for header height
+        }
+        
+        // Update button text
+        const btn = modelEl.querySelector('.model-controls button:nth-last-child(2)');
+        btn.textContent = 'Minimize';
+        fullScreenModel = model;
+      } else {
+        // Exit full screen
+        modelEl.classList.remove('fullscreen');
+        
+        // Restore previous view mode classes
+        if (modelEl.dataset.previousClasses) {
+          modelsContainer.className = modelEl.dataset.previousClasses;
+        }
+        
+        // Show all models
+        document.querySelectorAll('.model-container').forEach(m => {
+          m.classList.remove('hidden');
+        });
+        
+        // Reset iframe height
+        const iframe = modelEl.querySelector('iframe');
+        if (iframe) {
+          iframe.style.height = '';
+        }
+        
+        // Update button text
+        const btn = modelEl.querySelector('.model-controls button:nth-last-child(2)');
+        btn.textContent = 'Full Screen';
+        fullScreenModel = null;
+      }
+    }
+
+    // Initialize mobile touch events
+    function initMobileTouch() {
+      const cropBox = document.getElementById('crop-box');
+      const handles = document.querySelectorAll('.crop-handle');
+      
+      // Touch event for moving crop box
+      cropBox.addEventListener('touchstart', function(e) {
+        if (e.target === cropBox) {
+          isMoving = true;
+          const touch = e.touches[0];
+          startX = touch.clientX;
+          startY = touch.clientY;
+          startCropX = parseInt(cropBox.style.left);
+          startCropY = parseInt(cropBox.style.top);
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      // Touch events for resize handles
+      handles.forEach(handle => {
+        handle.addEventListener('touchstart', function(e) {
+          isDragging = true;
+          resizeHandle = e.target.classList[1];
+          const touch = e.touches[0];
+          startX = touch.clientX;
+          startY = touch.clientY;
+          startWidth = parseInt(cropBox.style.width);
+          startHeight = parseInt(cropBox.style.height);
+          startCropX = parseInt(cropBox.style.left);
+          startCropY = parseInt(cropBox.style.top);
+          e.preventDefault();
+        }, { passive: false });
+      });
+      
+      // Touch move for both moving and resizing
+      document.addEventListener('touchmove', function(e) {
+        if (!isDragging && !isMoving) return;
+        
+        const touch = e.touches[0];
+        const cropBox = document.getElementById('crop-box');
+        const dx = touch.clientX - startX;
+        const dy = touch.clientY - startY;
+        
+        if (isMoving) {
+          handleCropMove(cropBox, dx, dy);
+        } else if (isDragging) {
+          handleCropResize(cropBox, dx, dy);
+        }
+        
+        e.preventDefault();
+      }, { passive: false });
+      
+      // Touch end
+      document.addEventListener('touchend', function() {
+        isDragging = false;
+        isMoving = false;
+        resizeHandle = null;
+      });
+    }
+
+    // Handle crop box movement
+    function handleCropMove(cropBox, dx, dy) {
+      const newLeft = startCropX + dx;
+      const newTop = startCropY + dy;
+      
+      // Keep within iframe bounds
+      const minLeft = cropData.x;
+      const minTop = cropData.y;
+      const maxLeft = cropData.x + cropData.width - parseInt(cropBox.style.width);
+      const maxTop = cropData.y + cropData.height - parseInt(cropBox.style.height);
+      
+      cropBox.style.left = `${Math.min(Math.max(newLeft, minLeft), maxLeft)}px`;
+      cropBox.style.top = `${Math.min(Math.max(newTop, minTop), maxTop)}px`;
+    }
+
+    // Handle crop box resizing
+    function handleCropResize(cropBox, dx, dy) {
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+      let newLeft = startCropX;
+      let newTop = startCropY;
+      
+      switch(resizeHandle) {
+        case 'handle-nw':
+          newWidth = startWidth - dx;
+          newHeight = startHeight - dy;
+          newLeft = startCropX + dx;
+          newTop = startCropY + dy;
+          break;
+        case 'handle-ne':
+          newWidth = startWidth + dx;
+          newHeight = startHeight - dy;
+          newTop = startCropY + dy;
+          break;
+        case 'handle-sw':
+          newWidth = startWidth - dx;
+          newHeight = startHeight + dy;
+          newLeft = startCropX + dx;
+          break;
+        case 'handle-se':
+          newWidth = startWidth + dx;
+          newHeight = startHeight + dy;
+          break;
+      }
+      
+      // Apply minimum size (100px) and constraints
+      const minSize = 100;
+      newWidth = Math.max(newWidth, minSize);
+      newHeight = Math.max(newHeight, minSize);
+      
+      // Ensure crop box stays within iframe bounds
+      if (newLeft) {
+        newLeft = Math.max(newLeft, cropData.x);
+        newLeft = Math.min(newLeft, cropData.x + cropData.width - minSize);
+      }
+      if (newTop) {
+        newTop = Math.max(newTop, cropData.y);
+        newTop = Math.min(newTop, cropData.y + cropData.height - minSize);
+      }
+      
+      // Apply new dimensions
+      cropBox.style.width = `${newWidth}px`;
+      cropBox.style.height = `${newHeight}px`;
+      if (newLeft) cropBox.style.left = `${newLeft}px`;
+      if (newTop) cropBox.style.top = `${newTop}px`;
+    }
+
+    // Paint 3D style crop initiation
+    function startPaint3DCrop(model) {
+      currentModel = model;
+      const iframe = document.getElementById(`${model}-iframe`);
+      const rect = iframe.getBoundingClientRect();
+      
+      // Set smaller initial crop size (60% of iframe)
+      const initWidth = rect.width * 0.6;
+      const initHeight = rect.height * 0.6;
+      const initLeft = rect.left + (rect.width - initWidth) / 2;
+      const initTop = rect.top + (rect.height - initHeight) / 2;
+      
+      cropData = {
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        iframe: iframe
+      };
+      
+      const cropBox = document.getElementById('crop-box');
+      cropBox.style.left = `${initLeft}px`;
+      cropBox.style.top = `${initTop}px`;
+      cropBox.style.width = `${initWidth}px`;
+      cropBox.style.height = `${initHeight}px`;
+      
+      document.getElementById('crop-overlay').style.display = 'block';
+      setupCropEventListeners();
+    }
+
+    // Improved crop interaction
+    function setupCropEventListeners() {
+      const cropBox = document.getElementById('crop-box');
+      const handles = document.querySelectorAll('.crop-handle');
+      
+      // Click anywhere on crop box to move
+      cropBox.addEventListener('mousedown', function(e) {
+        if (e.target === cropBox) {
+          isMoving = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          startCropX = parseInt(cropBox.style.left);
+          startCropY = parseInt(cropBox.style.top);
+          e.preventDefault();
+        }
+      });
+      
+      // Handle resizing
+      handles.forEach(handle => {
+        handle.addEventListener('mousedown', function(e) {
+          isDragging = true;
+          resizeHandle = e.target.classList[1];
+          startX = e.clientX;
+          startY = e.clientY;
+          startWidth = parseInt(cropBox.style.width);
+          startHeight = parseInt(cropBox.style.height);
+          startCropX = parseInt(cropBox.style.left);
+          startCropY = parseInt(cropBox.style.top);
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
+      
+      // Smooth movement and resizing
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging && !isMoving) return;
+        
+        const cropBox = document.getElementById('crop-box');
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        if (isMoving) {
+          handleCropMove(cropBox, dx, dy);
+        } else if (isDragging) {
+          handleCropResize(cropBox, dx, dy);
+        }
+      });
+      
+      document.addEventListener('mouseup', function() {
+        isDragging = false;
+        isMoving = false;
+        resizeHandle = null;
+      });
+      
+      // Initialize mobile touch events
+      initMobileTouch();
+    }
+
+    // // Apply the crop
+    // function applyCrop() {
+    //   const cropBox = document.getElementById('crop-box');
+    //   const model = currentModel;
+      
+    //   // Calculate crop dimensions relative to iframe
+    //   const iframeRect = cropData.iframe.getBoundingClientRect();
+    //   const boxRect = cropBox.getBoundingClientRect();
+      
+    //   const cropX = boxRect.left - iframeRect.left;
+    //   const cropY = boxRect.top - iframeRect.top;
+    //   const cropWidth = boxRect.width;
+    //   const cropHeight = boxRect.height;
+      
+    //   // Create cropped view
+    //   const croppedView = document.getElementById(`${model}-cropped`);
+    //   const iframe = document.getElementById(`${model}-iframe`);
+      
+    //   croppedView.innerHTML = '';
+    //   const clone = iframe.cloneNode(true);
+    //   clone.style.position = 'absolute';
+    //   clone.style.left = `-${cropX}px`;
+    //   clone.style.top = `-${cropY}px`;
+    //   clone.style.width = `${iframeRect.width}px`;
+    //   clone.style.height = `${iframeRect.height}px`;
+      
+    //   // Create a container to ensure only the cropped area is visible
+    //   const container = document.createElement('div');
+    //   container.style.width = `${cropWidth}px`;
+    //   container.style.height = `${cropHeight}px`;
+    //   container.style.overflow = 'hidden';
+    //   container.style.position = 'relative';
+    //   container.appendChild(clone);
+      
+    //   croppedView.appendChild(container);
+      
+    //   // Set cropped view dimensions
+    //   croppedView.style.width = '100%';
+    //   croppedView.style.height = '100%';
+      
+    //   // Hide overlay
+    //   document.getElementById('crop-overlay').style.display = 'none';
+      
+    //   // Switch to cropped view
+    //   showCroppedView(model);
+    // }
+
+    // Apply the crop
+    function applyCrop() {
+      const cropBox = document.getElementById('crop-box');
+      const model = currentModel;
+      
+      // Calculate crop dimensions relative to iframe
+      const iframeRect = cropData.iframe.getBoundingClientRect();
+      const boxRect = cropBox.getBoundingClientRect();
+      
+      const cropX = boxRect.left - iframeRect.left;
+      const cropY = boxRect.top - iframeRect.top;
+      const cropWidth = boxRect.width;
+      const cropHeight = boxRect.height;
+      
+      // Create cropped view
+      const croppedView = document.getElementById(`${model}-cropped`);
+      const iframe = document.getElementById(`${model}-iframe`);
+      
+      croppedView.innerHTML = '';
+      const clone = iframe.cloneNode(true);
+      clone.style.position = 'absolute';
+      clone.style.left = `-${cropX}px`;
+      clone.style.top = `-${cropY}px`;
+      clone.style.width = `${iframeRect.width}px`;
+      clone.style.height = `${iframeRect.height}px`;
+      
+      // Create a container to ensure only the cropped area is visible
+      const container = document.createElement('div');
+      container.style.width = `${cropWidth}px`;
+      container.style.height = `${cropHeight}px`;
+      container.style.overflow = 'hidden';
+      container.style.position = 'relative';
+      container.appendChild(clone);
+      
+      croppedView.appendChild(container);
+      
+      // Set cropped view dimensions
+      croppedView.style.width = '100%';
+      croppedView.style.height = '100%';
+      
+      // Hide overlay
+      document.getElementById('crop-overlay').style.display = 'none';
+      
+      // Switch to cropped view
+      showCroppedView(model);
+    }
+
+    // Cancel cropping
+    function cancelCrop() {
+      document.getElementById('crop-overlay').style.display = 'none';
+      currentModel = null;
+    }
+
+    // Show full view of model
+    function showFullView(model) {
+      document.getElementById(`${model}-iframe`).classList.remove('hidden');
+      document.getElementById(`${model}-cropped`).classList.add('hidden');
+      
+      // Update toggle buttons
+      const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
+      buttons[0].classList.add('active');
+      buttons[1].classList.remove('active');
+    }
+
+    // Show cropped view of model
+    // function showCroppedView(model) {
+    //   const croppedView = document.getElementById(`${model}-cropped`);
+      
+    //   // Only show if there's a crop applied
+    //   if (croppedView.innerHTML !== '') {
+    //     document.getElementById(`${model}-iframe`).classList.add('hidden');
+    //     croppedView.classList.remove('hidden');
+        
+    //     // Update toggle buttons
+    //     const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
+    //     buttons[0].classList.remove('active');
+    //     buttons[1].classList.add('active');
+    //   } else {
+    //     alert('No crop has been applied to this model yet');
+    //     showFullView(model);
+    //   }
+    // }
+// Show cropped view of model
+function showCroppedView(model) {
+      const croppedView = document.getElementById(`${model}-cropped`);
+      
+      // Only show if there's a crop applied
+      if (croppedView.innerHTML !== '') {
+        document.getElementById(`${model}-iframe`).classList.add('hidden');
+        croppedView.classList.remove('hidden');
+        
+        // Update toggle buttons
+        const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+      } else {
+        alert('No crop has been applied to this model yet');
+        showFullView(model);
+      }
+    }
+    // Reset model to original state
+    function resetModel(model) {
+      document.getElementById(`${model}-cropped`).innerHTML = '';
+      showFullView(model);
+    }
+
+    // Initialize on load
+    window.addEventListener('load', function() {
+      // Check if mobile device
+      if (/Mobi|Android/i.test(navigator.userAgent)) {
+        document.body.classList.add('mobile');
+      }
+      
+      // Set default view mode
+      setViewMode('single');
+    });
+  </script>
+</body>
+</html>

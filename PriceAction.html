@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faisal Pro Market Structure Model (UPGRADED)</title>
+<style>
+  :root {
+    --primary-blue: #3498db;
+    --light-blue: #e6f2ff;
+    --dark-blue: #2980b9;
+    --primary-green: #2ecc71;
+    --light-green: #e8f8f5;
+    --dark-green: #27ae60;
+    --primary-orange: #e67e22;
+    --light-orange: #fef5e7;
+    --dark-orange: #d35400;
+    --primary-red: #e74c3c;
+    --light-red: #fdedec;
+    --dark-red: #c0392b;
+    --text-dark: #2c3e50;
+    --text-light: #7f8c8d;
+    --bg-color: #f9f9f9;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+  }
+  
+  body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: var(--bg-color); 
+    color: var(--text-dark); 
+    margin: 0; 
+    padding: 15px;
+    overflow-x: hidden;
+  }
+  
+  h1 { 
+    color: var(--primary-blue); 
+    text-align: center; 
+    margin-bottom: 15px; 
+    font-size: 26px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  
+  .controls { 
+    display: flex; 
+    gap: 12px; 
+    justify-content: center; 
+    margin: 15px 0; 
+    flex-wrap: wrap;
+    background: var(--card-bg);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  select, button, input { 
+    padding: 10px 15px; 
+    background: var(--card-bg); 
+    border: 1px solid var(--border-color); 
+    border-radius: 6px; 
+    font-size: 14px;
+    min-width: 140px;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  
+  select:focus, button:focus, input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+  }
+  
+  button {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  button:hover {
+    background: var(--dark-blue);
+    transform: translateY(-1px);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  .chart-container { 
+    position: relative; 
+    width: 100%; 
+    height: 70vh; 
+    min-height: 500px;
+    max-height: 1080px;
+    margin: 15px auto 0;
+    overflow: scroll; 
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  }
+  
+  canvas { 
+    background: var(--card-bg); 
+    display: block; 
+    width: 100%;
+    height: 100%;
+  }
+  
+  .indicators-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .indicators-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .indicator-box, .pivot-container, .swing-container, 
+  .price-labels, .mb-indicator, .candle-info, .structure-container { 
+    padding: 15px; 
+    border-radius: 8px; 
+    background: var(--card-bg); 
+    text-align: left;
+    min-width: 220px;
+    flex: 1;
+    max-width: 250px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+  }
+  
+  .indicator-box:hover, .pivot-container:hover, .swing-container:hover,
+  .price-labels:hover, .mb-indicator:hover, .candle-info:hover, .structure-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .indicator-box h3, .pivot-container h3, .swing-container h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+    font-size: 16px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+  }
+  
+  .bullish { 
+    color: var(--primary-green); 
+    font-weight: bold; 
+    background-color: var(--light-green);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .bearish { 
+    color: var(--primary-red); 
+    font-weight: bold; 
+    background-color: var(--light-red);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  
+  #symbolSearch {
+    width: 350px;
+    max-width: 100%;
+    padding: 12px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  #symbolSearch:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+  }
+
+  /* Price Axis Styles */
+  .price-axis {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: 100%;
+    background-color: rgba(255,255,255,0.9);
+    border-left: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-dark);
+    z-index: 15;
+    pointer-events: none;
+    border-radius: 0 8px 8px 0;
+  }
+  
+  .price-line {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background-color: var(--border-color);
+  }
+  
+  .price-label {
+    position: absolute;
+    right: 5px;
+    padding: 2px 5px;
+    background-color: rgba(255,255,255,0.9);
+    border-radius: 4px;
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+  
+  .live-price {
+    position: absolute;
+    width: 100%;
+    background: var(--primary-green);
+    color: white;
+    text-align: right;
+    padding-right: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    z-index: 20;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Card headers */
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    
+  }
+  
+  .card-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    color: var(--primary-blue);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .chart-container {
+      height: 60vh;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .chart-container {
+      height: 50vh;
+    }
+    
+    .indicator-box, .pivot-container, .swing-container, 
+    .price-labels, .mb-indicator, .candle-info, .structure-container {
+      min-width: 180px;
+      font-size: 12px;
+    }
+    
+    .price-axis {
+      width: 60px;
+      font-size: 11px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .chart-container {
+      height: 400px;
+    }
+    
+    h1 {
+      font-size: 22px;
+    }
+    
+    select, button, input {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    
+    .indicators-row {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .indicator-box, .pivot-container, .swing-container, 
+    .price-labels, .mb-indicator, .candle-info, .structure-container {
+      width: 100%;
+      max-width: 100%;
+    }
+    
+    .price-axis {
+      width: 50px;
+      font-size: 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .chart-container {
+      height: 350px;
+    }
+    
+    .controls {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    select, button, input {
+      width: 100%;
+      max-width: 250px;
+    }
+    
+    .price-axis {
+      width: 45px;
+      font-size: 9px;
+    }
+    
+    #symbolSearch {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+<h1>Price Action & SMC </h1>
+
+
+<div class="controls">
+    <div class="search-container">
+  <input type="text" id="symbolSearch" placeholder="🔍 Search symbol (e.g. BTC, ETH)" oninput="filterSymbols()">
+</div>
+
+  <select id="symbolSelector"></select>
+  <select id="timeframeSelector">
+    <option value="15m">15m</option>
+    <option value="30m">30m</option>
+    <option value="1h">1h</option>
+    <option value="4h">4h</option>
+    <option value="1d">1d</option>
+    <option value="1w">1w</option>
+    <option value="1M">1M</option>
+  </select>
+  <button onclick="refreshData()">🔄 Refresh</button>
+  <button onclick="resetZoom()">🔍 Reset Zoom</button>
+</div>
+
+<div class="indicators-container">
+  <div class="indicators-row">
+    <div class="indicator-box">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+        </svg>
+        <h3>Latest Order Block (OB)</h3>
+      </div>
+      <div id="obValue">-</div>
+    </div>
+    <div class="indicator-box">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <h3>Latest Fair Value Gap (FVG)</h3>
+      </div>
+      <div id="fvgValue">-</div>
+    </div>
+    <div class="indicator-box">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="20" x2="12" y2="10"></line>
+          <line x1="18" y1="20" x2="18" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+        <h3>Market Structure</h3>
+      </div>
+      <div id="msValue">-</div>
+    </div>
+
+<div class="mb-indicator" id="mbIndicator">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+        </svg>
+        <h3>Mitigation Block</h3>
+      </div>
+    </div>
+
+  </div>
+  
+  <div class="indicators-row">
+    <div class="pivot-container" id="pivotContainer">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12" y2="16"></line>
+        </svg>
+        <h3>Pivot Points</h3>
+      </div>
+    </div>
+    <div class="swing-container" id="swingContainer">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+        <h3>Swing & Liquidity</h3>
+      </div>
+    </div>
+    <div class="structure-container" id="structureContainer">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <h3>Structure Indicators</h3>
+      </div>
+      <div><strong>BOS:</strong> <span id="bosValue">-</span></div>
+      <div><strong>CHoCH:</strong> <span id="chochValue">-</span></div>
+    </div>
+    <div class="price-labels" id="priceLabels">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        <h3>Price Levels</h3>
+      </div>
+    </div>
+    
+
+
+    <div class="candle-info" id="candleInfo">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+        <h3>Candle Details</h3>
+      </div>
+      Hover over candles for details
+    </div>
+  </div>
+</div>
+
+<div class="chart-container">
+  <canvas id="chart"></canvas>
+  <div class="price-axis" id="priceAxis"></div>
+</div>
+
+<script>
+// [Rest of your JavaScript code remains exactly the same]
+// Only the CSS has been upgraded for visual appeal
+let symbolList = [];
+let ws, depthWs;
+let candles = [];
+let depthCandles = [];
+let chartCtx;
+let pivotPoints = {};
+let currentPrice = 0;
+let marketStructure = "";
+let swingPoints = [];
+let liquidityZones = { top: 0, bottom: 0 };
+let bosPoints = [];
+let chochPoints = [];
+
+// Chart navigation variables
+let isDragging = false;
+let lastX = 0;
+let offsetX = 0;
+let zoomLevel = 1;
+let visibleCandles = 100;
+let maxCandles = 500;
+let minCandlesToShow = 10;
+let candleWidth = 8;
+let candleSpacing = 2;
+
+const timeframeMap = {
+  '15m': '15m', '30m': '30m', '1h': '1h', '4h': '4h', '1d': '1d', '1w': '1w', '1M': '1M'
+};
+
+// Initialize chart
+function initChart() {
+  const chart = document.getElementById('chart');
+  resizeChart();
+  chartCtx = chart.getContext('2d');
+  
+  // Set HD resolution (1920x1080) for the chart
+  const dpr = window.devicePixelRatio || 1;
+  const rect = chart.getBoundingClientRect();
+  chart.width = rect.width * dpr;
+  chart.height = rect.height * dpr;
+  chartCtx.scale(dpr, dpr);
+  chart.style.width = rect.width + 'px';
+  chart.style.height = rect.height + 'px';
+  
+  chart.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastX = e.clientX - chart.getBoundingClientRect().left;
+  });
+
+  chart.addEventListener('mousemove', (e) => {
+    const chart = document.getElementById('chart');
+    const chartWidth = chart.width / (window.devicePixelRatio || 1);
+    const rect = chart.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    
+    if (!isDragging) {
+      // Handle hover to show candle info
+      const candleIndex = Math.floor(x / (chartWidth / visibleCandles));
+      const visibleData = getVisibleCandles();
+      
+      if (candleIndex >= 0 && candleIndex < visibleData.length) {
+        const candle = visibleData[candleIndex];
+        showCandleInfo(candle);
+      }
+    } else {
+      const deltaX = x - lastX;
+      offsetX += deltaX;
+      lastX = x;
+      drawChart();
+    }
+  });
+
+  chart.addEventListener('mouseup', (e) => {
+    if (!isDragging) {
+      const chart = document.getElementById('chart');
+      const chartWidth = chart.width / (window.devicePixelRatio || 1);
+      const rect = chart.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const candleIndex = Math.floor(x / (chartWidth / visibleCandles));
+      const visibleData = getVisibleCandles();
+      
+      if (candleIndex >= 0 && candleIndex < visibleData.length) {
+        const candle = visibleData[candleIndex];
+        showCandleInfo(candle);
+      }
+    }
+    isDragging = false;
+  });
+
+  chart.addEventListener('mouseleave', () => {
+    isDragging = false;
+  });
+
+  chart.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    zoomLevel = Math.max(0.5, Math.min(5, zoomLevel * zoomFactor));
+    visibleCandles = Math.max(minCandlesToShow, Math.min(maxCandles, Math.round(visibleCandles / zoomFactor)));
+    drawChart();
+  });
+
+  window.addEventListener('resize', () => {
+    resizeChart();
+    drawChart();
+  });
+}
+
+function resizeChart() {
+  const chart = document.getElementById('chart');
+  const container = document.querySelector('.chart-container');
+  
+  // Handle high DPI displays
+  const dpr = window.devicePixelRatio || 1;
+  const rect = container.getBoundingClientRect();
+  
+  // Set canvas size
+  chart.width = rect.width * dpr;
+  chart.height = rect.height * dpr;
+  chart.style.width = rect.width + 'px';
+  chart.style.height = rect.height + 'px';
+  
+  // Scale the context
+  chartCtx = chart.getContext('2d');
+  chartCtx.scale(dpr, dpr);
+}
+
+function showCandleInfo(candle) {
+  if (!candle) return;
+  
+  // Calculate momentum (percentage change from open to close)
+  const momentum = ((candle.close - candle.open) / candle.open * 100).toFixed(6);
+  const momentumClass = momentum >= 0 ? 'bullish' : 'bearish';
+  
+  // Format date/time
+  const date = new Date(candle.time);
+  const dateStr = date.toLocaleString();
+  
+  document.getElementById('candleInfo').innerHTML = `
+    <div><strong>Time:</strong> ${dateStr}</div>
+    <div><strong>Open:</strong> ${candle.open.toFixed(6)}</div>
+    <div><strong>High:</strong> ${candle.high.toFixed(6)}</div>
+    <div><strong>Low:</strong> ${candle.low.toFixed(6)}</div>
+    <div><strong>Close:</strong> ${candle.close.toFixed(6)}</div>
+    <div><strong>Momentum:</strong> <span class="${momentumClass}">${momentum}%</span></div>
+    <div><strong>Volume:</strong> ${candle.volume.toFixed(6)}</div>
+  `;
+}
+
+function resetZoom() {
+  zoomLevel = 1;
+  offsetX = 0;
+  visibleCandles = 100;
+  drawChart();
+}
+
+function filterSymbols() {
+  const searchInput = document.getElementById('symbolSearch').value.toLowerCase();
+  const selector = document.getElementById('symbolSelector');
+  
+  // Reset selector
+  selector.innerHTML = '';
+  
+  // Filter and add matching symbols
+  symbolList.filter(sym => sym.toLowerCase().includes(searchInput))
+    .forEach(sym => {
+      const opt = document.createElement('option');
+      opt.value = sym;
+      opt.text = sym;
+      selector.appendChild(opt);
+    });
+}
+
+async function fetchSymbols() {
+  try {
+    const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+    const data = await res.json();
+    symbolList = data.symbols
+      .filter(s => s.symbol.endsWith('USDT') && s.contractType === 'PERPETUAL')
+      .map(s => s.symbol)
+      .sort();
+    
+    const selector = document.getElementById('symbolSelector');
+    symbolList.forEach(sym => {
+      const opt = document.createElement('option');
+      opt.value = sym;
+      opt.text = sym;
+      selector.appendChild(opt);
+    });
+    
+    // Default to BTCUSDT if available
+    if (symbolList.includes('BTCUSDT')) {
+      selector.value = 'BTCUSDT';
+    }
+  } catch (error) {
+    console.error('Error fetching symbols:', error);
+  }
+}
+
+async function fetchHistoricalCandles(symbol, interval) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${maxCandles}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    candles = data.map(k => ({
+      time: k[0], 
+      open: parseFloat(k[1]), 
+      high: parseFloat(k[2]), 
+      low: parseFloat(k[3]), 
+      close: parseFloat(k[4]), 
+      volume: parseFloat(k[5]),
+      isFinal: true
+    }));
+    
+    depthCandles = [];
+    offsetX = 0;
+    zoomLevel = 1;
+    visibleCandles = 100;
+    
+    if (candles.length >= 2) {
+      calculatePivotPoints(candles[candles.length - 2]);
+    }
+    
+    drawChart();
+    updateIndicators();
+    updatePriceAxis();
+  } catch (error) {
+    console.error('Error fetching historical candles:', error);
+  }
+}
+
+function connectWebSocket(symbol, interval) {
+  if (ws) ws.close();
+  if (depthWs) depthWs.close();
+
+  const stream = `${symbol.toLowerCase()}@kline_${interval}`;
+  ws = new WebSocket(`wss://fstream.binance.com/ws/${stream}`);
+  
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    const k = msg.k;
+    currentPrice = parseFloat(k.c);
+    
+    updateCandle({
+      time: k.t,
+      open: parseFloat(k.o),
+      high: parseFloat(k.h),
+      low: parseFloat(k.l),
+      close: parseFloat(k.c),
+      volume: parseFloat(k.v),
+      isFinal: k.x
+    });
+    
+    if (k.x) {
+      updateIndicators();
+      if (candles.length >= 2) {
+        calculatePivotPoints(candles[candles.length - 2]);
+      }
+    }
+    updatePriceAxis();
+  };
+
+  depthWs = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}@depth@100ms`);
+  depthWs.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    const bids = msg.b.filter(b => parseFloat(b[1]) > 0).slice(0, 10);
+    const asks = msg.a.filter(a => parseFloat(a[1]) > 0).slice(0, 10);
+
+    const bidVolume = bids.reduce((acc, b) => acc + parseFloat(b[1]), 0);
+    const askVolume = asks.reduce((acc, a) => acc + parseFloat(a[1]), 0);
+    const totalDepth = bidVolume + askVolume;
+    updateDepth(totalDepth);
+  };
+}
+
+function updateCandle(k) {
+  const last = candles[candles.length - 1];
+  
+  if (last && last.time === k.time) {
+    candles[candles.length - 1] = k;
+  } else {
+    candles.push(k);
+    if (candles.length > maxCandles) candles.shift();
+    
+    if (currentDepthCandle.high > 0 && currentDepthCandle.low < Infinity) {
+      depthCandles.push({ ...currentDepthCandle });
+      if (depthCandles.length > maxCandles) depthCandles.shift();
+    }
+    currentDepthCandle = { high: 0, low: Infinity, close: 0 };
+  }
+  
+  currentDepthCandle.close = currentDepthValue;
+  drawChart();
+  updatePriceAxis();
+}
+
+let currentDepthValue = 0;
+let currentDepthCandle = { high: 0, low: Infinity, close: 0 };
+function updateDepth(totalDepth) {
+  currentDepthValue = totalDepth;
+  currentDepthCandle.high = Math.max(currentDepthCandle.high, totalDepth);
+  currentDepthCandle.low = Math.min(currentDepthCandle.low, totalDepth);
+}
+
+function refreshData() {
+  const symbol = document.getElementById('symbolSelector').value;
+  const timeframe = timeframeMap[document.getElementById('timeframeSelector').value];
+  fetchHistoricalCandles(symbol, timeframe);
+  connectWebSocket(symbol, timeframe);
+}
+
+function detectOrderBlock() {
+  if (candles.length < 8) return null;
+  
+  const lookback = 7;
+  let ob = null;
+  const startIdx = Math.max(0, candles.length - lookback - 1);
+
+  for (let i = startIdx; i < candles.length - 1; i++) {
+    const candle = candles[i];
+    const bodySize = Math.abs(candle.close - candle.open);
+    const candleRange = candle.high - candle.low;
+    const isStrong = bodySize > candleRange * 0.6;
+
+    if (isStrong) {
+      ob = {
+        price: candle.close > candle.open ? candle.low : candle.high,
+        type: candle.close > candle.open ? "Bullish OB" : "Bearish OB",
+        candleIndex: i
+      };
+      
+      drawOrderBlock(ob, i);
+    }
+  }
+  return ob;
+}
+
+function drawOrderBlock(ob, index) {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const chart = document.getElementById('chart');
+  const chartWidth = chart.width / (window.devicePixelRatio || 1);
+  
+  const x = (index - (candles.length - visibleCandles) + offsetX/10) * (chartWidth / visibleCandles);
+  const y = scale(ob.price, min, max, chart.height - 100, 0);
+  
+  chartCtx.fillStyle = ob.type === "Bullish OB" ? "rgba(46, 204, 113, 0.2)" : "rgba(231, 76, 60, 0.2)";
+  chartCtx.fillRect(x, y - 5, chartWidth / visibleCandles, 10);
+  
+  chartCtx.fillStyle = ob.type === "Bullish OB" ? "#27ae60" : "#c0392b";
+  chartCtx.font = "10px Arial";
+  chartCtx.fillText(ob.type, x, y - 10);
+}
+
+function detectFVG() {
+  if (candles.length < 4) return null;
+
+  const c1 = candles[candles.length - 4];
+  const c2 = candles[candles.length - 3];
+  const c3 = candles[candles.length - 2];
+
+  if (c1.high < c3.low) {
+    const fvg = { low: c1.high, high: c3.low, type: "Bullish FVG" };
+    drawFVG(fvg, candles.length - 4, candles.length - 2);
+    return fvg;
+  } else if (c1.low > c3.high) {
+    const fvg = { low: c3.high, high: c1.low, type: "Bearish FVG" };
+    drawFVG(fvg, candles.length - 4, candles.length - 2);
+    return fvg;
+  }
+  return null;
+}
+
+function drawFVG(fvg, startIdx, endIdx) {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const chart = document.getElementById('chart');
+  const chartWidth = chart.width / (window.devicePixelRatio || 1);
+  
+  const xStart = (startIdx - (candles.length - visibleCandles) + offsetX/10) * (chartWidth / visibleCandles);
+  const xEnd = (endIdx - (candles.length - visibleCandles) + offsetX/10) * (chartWidth / visibleCandles);
+  const yLow = scale(fvg.low, min, max, chart.height - 100, 0);
+  const yHigh = scale(fvg.high, min, max, chart.height - 100, 0);
+  
+  chartCtx.fillStyle = fvg.type === "Bullish FVG" ? "rgba(46, 204, 113, 0.2)" : "rgba(231, 76, 60, 0.2)";
+  chartCtx.fillRect(xStart, yHigh, xEnd - xStart, yLow - yHigh);
+  
+  chartCtx.fillStyle = fvg.type === "Bullish FVG" ? "#27ae60" : "#c0392b";
+  chartCtx.font = "10px Arial";
+  chartCtx.fillText("FVG", xStart, yHigh - 5);
+}
+
+function detectMitigationBlock() {
+  if (candles.length < 7) return null;
+  
+  const recent = candles.slice(-7);
+  let mb = null;
+  
+  for (let i = 0; i < recent.length - 1; i++) {
+    const current = recent[i];
+    const next = recent[i + 1];
+
+    // Bullish MB: Bearish candle followed by bullish candle that closes above bearish candle's open
+    const isBullBlock = current.open > current.close && 
+                       next.close > next.open && 
+                       next.close > current.open;
+
+    // Bearish MB: Bullish candle followed by bearish candle that closes below bullish candle's open
+    const isBearBlock = current.close > current.open && 
+                       next.open > next.close && 
+                       next.close < current.open;
+
+    if (isBullBlock || isBearBlock) {
+      mb = {
+        top: isBullBlock ? current.open : current.close,
+        bottom: isBullBlock ? current.close : current.open,
+        type: isBullBlock ? "Bullish MB" : "Bearish MB",
+        candleIndex: candles.length - 7 + i
+      };
+      
+      drawMitigationBlock(mb, candles.length - 7 + i);
+    }
+  }
+  
+  // Update MB indicator
+  if (mb) {
+    document.getElementById('mbIndicator').innerHTML = `
+      <div><strong>Mitigation Block:</strong> <span class="${mb.type.includes('Bullish') ? 'bullish' : 'bearish'}">
+        ${mb.type} (${mb.bottom.toFixed(2)}-${mb.top.toFixed(2)})
+      </span></div>
+    `;
+  } else {
+    document.getElementById('mbIndicator').innerHTML = "<div><strong>Mitigation Block:</strong> -</div>";
+  }
+  
+  return mb;
+}
+
+function drawMitigationBlock(mb, index) {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const chart = document.getElementById('chart');
+  const chartWidth = chart.width / (window.devicePixelRatio || 1);
+  
+  const x = (index - (candles.length - visibleCandles) + offsetX/10) * (chartWidth / visibleCandles);
+  const yTop = scale(mb.top, min, max, chart.height - 100, 0);
+  const yBottom = scale(mb.bottom, min, max, chart.height - 100, 0);
+  const height = yBottom - yTop;
+  
+  // Draw block
+  chartCtx.fillStyle = mb.type === "Bullish MB" ? "rgba(52, 152, 219, 0.2)" : "rgba(230, 126, 34, 0.2)";
+  chartCtx.fillRect(x, yTop, chartWidth / visibleCandles, height);
+  
+  // Draw border
+  chartCtx.strokeStyle = mb.type === "Bullish MB" ? "#3498db" : "#e67e22";
+  chartCtx.setLineDash([3, 3]);
+  chartCtx.beginPath();
+  chartCtx.moveTo(x, yTop);
+  chartCtx.lineTo(x + chartWidth / visibleCandles, yTop);
+  chartCtx.lineTo(x + chartWidth / visibleCandles, yBottom);
+  chartCtx.lineTo(x, yBottom);
+  chartCtx.closePath();
+  chartCtx.stroke();
+  
+  // Draw label
+  chartCtx.fillStyle = mb.type === "Bullish MB" ? "#3498db" : "#e67e22";
+  chartCtx.font = "bold 10px Arial";
+  chartCtx.fillText(mb.type, x + 5, yTop + 15);
+  
+  chartCtx.setLineDash([]);
+}
+
+function updateIndicators() {
+  const ob = detectOrderBlock();
+  const fvg = detectFVG();
+  const mb = detectMitigationBlock();
+  
+  document.getElementById('obValue').innerHTML = ob 
+    ? `<span class="${ob.type.includes('Bullish') ? 'bullish' : 'bearish'}">${ob.type} at ${ob.price.toFixed(2)}</span>`
+    : "No OB found (Last 7 candles)";
+  
+  document.getElementById('fvgValue').innerHTML = fvg 
+    ? `<span class="${fvg.type.includes('Bullish') ? 'bullish' : 'bearish'}">${fvg.type} (${fvg.low.toFixed(2)}-${fvg.high.toFixed(2)})</span>`
+    : "No FVG found (Last 3 candles)";
+  
+  document.getElementById('msValue').innerHTML = marketStructure 
+    ? `<span class="${marketStructure.includes('Bullish') ? 'bullish' : 'bearish'}">${marketStructure}</span>`
+    : "-";
+}
+
+function getVisibleCandles() {
+  const startIdx = Math.max(0, candles.length - visibleCandles - Math.round(offsetX/10));
+  const endIdx = Math.min(candles.length, startIdx + visibleCandles);
+  return candles.slice(startIdx, endIdx);
+}
+
+function calculatePivotPoints(candle) {
+  const high = candle.high;
+  const low = candle.low;
+  const close = candle.close;
+
+  const pp = (high + low + close) / 3;
+  const r1 = (2 * pp) - low;
+  const r2 = pp + (high - low);
+  const r3 = high + 2 * (pp - low);
+  const s1 = (2 * pp) - high;
+  const s2 = pp - (high - low);
+  const s3 = low - 2 * (high - pp);
+
+  const midPPR1 = (pp + r1) / 2;
+  const midR1R2 = (r1 + r2) / 2;
+  const midR2R3 = (r2 + r3) / 2;
+  const midPPS1 = (pp + s1) / 2;
+  const midS1S2 = (s1 + s2) / 2;
+  const midS2S3 = (s2 + s3) / 2;
+
+  pivotPoints = {
+    pp, r1, r2, r3, s1, s2, s3,
+    midPPR1, midR1R2, midR2R3, midPPS1, midS1S2, midS2S3
+  };
+
+  updatePivotPointsDisplay();
+}
+
+function updatePivotPointsDisplay() {
+  const container = document.getElementById('pivotContainer');
+  container.innerHTML = `
+    <div style="font-weight:bold; margin-bottom:5px; color: var(--primary-blue);">Pivot Points</div>
+    <div class="pivot-level" style="color: #0000FF;"><strong>R3: </strong>${pivotPoints.r3.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #0000FF;"><strong>R2: </strong>${pivotPoints.r2.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #0000FF;"><strong>R1: </strong>${pivotPoints.r1.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #FF0000;"><strong>PP: </strong>${pivotPoints.pp.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #00FF00;"><strong>S1: </strong>${pivotPoints.s1.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #00FF00;"><strong>S2: </strong>${pivotPoints.s2.toFixed(6)}</div>
+    <div class="pivot-level" style="color: #00FF00;"><strong>S3: </strong>${pivotPoints.s3.toFixed(6)}</div>
+  `;
+}
+
+function updateSwingPointsDisplay() {
+  const container = document.getElementById('swingContainer');
+  
+  // Get the latest swing points
+  const latestSwingHigh = swingPoints.filter(s => s.type === 'HH').pop();
+  const latestSwingLow = swingPoints.filter(s => s.type === 'LL').pop();
+  
+  container.innerHTML = `
+    <div style="font-weight:bold; margin-bottom:5px; color: var(--primary-blue);">Swing & Liquidity</div>
+    <div class="swing-level" style="color: var(--primary-blue);"><strong>Latest Swing High: </strong>${latestSwingHigh ? latestSwingHigh.y.toFixed(6) : '-'}</div>
+    <div class="swing-level" style="color: var(--primary-orange);"><strong>Latest Swing Low: </strong>${latestSwingLow ? latestSwingLow.y.toFixed(6) : '-'}</div>
+    <div class="liquidity-level" style="color: var(--primary-red);"><strong>Top Liquidity: </strong>${liquidityZones.top.toFixed(6)}</div>
+    <div class="liquidity-level" style="color: var(--primary-red);"><strong>Bottom Liquidity: </strong>${liquidityZones.bottom.toFixed(6)}</div>
+  `;
+}
+
+function drawPivotLines() {
+  if (!pivotPoints || Object.keys(pivotPoints).length === 0) return;
+  
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const chart = document.getElementById('chart');
+  const chartWidth = chart.width / (window.devicePixelRatio || 1);
+  
+  const mainLevels = [
+    {price: pivotPoints.r3, color: '#0000FF', name: 'R3'},
+    {price: pivotPoints.r2, color: '#0000FF', name: 'R2'},
+    {price: pivotPoints.r1, color: '#0000FF', name: 'R1'},
+    {price: pivotPoints.pp, color: '#FF0000', name: 'PP'},
+    {price: pivotPoints.s1, color: '#00FF00', name: 'S1'},
+    {price: pivotPoints.s2, color: '#00FF00', name: 'S2'},
+    {price: pivotPoints.s3, color: '#00FF00', name: 'S3'}
+  ];
+  
+  const midLevels = [
+    {price: pivotPoints.midR2R3, color: '#888888', name: 'Mid R2-R3'},
+    {price: pivotPoints.midR1R2, color: '#888888', name: 'Mid R1-R2'},
+    {price: pivotPoints.midPPR1, color: '#888888', name: 'Mid PP-R1'},
+    {price: pivotPoints.midPPS1, color: '#888888', name: 'Mid PP-S1'},
+    {price: pivotPoints.midS1S2, color: '#888888', name: 'Mid S1-S2'},
+    {price: pivotPoints.midS2S3, color: '#888888', name: 'Mid S2-S3'}
+  ];
+  
+  // Draw main levels
+  mainLevels.forEach(level => {
+    const y = scale(level.price, min, max, chart.height - 100, 0);
+    chartCtx.strokeStyle = level.color;
+    chartCtx.setLineDash([]);
+    chartCtx.beginPath();
+    chartCtx.moveTo(0, y);
+    chartCtx.lineTo(chartWidth, y);
+    chartCtx.stroke();
+    
+    chartCtx.fillStyle = level.color;
+    chartCtx.font = "10px Arial";
+    chartCtx.fillText(`${level.name}: ${level.price.toFixed(6)}`, chartWidth - 100, y - 5);
+  });
+  
+  // Draw mid levels
+  midLevels.forEach(level => {
+    const y = scale(level.price, min, max, chart.height - 100, 0);
+    chartCtx.strokeStyle = level.color;
+    chartCtx.setLineDash([5, 3]);
+    chartCtx.beginPath();
+    chartCtx.moveTo(0, y);
+    chartCtx.lineTo(chartWidth, y);
+    chartCtx.stroke();
+    
+    chartCtx.fillStyle = level.color;
+    chartCtx.font = "10px Arial";
+    chartCtx.fillText(`${level.name}: ${level.price.toFixed(2)}`, chartWidth - 100, y - 5);
+  });
+  
+  chartCtx.setLineDash([]);
+}
+
+function calculateLiquidityExpansionZones() {
+  if (candles.length < 7) return;
+  
+  const last7 = candles.slice(-7);
+  const highs = last7.map(c => c.high);
+  const lows = last7.map(c => c.low);
+  const highestHigh = Math.max(...highs);
+  const lowestLow = Math.min(...lows);
+  const range = highestHigh - lowestLow;
+  const expansionFactor = 0.25;
+
+  liquidityZones.top = highestHigh + range * expansionFactor;
+  liquidityZones.bottom = lowestLow - range * expansionFactor;
+
+  drawLiquidityZone(liquidityZones.top, 'Top Liquidity');
+  drawLiquidityZone(liquidityZones.bottom, 'Bottom Liquidity');
+  
+  // Update the swing points display
+  updateSwingPointsDisplay();
+}
+
+function drawLiquidityZone(price, label) {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const chart = document.getElementById('chart');
+  const y = scale(price, min, max, chart.height - 100, 0);
+  
+  chartCtx.strokeStyle = 'rgba(230, 126, 34, 0.8)';
+  chartCtx.setLineDash([5, 3]);
+  chartCtx.beginPath();
+  chartCtx.moveTo(0, y);
+  chartCtx.lineTo(chart.width / (window.devicePixelRatio || 1), y);
+  chartCtx.stroke();
+  
+  chartCtx.fillStyle = 'rgba(230, 126, 34, 0.9)';
+  chartCtx.font = "bold 10px Arial";
+  chartCtx.fillText(`${label}: ${price.toFixed(2)}`, 10, y - 5);
+  
+  chartCtx.setLineDash([]);
+}
+
+function detectMarketStructure() {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 5) return;
+  
+  swingPoints = [];
+  marketStructure = "";
+  bosPoints = [];
+  chochPoints = [];
+
+  // First pass to identify swing points
+  for (let i = 2; i < visibleData.length - 2; i++) {
+    const curr = visibleData[i];
+    
+    if (curr.high > visibleData[i-1].high && curr.high > visibleData[i+1].high) {
+      swingPoints.push({ x: i, y: curr.high, type: 'HH' });
+    }
+    if (curr.low < visibleData[i-1].low && curr.low < visibleData[i+1].low) {
+      swingPoints.push({ x: i, y: curr.low, type: 'LL' });
+    }
+  }
+
+  // Second pass to identify BOS and CHoCH
+  if (swingPoints.length >= 3) {
+    for (let i = 2; i < swingPoints.length; i++) {
+      const current = swingPoints[i];
+      const prev = swingPoints[i-1];
+      const prevPrev = swingPoints[i-2];
+      
+      // Detect BOS (Break of Structure)
+      if (current.type === 'HH' && prev.type === 'LL' && prevPrev.type === 'HH') {
+        if (current.y > prevPrev.y) {
+          bosPoints.push({ ...current, label: 'Bullish BOS' });
+        }
+      } else if (current.type === 'LL' && prev.type === 'HH' && prevPrev.type === 'LL') {
+        if (current.y < prevPrev.y) {
+          bosPoints.push({ ...current, label: 'Bearish BOS' });
+        }
+      }
+      
+      // Detect CHoCH (Change of Character)
+      if (current.type === 'HH' && prev.type === 'LL' && prevPrev.type === 'LL') {
+        chochPoints.push({ ...current, label: 'Bullish CHoCH' });
+      } else if (current.type === 'LL' && prev.type === 'HH' && prevPrev.type === 'HH') {
+        chochPoints.push({ ...current, label: 'Bearish CHoCH' });
+      }
+    }
+  }
+
+  // Determine market structure
+  if (swingPoints.length >= 2) {
+    const last = swingPoints[swingPoints.length - 1];
+    const prev = swingPoints[swingPoints.length - 2];
+    
+    if (last.type === 'HH' && prev.type === 'LL') {
+      marketStructure = "Bullish Structure";
+    } else if (last.type === 'LL' && prev.type === 'HH') {
+      marketStructure = "Bearish Structure";
+    }
+  }
+
+  // Draw all points
+  swingPoints.forEach(pt => {
+    const chart = document.getElementById('chart');
+    const chartWidth = chart.width / (window.devicePixelRatio || 1);
+    const x = pt.x * (chartWidth / visibleCandles);
+    const y = scale(pt.y, 
+      Math.min(...visibleData.map(c => c.low)), 
+      Math.max(...visibleData.map(c => c.high)), 
+      chart.height - 100, 0);
+    
+    chartCtx.fillStyle = pt.type === 'HH' ? '#3498db' : '#e67e22';
+    chartCtx.beginPath();
+    chartCtx.arc(x + (chartWidth / visibleCandles) / 2, y, 5, 0, 2 * Math.PI);
+    chartCtx.fill();
+    
+    chartCtx.fillStyle = '#2c3e50';
+    chartCtx.font = 'bold 10px Arial';
+    chartCtx.fillText(pt.type, x, y - 8);
+  });
+
+  // Draw BOS points
+  bosPoints.forEach(pt => {
+    const chart = document.getElementById('chart');
+    const chartWidth = chart.width / (window.devicePixelRatio || 1);
+    const x = pt.x * (chartWidth / visibleCandles);
+    const y = scale(pt.y, 
+      Math.min(...visibleData.map(c => c.low)), 
+      Math.max(...visibleData.map(c => c.high)), 
+      chart.height - 100, 0);
+    
+    chartCtx.fillStyle = pt.label.includes('Bullish') ? '#2ecc71' : '#e74c3c';
+    chartCtx.beginPath();
+    chartCtx.arc(x + (chartWidth / visibleCandles) / 2, y, 7, 0, 2 * Math.PI);
+    chartCtx.fill();
+    
+    chartCtx.fillStyle = pt.label.includes('Bullish') ? '#2ecc71' : '#e74c3c';
+    chartCtx.font = 'bold 10px Arial';
+    chartCtx.fillText('BOS', x, y - 15);
+  });
+
+  // Draw CHoCH points
+  chochPoints.forEach(pt => {
+    const chart = document.getElementById('chart');
+    const chartWidth = chart.width / (window.devicePixelRatio || 1);
+    const x = pt.x * (chartWidth / visibleCandles);
+    const y = scale(pt.y, 
+      Math.min(...visibleData.map(c => c.low)), 
+      Math.max(...visibleData.map(c => c.high)), 
+      chart.height - 100, 0);
+    
+    chartCtx.fillStyle = pt.label.includes('Bullish') ? '#2ecc71' : '#e74c3c';
+    chartCtx.beginPath();
+    chartCtx.arc(x + (chartWidth / visibleCandles) / 2, y, 7, 0, 2 * Math.PI);
+    chartCtx.fill();
+    
+    chartCtx.fillStyle = pt.label.includes('Bullish') ? '#2ecc71' : '#e74c3c';
+    chartCtx.font = 'bold 10px Arial';
+    chartCtx.fillText('CHoCH', x, y - 25);
+  });
+
+  // Update structure indicators
+  const latestBOS = bosPoints[bosPoints.length - 1];
+  const latestCHoCH = chochPoints[chochPoints.length - 1];
+  
+  document.getElementById('bosValue').innerHTML = latestBOS 
+    ? `<span class="${latestBOS.label.includes('Bullish') ? 'bullish' : 'bearish'}">${latestBOS.label} at ${latestBOS.y.toFixed(6)}</span>`
+    : "-";
+  
+  document.getElementById('chochValue').innerHTML = latestCHoCH 
+    ? `<span class="${latestCHoCH.label.includes('Bullish') ? 'bullish' : 'bearish'}">${latestCHoCH.label} at ${latestCHoCH.y.toFixed(6)}</span>`
+    : "-";
+  
+  // Update the swing points display
+  updateSwingPointsDisplay();
+}
+
+function drawDepthChart() {
+  if (depthCandles.length === 0) return;
+  
+  const visibleDepth = depthCandles.slice(
+    Math.max(0, depthCandles.length - visibleCandles - Math.round(offsetX/10)),
+    Math.min(depthCandles.length, depthCandles.length - Math.round(offsetX/10) + visibleCandles)
+  );
+  
+  if (visibleDepth.length < 2) return;
+  
+  const highs = visibleDepth.map(c => c.high);
+  const lows = visibleDepth.map(c => c.low);
+  const max = Math.max(...highs);
+  const min = Math.min(...lows);
+  const chart = document.getElementById('chart');
+  const chartWidth = chart.width / (window.devicePixelRatio || 1);
+  const xStep = chartWidth / visibleDepth.length;
+
+  visibleDepth.forEach((c, i) => {
+    const x = i * xStep;
+    const h = scale(c.high, min, max, chart.height, chart.height - 90);
+    const l = scale(c.low, min, max, chart.height, chart.height - 90);
+    const cl = scale(c.close, min, max, chart.height, chart.height - 90);
+
+    chartCtx.strokeStyle = '#3498db';
+    chartCtx.beginPath();
+    chartCtx.moveTo(x + xStep / 2, h);
+    chartCtx.lineTo(x + xStep / 2, l);
+    chartCtx.stroke();
+
+    chartCtx.fillStyle = '#3498db';
+    chartCtx.fillRect(x + xStep / 4, cl - 2, xStep / 2, 4);
+  });
+}
+
+function updatePriceLabels() {
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+  
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  
+  document.getElementById('priceLabels').innerHTML = `
+    <div><strong>Current Price:</strong> ${currentPrice.toFixed(6)}</div>
+    <div><strong>Visible High:</strong> ${max.toFixed(6)}</div>
+    <div><strong>Visible Low:</strong> ${min.toFixed(6)}</div>
+  `;
+}
+
+function updatePriceAxis() {
+  const axis = document.getElementById("priceAxis");
+  if (!axis || candles.length === 0) return;
+
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const range = max - min;
+  if (range <= 0) return;
+
+  const container = document.querySelector('.chart-container');
+  const containerHeight = container.clientHeight;
+  const step = range / 10;
+  
+  axis.innerHTML = "";
+
+  // Create price lines and labels
+  for (let i = 0; i <= 10; i++) {
+    const price = max - i * step;
+    const y = (i / 10) * containerHeight;
+
+    const line = document.createElement("div");
+    line.className = "price-line";
+    line.style.top = `${y}px`;
+
+    const label = document.createElement("div");
+    label.className = "price-label";
+    label.style.top = `${y - 7}px`;
+    label.textContent = price.toFixed(6);
+
+    axis.appendChild(line);
+    axis.appendChild(label);
+  }
+
+  // Add live price marker
+  if (currentPrice && currentPrice >= min && currentPrice <= max) {
+    const liveY = ((max - currentPrice) / range) * containerHeight;
+    const live = document.createElement("div");
+    live.className = "live-price";
+    live.style.top = `${liveY - 10}px`;
+    live.innerText = currentPrice.toFixed(6);
+    axis.appendChild(live);
+  }
+}
+
+function drawChart() {
+  const chart = document.getElementById('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const chartWidth = chart.width / dpr;
+  const chartHeight = chart.height / dpr;
+  
+  // Clear canvas
+  chartCtx.clearRect(0, 0, chart.width, chart.height);
+  
+  // Draw chart borders
+  chartCtx.strokeStyle = '#ddd';
+  chartCtx.strokeRect(0, 0, chartWidth, chartHeight - 90);
+  chartCtx.strokeRect(0, chartHeight - 90, chartWidth, 90);
+
+  if (candles.length < 2) return;
+
+  const visibleData = getVisibleCandles();
+  if (visibleData.length < 2) return;
+
+  // Calculate candle dimensions
+  const max = Math.max(...visibleData.map(c => c.high));
+  const min = Math.min(...visibleData.map(c => c.low));
+  const xStep = chartWidth / visibleCandles;
+
+  // Draw all elements in proper order
+  drawPivotLines();
+  calculateLiquidityExpansionZones();
+  detectOrderBlock();
+  detectFVG();
+  detectMitigationBlock();
+
+  // Draw candles
+  visibleData.forEach((c, i) => {
+    const x = i * xStep;
+    const o = scale(c.open, min, max, chartHeight - 100, 0);
+    const h = scale(c.high, min, max, chartHeight - 100, 0);
+    const l = scale(c.low, min, max, chartHeight - 100, 0);
+    const cl = scale(c.close, min, max, chartHeight - 100, 0);
+
+    // Draw wick
+    chartCtx.strokeStyle = c.close >= c.open ? '#27ae60' : '#e74c3c';
+    chartCtx.beginPath();
+    chartCtx.moveTo(x + xStep / 2, h);
+    chartCtx.lineTo(x + xStep / 2, l);
+    chartCtx.stroke();
+
+    // Draw body
+    chartCtx.fillStyle = c.close >= c.open ? '#27ae60' : '#e74c3c';
+    chartCtx.fillRect(x + xStep / 4, o, xStep / 2, cl - o);
+  });
+
+  detectMarketStructure();
+  drawDepthChart();
+  updatePriceLabels();
+  updatePriceAxis();
+}
+
+function scale(val, min, max, top, bottom) {
+  return bottom + (top - bottom) * (max - val) / (max - min);
+}
+
+// Initialize the application
+initChart();
+fetchSymbols();
+
+// Set default symbol and timeframe
+document.getElementById('timeframeSelector').value = '1h';
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (document.getElementById('symbolSelector').value) {
+      refreshData();
+    }
+  }, 500);
+});
+</script>
+</body>
+</html>

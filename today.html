@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Volume Momentum Trend Analysis</title>
   <style>
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
       background: linear-gradient(135deg, #f5f7fa 0%, #e4f0fb 100%);
-      margin: 10px;
+      margin: 20px;
       color: #333;
-      min-width: 320px;
     }
     #controls { 
       display: flex; 
@@ -22,7 +20,6 @@
       padding: 15px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      
     }
     #settings-button { 
       background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
@@ -59,8 +56,6 @@
       border: 1px solid #ddd;
       background: white;
       transition: all 0.3s ease;
-      width: 20%;
-      box-sizing: border-box;
     }
     input:focus, select:focus {
       outline: none;
@@ -144,12 +139,6 @@
       color: #d97706; 
       font-weight: bold; 
       background-color: rgba(217, 119, 6, 0.1);
-    }
-    .red{
-      color: red;
-    }
-    .green{
-      color: green;
     }
     .risky { 
       color: #9f1239; 
@@ -313,15 +302,14 @@
     /* Live Price Display */
     #live-price-container {
       background: white;
-      padding: 10px;
+      padding: 15px;
       border-radius: 12px;
-      margin-bottom: 0px;
+      margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 60px
     }
     #live-price-container h3 {
       margin: 0;
@@ -372,107 +360,19 @@
     }
     
     /* Responsive adjustments */
-    @media (max-width: 1200px) {
-      table {
-        font-size: 0.9rem;
-      }
-      th, td {
-        padding: 8px;
-      }
-    }
-    
-    @media (max-width: 992px) {
-      .header-row h2 {
-        font-size: 1.5rem;
-      }
-      #settings-button {
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-      #live-price {
-        font-size: 1.3rem;
-      }
-    }
-    
     @media (max-width: 768px) {
-      body {
-        margin: 5px;
-      }
-      
-      .header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 12px;
-      }
-      
-      #settings-button {
-        margin-left: 0;
-        margin-top: 10px;
-        width: 100%;
-      }
-      
-      #live-price-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      #controls {
-        flex-direction: row;
-      
-      }
-      
-      #search, #symbol {
-        width: 100%;
-      }
-      
-      table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-      }
-      
-      .modal-content {
-        width: 90%;
-        margin: 20% auto;
-        padding: 15px;
-      }
-      
       .setting-item {
         flex-direction: column;
         align-items: flex-start;
       }
-      
       .setting-item label {
         margin-bottom: 8px;
         width: auto;
       }
-      
-      .setting-item input {
-        width: 100%;
-      }
-    }
-    
-    @media (max-width: 576px) {
-      .header-row h2 {
-        font-size: 1.3rem;
-      }
-      
-      #live-price {
-        font-size: 1.2rem;
-      }
-      
-      table {
-        font-size: 0.8rem;
-      }
-      
-      th, td {
-        padding: 6px;
-      }
-      
-      .modal-content {
-        width: 95%;
-        margin: 30% auto;
+      #live-price-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
       }
     }
   </style>
@@ -484,7 +384,11 @@
     <button id="settings-button">⚙️ Settings</button>
   </div>
 
-  
+  <!-- Live Price Display -->
+  <div id="live-price-container">
+    <h3>💰 Live Price</h3>
+    <div id="live-price">-</div>
+  </div>
 
   <!-- The Modal -->
   <div id="settingsModal" class="modal">
@@ -568,12 +472,6 @@
 
     <label for="symbol">Symbol:</label>
     <select id="symbol"></select>
-
-    <!-- Live Price Display -->
-  <div id="live-price-container">
-    <h3>💰 Live Price</h3>
-    <div id="live-price">-</div>
-  </div>
   </div>
 
   <div id="indicators-container"></div>
@@ -790,13 +688,13 @@
       let trendClass = '';
       
       if (strengthScore > 80) {
-        trendCategory = isBullish ? 'Strong Bullish' : 'Strong Bearish';
+        trendCategory = isBullish ? 'Very Strong Bullish' : 'Very Strong Bearish';
         trendClass = 'trend-very-strong';
       } else if (strengthScore > 60) {
-        trendCategory = isBullish ? 'Bullish' : 'Bearish';
+        trendCategory = isBullish ? 'Strong Bullish' : 'Strong Bearish';
         trendClass = 'trend-strong';
       } else if (strengthScore > 40) {
-        trendCategory = isBullish ? 'Normal Bullish' : 'Normal Bearish';
+        trendCategory = isBullish ? 'Moderate Bullish' : 'Moderate Bearish';
         trendClass = 'trend-moderate';
       } else {
         trendCategory = isBullish ? 'Weak Bullish' : 'Weak Bearish';
@@ -824,17 +722,17 @@
         // Update price with color animation
         if (lastPrice !== null) {
           if (currentPrice > lastPrice) {
-            priceElement.textContent = `$${currentPrice.toFixed(7)} ▲`;
+            priceElement.textContent = `$${currentPrice.toFixed(4)} ▲`;
             priceElement.className = 'price-up';
           } else if (currentPrice < lastPrice) {
-            priceElement.textContent = `$${currentPrice.toFixed(7)} ▼`;
+            priceElement.textContent = `$${currentPrice.toFixed(4)} ▼`;
             priceElement.className = 'price-down';
           } else {
-            priceElement.textContent = `$${currentPrice.toFixed(7)}`;
+            priceElement.textContent = `$${currentPrice.toFixed(4)}`;
             priceElement.className = '';
           }
         } else {
-          priceElement.textContent = `$${currentPrice.toFixed(7)}`;
+          priceElement.textContent = `$${currentPrice.toFixed(4)}`;
         }
         
         lastPrice = currentPrice;
@@ -927,9 +825,9 @@
 
     // Determine ROC trend
     function determineROCTrend(rocValue) {
-      if (rocValue > 2) return 'Bullish';
-      if (rocValue < -2) return 'Bearish';
-      return 'Neutral';
+      if (rocValue > 2) return 'Strong Momentum';
+      if (rocValue < -2) return 'Weak Momentum';
+      return 'Neutral Momentum';
     }
 
     // Determine RVOL trend
@@ -957,11 +855,10 @@
       let html = '<table>' +
         '<tr><th>Timeframe</th>' +
         `<th>RSI-${settings.rsiPeriod}</th><th>RSI Trend</th><th>RSI Divergence</th>` +
-        `<th>ROC-${settings.rocPeriod}</th><th>Momentum Trend</th>` +
-        `<th>Volume RVOL</th><th>Volume Power</th>` +
-        `<th>Volum Speed</th>` +
+        `<th>ROC-${settings.rocPeriod}</th><th>Momentum ROC</th>` +
+        `<th>Volume RVOL</th><th>Volume Trend</th>` +
         `<th>ADX/+DI/-DI</th><th>ADX Trend</th>` +
-        
+        `<th>VROC Score</th><th>VROC Signal</th>` +
         `</tr>`;
 
       // Process each timeframe
@@ -1002,6 +899,7 @@
         const rvolTrend = determineRVOLTrend(+rvol);
         const rsiDivergence = getLatestDivergence(klines, rsiArr);
         const adxTrend = determineADXTrend(+adx, +pdi, +mdi);
+        const vrocSignal = getVROCSignal(+vroc);
         vroc = parseInt(vroc)+100 ; 
         // Calculate combined trend strength
         const trendStrength = calculateTrendStrength(rsiArr, rocArr, rvolArr, adxData);
@@ -1012,8 +910,8 @@
                          rsiTrend === 'Bullish' ? 'bullish' : 
                          rsiTrend === 'Bearish' ? 'bearish' : 'neutral';
         
-        const rocClass = rocTrend.includes('Bullish') ? 'bullish' : 
-                         rocTrend.includes('Bearish') ? 'bearish' : 'neutral';
+        const rocClass = rocTrend.includes('Strong') ? 'bullish' : 
+                         rocTrend.includes('Weak') ? 'bearish' : 'neutral';
         
         const rvolClass = rvolTrend.includes('Strong') ? 'bullish' : 
                           rvolTrend.includes('Weak') ? 'bearish' : 'neutral';
@@ -1026,7 +924,6 @@
         else if (rsiDivergence.includes('Hidden Bullish')) divClass = 'hidden-bullish';
         else if (rsiDivergence.includes('Hidden Bearish')) divClass = 'hidden-bearish';
 
-       
         // Add data row
         html += `<tr>
           <td>${timeframe}</td>
@@ -1037,13 +934,13 @@
           <td class="${rocClass}">${rocTrend}</td>
           <td>${rvol}</td>
           <td class="${rvolClass}">${rvolTrend}</td>
-          <td>${vroc}%</td>
           <td>ADX: ${adx}<br>+DI: ${pdi}<br>-DI: ${mdi}</td>
           <td class="${trendStrength.class}">
             ${trendStrength.category}<br>
             (Score: ${trendStrength.score})
           </td>
-          
+          <td>${vroc}%</td>
+          <td class="${vrocSignal.class}">${vrocSignal.signal}</td>
         </tr>`;
             document.querySelectorAll(".rsi").forEach((e)=>{
                 
@@ -1055,8 +952,6 @@
                     e.style.color="black";
                 }
             })
-                 
-
       }
 
       html += '</table>';

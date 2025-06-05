@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Legend The liquidity Zone</title>
+  <!-- Add responsive viewport meta tag -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     :root {
       --primary-color: #4CAF50;
@@ -23,6 +25,7 @@
       padding: 20px;
       margin: 0;
       transition: all 0.3s ease;
+      min-width: 320px; /* Prevent content from getting too narrow */
     }
 
     .header {
@@ -39,8 +42,6 @@
       margin: 0;
       font-size: 28px;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-      text-align: center;
-      padding: 10px;
     }
 
     .controls {
@@ -59,6 +60,7 @@
       color: var(--text-color);
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       transition: all 0.2s;
+      min-width: 120px; /* Prevent elements from becoming too narrow */
     }
 
     select:focus, input:focus {
@@ -75,6 +77,7 @@
       transition: all 0.3s;
       font-weight: bold;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      min-width: 140px; /* Make buttons more touch-friendly */
     }
 
     button:hover {
@@ -98,6 +101,7 @@
       gap: 10px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       border: 1px solid var(--border-color);
+      min-width: 200px; /* Prevent price display from wrapping */
     }
 
     .price-value {
@@ -111,14 +115,16 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       padding: 20px;
       margin-top: 20px;
-      overflow-x: auto;
+      overflow-x: auto; /* Allow horizontal scrolling on small screens */
       border: 1px solid var(--border-color);
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
+      min-width: 600px; /* Minimum table width before scrolling */
     }
 
     th {
@@ -179,10 +185,12 @@
       padding: 10px;
       width: 200px;
       border-radius: 6px;
+      min-width: 150px; /* Prevent search from becoming too narrow */
     }
 
     .search-container {
       position: relative;
+      width: 100%; /* Full width on mobile */
     }
 
     .search-results {
@@ -327,22 +335,97 @@
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
       }
       
-      .controls{
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      .controls {
         flex-direction: column;
-        background-color: #1e1e1e;
-        color: #F44336;
+        gap: 10px;
+        width: 100%;
+      }
+      
+      .controls > * {
+        width: 100%;
       }
       
       #searchInput {
+        width: 93%;
+      }
+      
+      select, button {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .price-display {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .settings-label {
+        min-width: 100%;
+        margin-bottom: 5px;
+      }
+      
+      .settings-value {
         width: 100%;
       }
+      
+      .settings-input {
+        width: 100%;
+      }
+      
+      .checkbox-group {
+        width: 100%;
+      }
+      
+      .checkbox-item {
+        width: calc(50% - 8px);
+      }
+      td{
+        font-size: 30px;
+      
+      }
     }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        text-align: center;
+      }
+      
+      .dashboard {
+        padding: 10px;
+      }
+      
+      th, td {
+        padding: 8px 10px;
+        font-size: 14px;
+      }
+      
+      .metric-name {
+        width: 120px;
+        font-size: 13px;
+      }
+      
+      .theme-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        bottom: 15px;
+        right: 15px;
+      }
+    }
+    
     .green{
       color: #45a049;
     }
@@ -353,8 +436,9 @@
 </head>
 <body>
 
-  <h1>Legend The liquidity Zone</h1>
+  <!-- Rest of your HTML remains exactly the same -->
   <div class="header">
+    <h1>Legend The liquidity Zone</h1>
     
     <div class="controls">
       <div class="search-container">
@@ -424,6 +508,7 @@
   <button class="theme-toggle" id="themeToggle">🌓</button>
 
 <script>
+/* Your existing JavaScript code remains exactly the same */
 let sockets = {};
 let symbol = "";
 const allIntervals = ["15m", "30m", "1h", "4h", "1d", "1w", "1M"];

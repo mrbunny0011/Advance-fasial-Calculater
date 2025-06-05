@@ -42,7 +42,7 @@ nav h1{
             padding-top: 20px;
             transition: 0.3s ease-in-out;
             z-index: 2;
-          overflow-y: auto;
+            overflow-y: auto;
         }
 
         .sidebar a {
@@ -491,6 +491,9 @@ th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
                 flex-direction: column;
                 justify-content: space-around;
                 align-items: center;
+            }
+            .sidebar{
+                overflow-y: auto;
             }
         }
 

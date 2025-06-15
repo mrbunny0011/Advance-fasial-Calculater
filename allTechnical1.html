@@ -54,6 +54,16 @@
       flex-grow: 1;
       min-width: calc(100% - 20px);
       transition: all 0.3s ease;
+      resize: both;
+      min-height: 300px;
+    }
+    .model-container.pinned {
+      order: -1;
+      border: 2px solid #ff9800;
+    }
+    .model-container.favorite {
+      border: 2px solid #ffeb3b;
+      background: #fffde7;
     }
     .model-container.fullscreen {
       position: fixed;
@@ -65,6 +75,7 @@
       margin: 0;
       border-radius: 0;
       min-width: 100%;
+      resize: none;
     }
     .model-header {
       background: #d4e3ff;
@@ -73,6 +84,13 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #c3dafe;
+      cursor: move;
+    }
+    .model-container.pinned .model-header {
+      background: #ffe0b2;
+    }
+    .model-container.favorite .model-header {
+      background: #fff9c4;
     }
     .model-title {
       font-size: 18px;
@@ -82,16 +100,15 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .model-container.pinned .model-title {
+      color: #ff9800;
+    }
+    .model-container.favorite .model-title {
+      color: #ffc107;
+    }
     .model-controls {
       display: flex;
       gap: 8px;
-    }
-    .view-toggle {
-      display: flex;
-      gap: 5px;
-      background: rgba(255,255,255,0.7);
-      padding: 4px;
-      border-radius: 6px;
     }
     button {
       padding: 6px 12px;
@@ -117,67 +134,28 @@
       background: #00c3a5;
       color: white;
     }
+    button.warning {
+      background: #ff9800;
+      color: white;
+    }
+    button.star {
+      background: #ffc107;
+      color: white;
+    }
+    button.screenshot-btn {
+      background: #9c27b0 !important;
+    }
     iframe {
       width: 100%;
-      height: calc(100vh - 150px);
+      height: calc(100% - 50px);
       border: none;
       background: white;
-    }
-    .cropped-view {
-      width: 100%;
-      height: calc(100vh - 150px);
-      overflow: hidden;
-      position: relative;
-      background: white;
-    }
-    .crop-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(240, 248, 255, 0.9);
-      z-index: 1000;
-      display: none;
-    }
-    .crop-box {
-      position: absolute;
-      border: 2px dashed #00c3a5;
-      background: rgba(0, 195, 165, 0.1);
-      cursor: move;
-    }
-    .crop-handle {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      background: #00c3a5;
-      border-radius: 50%;
-      z-index: 1001;
-      border: 2px solid white;
-    }
-    .handle-nw { top: -8px; left: -8px; cursor: nw-resize; }
-    .handle-ne { top: -8px; right: -8px; cursor: ne-resize; }
-    .handle-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
-    .handle-se { bottom: -8px; right: -8px; cursor: se-resize; }
-    .crop-controls {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      z-index: 1002;
     }
     .hidden {
       display: none;
     }
-    .cropped-iframe {
-      position: absolute;
-      border: 2px solid #00c3a5;
-      box-sizing: border-box;
-    }
 
-    /* View modes - FIXED TO WORK WITH ALL MODELS */
+    /* View modes */
     .single-view .model-container {
       min-width: calc(100% - 20px);
       height: auto;
@@ -192,9 +170,151 @@
       flex-basis: calc(50% - 15px);
       height: calc(50vh - 15px);
     }
-    .quadrant-view iframe,
-    .quadrant-view .cropped-view {
-      height: calc(50vh - 80px);
+    .quadrant-view iframe {
+      height: calc(100% - 50px);
+    }
+
+    /* Add model controls */
+    .add-model-container {
+      background: #e1f0ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px auto;
+      width: calc(100% - 40px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .add-model-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .add-model-form input, .add-model-form select {
+      padding: 8px 12px;
+      border: 1px solid #c3dafe;
+      border-radius: 6px;
+      flex-grow: 1;
+      min-width: 200px;
+    }
+    .add-model-form button {
+      min-width: 100px;
+    }
+
+    /* Search bar */
+    .search-container {
+      margin: 10px auto;
+      width: calc(100% - 40px);
+      max-width: 600px;
+    }
+    #globalSearch {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #c3dafe;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    /* Modal for editing */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    /* Folder/Section styling */
+    .folder-container {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    .folder-header {
+      background: #4a8cff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .folder-header:hover {
+      background: #3a7cff;
+    }
+    .folder-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 0 10px;
+    }
+    .folder-title {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .folder-controls {
+      display: flex;
+      gap: 5px;
+    }
+    .folder-controls button {
+      padding: 2px 8px;
+      font-size: 12px;
+    }
+
+    /* Favorites section */
+    #favorites-section {
+      background: #fffde7;
+      border: 2px solid #ffeb3b;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      padding: 5px;
+    }
+    #favorites-section .folder-header {
+      background: #ffc107;
+    }
+    #favorites-section .folder-header:hover {
+      background: #ffb300;
+    }
+
+    /* Layout locked state */
+    body.layout-locked .model-container {
+      resize: none;
+    }
+    body.layout-locked .model-header {
+      cursor: default;
+    }
+
+    /* Screenshot notification */
+    .screenshot-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1001;
+      display: none;
     }
 
     /* Mobile-specific styles */
@@ -227,6 +347,12 @@
       .model-controls {
         width: 100%;
         justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      
+      .model-controls button {
+        flex-grow: 1;
+        margin: 2px;
       }
       
       button {
@@ -235,24 +361,9 @@
         min-width: 60px;
       }
       
-      .view-toggle {
-        flex-grow: 1;
-        justify-content: space-between;
-      }
-      
-      iframe, .cropped-view {
+      iframe {
         height: calc(100vh - 100px);
       }
-      
-      .crop-handle {
-        width: 24px;
-        height: 24px;
-      }
-      
-      .handle-nw { top: -12px; left: -12px; }
-      .handle-ne { top: -12px; right: -12px; }
-      .handle-sw { bottom: -12px; left: -12px; }
-      .handle-se { bottom: -12px; right: -12px; }
       
       /* Force single column on mobile */
       .two-column-view .model-container,
@@ -260,9 +371,9 @@
         min-width: calc(100% - 20px);
         flex-basis: auto;
         height: auto;
+        resize: none;
       }
-      .quadrant-view iframe,
-      .quadrant-view .cropped-view {
+      .quadrant-view iframe {
         height: calc(100vh - 100px);
       }
     }
@@ -272,16 +383,21 @@
         flex-wrap: wrap;
       }
       
-      .view-toggle {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-      
       button {
         flex-grow: 1;
       }
+      
+      .add-model-form {
+        flex-direction: column;
+      }
+      
+      .add-model-form input, .add-model-form select {
+        width: 100%;
+      }
     }
   </style>
+  <!-- Include html2canvas library for screenshots -->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
   <h1>📊 Faisal's Complete Trading Dashboard</h1>
@@ -290,198 +406,369 @@
     <button class="active" onclick="setViewMode('single')">Single View</button>
     <button onclick="setViewMode('two-column')">2-Column Split</button>
     <button onclick="setViewMode('quadrant')">4-Quadrant View</button>
+    <button class="secondary" onclick="showAddModelForm()">+ Add New Model</button>
+    <button id="lockLayoutBtn" class="secondary" onclick="toggleLayoutLock()">Lock Layout</button>
   </div>
 
-  <div class="models-container" id="models-container">
-    <!-- Model 1 -->
-    <div class="model-container" id="model1">
-      <div class="model-header">
-        <div class="model-title">📌 Model 1 – Legend: The Liquidity Zone</div>
-        <div class="model-controls">
-          <div class="view-toggle">
-            <button class="active" onclick="showFullView('model1')">Full</button>
-            <button onclick="showCroppedView('model1')">Cropped</button>
-          </div>
-          <button onclick="startPaint3DCrop('model1')">Crop</button>
-          <button onclick="toggleFullScreen('model1')">Full Screen</button>
-          <button class="secondary" onclick="resetModel('model1')">Reset</button>
-        </div>
-      </div>
-      <iframe id="model1-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/LegendTheliquidityZone.html"></iframe>
-      <div id="model1-cropped" class="cropped-view hidden"></div>
-    </div>
-
-    <!-- Model 2 -->
-    <div class="model-container" id="model2">
-      <div class="model-header">
-        <div class="model-title">📌 Model 2 – Multan Calculation</div>
-        <div class="model-controls">
-          <div class="view-toggle">
-            <button class="active" onclick="showFullView('model2')">Full</button>
-            <button onclick="showCroppedView('model2')">Cropped</button>
-          </div>
-          <button onclick="startPaint3DCrop('model2')">Crop</button>
-          <button onclick="toggleFullScreen('model2')">Full Screen</button>
-          <button class="secondary" onclick="resetModel('model2')">Reset</button>
-        </div>
-      </div>
-      <iframe id="model2-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/MultanCalculation.html"></iframe>
-      <div id="model2-cropped" class="cropped-view hidden"></div>
-    </div>
-
-    <!-- Model 3 -->
-    <div class="model-container" id="model3">
-      <div class="model-header">
-        <div class="model-title">📌 Model 3 – Gold Calculation</div>
-        <div class="model-controls">
-          <div class="view-toggle">
-            <button class="active" onclick="showFullView('model3')">Full</button>
-            <button onclick="showCroppedView('model3')">Cropped</button>
-          </div>
-          <button onclick="startPaint3DCrop('model3')">Crop</button>
-          <button onclick="toggleFullScreen('model3')">Full Screen</button>
-          <button class="secondary" onclick="resetModel('model3')">Reset</button>
-        </div>
-      </div>
-      <iframe id="model3-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/GoldClculation.html"></iframe>
-      <div id="model3-cropped" class="cropped-view hidden"></div>
-    </div>
-
-    <!-- Model 4 -->
-    <div class="model-container" id="model4">
-      <div class="model-header">
-        <div class="model-title">📌 Model 4 – Volume Profile</div>
-        <div class="model-controls">
-          <div class="view-toggle">
-            <button class="active" onclick="showFullView('model4')">Full</button>
-            <button onclick="showCroppedView('model4')">Cropped</button>
-          </div>
-          <button onclick="startPaint3DCrop('model4')">Crop</button>
-          <button onclick="toggleFullScreen('model4')">Full Screen</button>
-          <button class="secondary" onclick="resetModel('model4')">Reset</button>
-        </div>
-      </div>
-      <iframe id="model4-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/volumProfile.html"></iframe>
-      <div id="model4-cropped" class="cropped-view hidden"></div>
-    </div>
-  
-
- <!-- Model 5 -->
- <div class="model-container" id="model5">
-    <div class="model-header">
-      <div class="model-title">📌 Model 5 – Advance Dimand</div>
-      <div class="model-controls">
-        <div class="view-toggle">
-          <button class="active" onclick="showFullView('model5')">Full</button>
-          <button onclick="showCroppedView('model5')">Cropped</button>
-        </div>
-        <button onclick="startPaint3DCrop('model5')">Crop</button>
-        <button onclick="toggleFullScreen('model5')">Full Screen</button>
-        <button class="secondary" onclick="resetModel('model5')">Reset</button>
-      </div>
-    </div>
-    <iframe id="model5-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/Advance_diamond.html"></iframe>
-    <div id="model5-cropped" class="cropped-view hidden"></div>
+  <div class="search-container">
+    <input type="text" id="globalSearch" placeholder="🔍 Search models by title, icon or URL..." oninput="filterModels()">
   </div>
 
-
- <!-- Model 6 -->
- <div class="model-container" id="model6">
-    <div class="model-header">
-      <div class="model-title">📌 Model 6 – Order Book</div>
-      <div class="model-controls">
-        <div class="view-toggle">
-          <button class="active" onclick="showFullView('model6')">Full</button>
-          <button onclick="showCroppedView('model6')">Cropped</button>
-        </div>
-        <button onclick="startPaint3DCrop('model6')">Crop</button>
-        <button onclick="toggleFullScreen('model6')">Full Screen</button>
-        <button class="secondary" onclick="resetModel('model6')">Reset</button>
-      </div>
-    </div>
-    <iframe id="model6-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/OrderBook.html"></iframe>
-    <div id="model6-cropped" class="cropped-view hidden"></div>
-  </div>
-
-
-
-
-
-
-<!-- Model 7 -->
-<div class="model-container" id="model7">
-  <div class="model-header">
-    <div class="model-title">📌 Model 7 – Liquidity</div>
-    <div class="model-controls">
-      <div class="view-toggle">
-        <button class="active" onclick="showFullView('model7')">Full</button>
-        <button onclick="showCroppedView('model7')">Cropped</button>
-      </div>
-      <button onclick="startPaint3DCrop('model7')">Crop</button>
-      <button onclick="toggleFullScreen('model7')">Full Screen</button>
-      <button class="secondary" onclick="resetModel('model7')">Reset</button>
+  <div class="add-model-container hidden" id="addModelContainer">
+    <div class="add-model-form">
+      <input type="text" id="newModelTitle" placeholder="Model Title (e.g., TradingView Chart)" required>
+      <input type="text" id="newModelIcon" placeholder="Icon (e.g., 📊, 🔍, 💰)">
+      <input type="url" id="newModelUrl" placeholder="URL (e.g., https://example.com)" required>
+      <select id="newModelFolder">
+        <option value="">No Folder</option>
+        <option value="favorites">Favorites</option>
+        <option value="technical">Technical Analysis</option>
+        <option value="fundamental">Fundamental Analysis</option>
+        <option value="custom">Custom Folder</option>
+      </select>
+      <input type="text" id="newCustomFolder" placeholder="Custom Folder Name" class="hidden">
+      <button onclick="addNewModel()">Add Model</button>
+      <button class="secondary" onclick="hideAddModelForm()">Cancel</button>
     </div>
   </div>
-  <iframe id="model7-iframe" src="https://www.coinglass.com/pro/futures/LiquidationHeatMap"></iframe>
-  <div id="model7-cropped" class="cropped-view hidden"></div>
-</div>
 
-
-<!-- Model 8 -->
-<div class="model-container" id="model8">
-  <div class="model-header">
-    <div class="model-title">📌 Model 8 – Dimand</div>
-    <div class="model-controls">
-      <div class="view-toggle">
-        <button class="active" onclick="showFullView('model8')">Full</button>
-        <button onclick="showCroppedView('model8')">Cropped</button>
+  <div id="models-container">
+    <!-- Favorites section -->
+    <div class="folder-container" id="favorites-section">
+      <div class="folder-header" onclick="toggleFolder('favorites')">
+        <span class="folder-title">⭐ Favorites</span>
+        <span class="folder-controls">
+          <button class="secondary" onclick="event.stopPropagation();editFolder('favorites')">Edit</button>
+          <button class="secondary" onclick="event.stopPropagation();collapseAllFolders()">Collapse All</button>
+        </span>
       </div>
-      <button onclick="startPaint3DCrop('model8')">Crop</button>
-      <button onclick="toggleFullScreen('model8')">Full Screen</button>
-      <button class="secondary" onclick="resetModel('model8')">Reset</button>
+      <div class="folder-content" id="favorites-folder"></div>
+    </div>
+
+    <!-- Other folders will be added here dynamically -->
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Model</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Title:</label>
+        <input type="text" id="editModelTitle" style="width: 100%; padding: 8px;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Icon:</label>
+        <input type="text" id="editModelIcon" style="width: 100%; padding: 8px;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">URL:</label>
+        <input type="url" id="editModelUrl" style="width: 100%; padding: 8px;">
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Folder:</label>
+        <select id="editModelFolder" style="width: 100%; padding: 8px;">
+          <option value="">No Folder</option>
+          <option value="favorites">Favorites</option>
+          <option value="technical">Technical Analysis</option>
+          <option value="fundamental">Fundamental Analysis</option>
+          <option value="custom">Custom Folder</option>
+        </select>
+        <input type="text" id="editCustomFolder" placeholder="Custom Folder Name" class="hidden" style="width: 100%; padding: 8px; margin-top: 5px;">
+      </div>
+      <div class="modal-buttons">
+        <button class="secondary" onclick="hideEditModal()">Cancel</button>
+        <button onclick="saveModelChanges()">Save Changes</button>
+      </div>
     </div>
   </div>
-  <iframe id="model8-iframe" src="https://mrbunny0011.github.io/Advance-fasial-Calculater/dimand.html"></iframe>
-  <div id="model8-cropped" class="cropped-view hidden"></div>
-</div>
-</div>
 
-
-
-  <!-- ?????????????????????????????????????????? -->
-
-  <!-- Paint 3D Style Crop Overlay -->
-  <div class="crop-overlay" id="crop-overlay">
-    <div class="drop-box" id="crop-box">
-      <div class="crop-handle handle-nw"></div>
-      <div class="crop-handle handle-ne"></div>
-      <div class="crop-handle handle-sw"></div>
-      <div class="crop-handle handle-se"></div>
+  <!-- Folder Edit Modal -->
+  <div class="modal" id="folderEditModal">
+    <div class="modal-content">
+      <h3>Edit Folder</h3>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Folder Name:</label>
+        <input type="text" id="editFolderName" style="width: 100%; padding: 8px;">
+      </div>
+      <div class="modal-buttons">
+        <button class="secondary" onclick="hideFolderEditModal()">Cancel</button>
+        <button onclick="confirmFolderEdit()">Save Changes</button>
+        <button class="warning" onclick="deleteFolder()">Delete Folder</button>
+      </div>
     </div>
-    <div class="crop-controls">
-      <button onclick="applyCrop()">Apply</button>
-      <button class="secondary" onclick="cancelCrop()">Cancel</button>
-    </div>
+  </div>
+
+  <!-- Screenshot notification -->
+  <div class="screenshot-notification" id="screenshotNotification">
+    Screenshot saved successfully!
   </div>
 
   <script>
     // Global variables
-    let currentModel = null;
     let currentViewMode = 'single';
     let fullScreenModel = null;
-    let cropData = {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      iframe: null
+    let currentEditModel = null;
+    let currentEditFolder = null;
+    let layoutLocked = false;
+    let models = [
+      {
+        id: 'model1',
+        title: 'Model 1 – Legend: The Liquidity Zone',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/LegendTheliquidityZone.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model2',
+        title: 'Model 2 – Multan Calculation',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/MultanCalculation.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model3',
+        title: 'Model 3 – Gold Calculation',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/GoldClculation.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model4',
+        title: 'Model 4 – Volume Profile',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/volumProfile.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model5',
+        title: 'Model 5 – Advance Dimand',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/Advance_diamond.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model6',
+        title: 'Model 6 – Order Book',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/OrderBook.html',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model7',
+        title: 'Model 7 – Liquidity',
+        icon: '📌',
+        url: 'https://www.coinglass.com/pro/futures/LiquidationHeatMap',
+        folder: '',
+        favorite: false
+      },
+      {
+        id: 'model8',
+        title: 'Model 8 – Dimand',
+        icon: '📌',
+        url: 'https://mrbunny0011.github.io/Advance-fasial-Calculater/dimand.html',
+        folder: '',
+        favorite: false
+      }
+    ];
+
+    let folders = {
+      'favorites': { name: 'Favorites', collapsed: false },
+      'technical': { name: 'Technical Analysis', collapsed: false },
+      'fundamental': { name: 'Fundamental Analysis', collapsed: false }
     };
-    let isDragging = false;
-    let isMoving = false;
-    let resizeHandle = null;
-    let startX, startY;
-    let startWidth, startHeight;
-    let startCropX, startCropY;
+
+    // Initialize the dashboard
+    function initializeDashboard() {
+      const container = document.getElementById('models-container');
+      
+      // Load models and folders from localStorage if available
+      const savedModels = localStorage.getItem('dashboardModels');
+      const savedFolders = localStorage.getItem('dashboardFolders');
+      
+      if (savedModels) models = JSON.parse(savedModels);
+      if (savedFolders) folders = JSON.parse(savedFolders);
+      
+      // Create folder structure
+      createFolderStructure();
+      
+      // Create model elements
+      models.forEach(model => {
+        addModelToFolder(model);
+      });
+      
+      // Load view mode
+      const savedViewMode = localStorage.getItem('dashboardViewMode') || 'single';
+      setViewMode(savedViewMode);
+      
+      // Load full screen state
+      const savedFullScreenModel = localStorage.getItem('fullScreenModel');
+      if (savedFullScreenModel) {
+        toggleFullScreen(savedFullScreenModel);
+      }
+      
+      // Load layout lock state
+      const savedLayoutLocked = localStorage.getItem('layoutLocked') === 'true';
+      if (savedLayoutLocked) {
+        toggleLayoutLock(true);
+      }
+      
+      // Make models draggable
+      makeModelsDraggable();
+      
+      // Setup folder toggle for custom folders
+      setupFolderToggles();
+      
+      // Setup folder select change handler
+      document.getElementById('newModelFolder').addEventListener('change', function() {
+        const customFolderInput = document.getElementById('newCustomFolder');
+        customFolderInput.classList.toggle('hidden', this.value !== 'custom');
+      });
+      
+      document.getElementById('editModelFolder').addEventListener('change', function() {
+        const customFolderInput = document.getElementById('editCustomFolder');
+        customFolderInput.classList.toggle('hidden', this.value !== 'custom');
+      });
+    }
+
+    // Create folder structure
+    function createFolderStructure() {
+      const container = document.getElementById('models-container');
+      
+      // Clear existing folders (except favorites)
+      document.querySelectorAll('.folder-container:not(#favorites-section)').forEach(el => el.remove());
+      
+      // Create other folders
+      for (const [folderId, folder] of Object.entries(folders)) {
+        if (folderId === 'favorites') continue;
+        
+        const folderHtml = `
+          <div class="folder-container" id="${folderId}-section">
+            <div class="folder-header" onclick="toggleFolder('${folderId}')">
+              <span class="folder-title">${folder.name}</span>
+              <span class="folder-controls">
+                <button class="secondary" onclick="event.stopPropagation();editFolder('${folderId}')">Edit</button>
+                <button class="secondary" onclick="event.stopPropagation();collapseAllFolders()">Collapse All</button>
+              </span>
+            </div>
+            <div class="folder-content ${folder.collapsed ? 'hidden' : ''}" id="${folderId}-folder"></div>
+          </div>
+        `;
+        
+        // Insert after favorites section
+        document.getElementById('favorites-section').insertAdjacentHTML('afterend', folderHtml);
+      }
+    }
+
+    // Add model to appropriate folder
+    function addModelToFolder(model) {
+      let folderId = model.folder || '';
+      
+      // If marked as favorite but not in favorites folder, add to favorites
+      if (model.favorite && (!model.folder || model.folder !== 'favorites')) {
+        folderId = 'favorites';
+        model.folder = 'favorites';
+      }
+      
+      const folderElement = folderId ? document.getElementById(`${folderId}-folder`) : 
+        document.getElementById('models-container');
+      
+      if (!folderElement) {
+        console.error(`Folder not found: ${folderId}`);
+        return;
+      }
+      
+      const modelEl = createModelElement(model);
+      folderElement.appendChild(modelEl);
+    }
+
+    // Create a model element
+    function createModelElement(model) {
+      const modelEl = document.createElement('div');
+      modelEl.className = 'model-container';
+      modelEl.id = model.id;
+      if (model.favorite) modelEl.classList.add('favorite');
+      
+      modelEl.innerHTML = `
+        <div class="model-header">
+          <div class="model-title">${model.icon || '📌'} ${model.title}</div>
+          <div class="model-controls">
+            <button onclick="toggleFullScreen('${model.id}')">Full Screen</button>
+            <button class="secondary" onclick="showEditModal('${model.id}')">Edit</button>
+            <button class="${model.favorite ? 'star' : 'secondary'}" onclick="toggleFavorite('${model.id}')">
+              ${model.favorite ? '⭐' : '☆'}
+            </button>
+            <button class="screenshot-btn" onclick="takeScreenshot('${model.id}')">📷 Screenshot</button>
+            <button class="secondary" onclick="resetModel('${model.id}')">Reset</button>
+            <button class="secondary" onclick="removeModel('${model.id}')">Remove</button>
+          </div>
+        </div>
+        <iframe id="${model.id}-iframe" src="${model.url}"></iframe>
+      `;
+      
+      return modelEl;
+    }
+
+     async function takeScreenshot(modelId) {
+    const modelElement = document.getElementById(modelId);
+    if (!modelElement) return;
+
+    // Hide buttons for a clean capture
+    const buttons = modelElement.querySelectorAll('button');
+    buttons.forEach(btn => (btn.style.visibility = 'hidden'));
+
+    // Give the browser one paint frame so layout settles
+    await new Promise(r => requestAnimationFrame(r));
+
+    // Decide what to capture
+    let targetEl = modelElement; // default: whole card
+    const iframe = modelElement.querySelector('iframe');
+    if (iframe) {
+      try {
+        // If iframe is same‑origin we can capture its real content
+        const iDoc = iframe.contentWindow.document;
+        if (iDoc && iDoc.domain === document.domain) {
+          targetEl = iDoc.body; // capture only the inner page for perfect quality
+        }
+      } catch (_) {
+        /* Cross‑origin – fall back to outer card */
+      }
+    }
+
+    // Do the capture
+    html2canvas(targetEl, {
+      backgroundColor: null,  // preserve transparency / page bg
+      useCORS: true,          // try CORS for any remote images
+      allowTaint: false,      // if a remote image blocks CORS, skip it but don’t blank
+      scale: 2,               // retina‑sharp
+      scrollY: -window.scrollY
+    }).then(canvas => {
+      // Restore UI
+      buttons.forEach(btn => (btn.style.visibility = 'visible'));
+
+      // Download
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const link = document.createElement('a');
+      link.download = `dashboard-${modelId}-${ts}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      // Toast
+      const note = document.getElementById('screenshotNotification');
+      if (note) {
+        note.style.display = 'block';
+        setTimeout(() => (note.style.display = 'none'), 4000);
+      }
+    }).catch(err => {
+      buttons.forEach(btn => (btn.style.visibility = 'visible'));
+      alert('⚠️ Screenshot failed. Possibly due to cross‑origin iframe.  ' + err.message);
+    });
+  }
 
     // Set view mode (single, two-column, quadrant)
     function setViewMode(mode) {
@@ -490,8 +777,12 @@
       const buttons = document.querySelectorAll('.dashboard-controls button');
       
       // Update active button
-      buttons.forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(mode.replace('-', ' '))) {
+          btn.classList.add('active');
+        }
+      });
       
       // Update container class
       container.className = 'models-container';
@@ -507,431 +798,507 @@
       if (fullScreenModel) {
         toggleFullScreen(fullScreenModel);
       }
+      
+      // Save view mode to local storage
+      localStorage.setItem('dashboardViewMode', mode);
     }
 
-    // Improved full screen toggle function
+    // Toggle full screen mode
     function toggleFullScreen(model) {
       const modelEl = document.getElementById(model);
       const modelsContainer = document.getElementById('models-container');
       
       if (!modelEl.classList.contains('fullscreen')) {
         // Enter full screen
-        // Store current view mode classes
         modelEl.dataset.previousClasses = modelsContainer.className;
-        
-        // Remove all view mode classes from container
         modelsContainer.className = 'models-container';
         
-        // Hide other models
         document.querySelectorAll('.model-container').forEach(m => {
           if (m.id !== model) m.classList.add('hidden');
         });
         
         modelEl.classList.add('fullscreen');
-        
-        // Update iframe height for full screen
         const iframe = modelEl.querySelector('iframe');
         if (iframe) {
-          iframe.style.height = 'calc(100vh - 60px)'; // Account for header height
+          iframe.style.height = 'calc(100vh - 60px)';
         }
         
-        // Update button text
-        const btn = modelEl.querySelector('.model-controls button:nth-last-child(2)');
+        const btn = modelEl.querySelector('.model-controls button:first-child');
         btn.textContent = 'Minimize';
         fullScreenModel = model;
       } else {
         // Exit full screen
         modelEl.classList.remove('fullscreen');
         
-        // Restore previous view mode classes
         if (modelEl.dataset.previousClasses) {
           modelsContainer.className = modelEl.dataset.previousClasses;
         }
         
-        // Show all models
         document.querySelectorAll('.model-container').forEach(m => {
           m.classList.remove('hidden');
         });
         
-        // Reset iframe height
         const iframe = modelEl.querySelector('iframe');
         if (iframe) {
           iframe.style.height = '';
         }
         
-        // Update button text
-        const btn = modelEl.querySelector('.model-controls button:nth-last-child(2)');
+        const btn = modelEl.querySelector('.model-controls button:first-child');
         btn.textContent = 'Full Screen';
         fullScreenModel = null;
       }
+      
+      saveFullScreenState();
     }
 
-    // Initialize mobile touch events
-    function initMobileTouch() {
-      const cropBox = document.getElementById('crop-box');
-      const handles = document.querySelectorAll('.crop-handle');
-      
-      // Touch event for moving crop box
-      cropBox.addEventListener('touchstart', function(e) {
-        if (e.target === cropBox) {
-          isMoving = true;
-          const touch = e.touches[0];
-          startX = touch.clientX;
-          startY = touch.clientY;
-          startCropX = parseInt(cropBox.style.left);
-          startCropY = parseInt(cropBox.style.top);
-          e.preventDefault();
-        }
-      }, { passive: false });
-      
-      // Touch events for resize handles
-      handles.forEach(handle => {
-        handle.addEventListener('touchstart', function(e) {
-          isDragging = true;
-          resizeHandle = e.target.classList[1];
-          const touch = e.touches[0];
-          startX = touch.clientX;
-          startY = touch.clientY;
-          startWidth = parseInt(cropBox.style.width);
-          startHeight = parseInt(cropBox.style.height);
-          startCropX = parseInt(cropBox.style.left);
-          startCropY = parseInt(cropBox.style.top);
-          e.preventDefault();
-        }, { passive: false });
-      });
-      
-      // Touch move for both moving and resizing
-      document.addEventListener('touchmove', function(e) {
-        if (!isDragging && !isMoving) return;
-        
-        const touch = e.touches[0];
-        const cropBox = document.getElementById('crop-box');
-        const dx = touch.clientX - startX;
-        const dy = touch.clientY - startY;
-        
-        if (isMoving) {
-          handleCropMove(cropBox, dx, dy);
-        } else if (isDragging) {
-          handleCropResize(cropBox, dx, dy);
-        }
-        
-        e.preventDefault();
-      }, { passive: false });
-      
-      // Touch end
-      document.addEventListener('touchend', function() {
-        isDragging = false;
-        isMoving = false;
-        resizeHandle = null;
-      });
-    }
-
-    // Handle crop box movement
-    function handleCropMove(cropBox, dx, dy) {
-      const newLeft = startCropX + dx;
-      const newTop = startCropY + dy;
-      
-      // Keep within iframe bounds
-      const minLeft = cropData.x;
-      const minTop = cropData.y;
-      const maxLeft = cropData.x + cropData.width - parseInt(cropBox.style.width);
-      const maxTop = cropData.y + cropData.height - parseInt(cropBox.style.height);
-      
-      cropBox.style.left = `${Math.min(Math.max(newLeft, minLeft), maxLeft)}px`;
-      cropBox.style.top = `${Math.min(Math.max(newTop, minTop), maxTop)}px`;
-    }
-
-    // Handle crop box resizing
-    function handleCropResize(cropBox, dx, dy) {
-      let newWidth = startWidth;
-      let newHeight = startHeight;
-      let newLeft = startCropX;
-      let newTop = startCropY;
-      
-      switch(resizeHandle) {
-        case 'handle-nw':
-          newWidth = startWidth - dx;
-          newHeight = startHeight - dy;
-          newLeft = startCropX + dx;
-          newTop = startCropY + dy;
-          break;
-        case 'handle-ne':
-          newWidth = startWidth + dx;
-          newHeight = startHeight - dy;
-          newTop = startCropY + dy;
-          break;
-        case 'handle-sw':
-          newWidth = startWidth - dx;
-          newHeight = startHeight + dy;
-          newLeft = startCropX + dx;
-          break;
-        case 'handle-se':
-          newWidth = startWidth + dx;
-          newHeight = startHeight + dy;
-          break;
-      }
-      
-      // Apply minimum size (100px) and constraints
-      const minSize = 100;
-      newWidth = Math.max(newWidth, minSize);
-      newHeight = Math.max(newHeight, minSize);
-      
-      // Ensure crop box stays within iframe bounds
-      if (newLeft) {
-        newLeft = Math.max(newLeft, cropData.x);
-        newLeft = Math.min(newLeft, cropData.x + cropData.width - minSize);
-      }
-      if (newTop) {
-        newTop = Math.max(newTop, cropData.y);
-        newTop = Math.min(newTop, cropData.y + cropData.height - minSize);
-      }
-      
-      // Apply new dimensions
-      cropBox.style.width = `${newWidth}px`;
-      cropBox.style.height = `${newHeight}px`;
-      if (newLeft) cropBox.style.left = `${newLeft}px`;
-      if (newTop) cropBox.style.top = `${newTop}px`;
-    }
-
-    // Paint 3D style crop initiation
-    function startPaint3DCrop(model) {
-      currentModel = model;
-      const iframe = document.getElementById(`${model}-iframe`);
-      const rect = iframe.getBoundingClientRect();
-      
-      // Set smaller initial crop size (60% of iframe)
-      const initWidth = rect.width * 0.6;
-      const initHeight = rect.height * 0.6;
-      const initLeft = rect.left + (rect.width - initWidth) / 2;
-      const initTop = rect.top + (rect.height - initHeight) / 2;
-      
-      cropData = {
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height,
-        iframe: iframe
-      };
-      
-      const cropBox = document.getElementById('crop-box');
-      cropBox.style.left = `${initLeft}px`;
-      cropBox.style.top = `${initTop}px`;
-      cropBox.style.width = `${initWidth}px`;
-      cropBox.style.height = `${initHeight}px`;
-      
-      document.getElementById('crop-overlay').style.display = 'block';
-      setupCropEventListeners();
-    }
-
-    // Improved crop interaction
-    function setupCropEventListeners() {
-      const cropBox = document.getElementById('crop-box');
-      const handles = document.querySelectorAll('.crop-handle');
-      
-      // Click anywhere on crop box to move
-      cropBox.addEventListener('mousedown', function(e) {
-        if (e.target === cropBox) {
-          isMoving = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          startCropX = parseInt(cropBox.style.left);
-          startCropY = parseInt(cropBox.style.top);
-          e.preventDefault();
-        }
-      });
-      
-      // Handle resizing
-      handles.forEach(handle => {
-        handle.addEventListener('mousedown', function(e) {
-          isDragging = true;
-          resizeHandle = e.target.classList[1];
-          startX = e.clientX;
-          startY = e.clientY;
-          startWidth = parseInt(cropBox.style.width);
-          startHeight = parseInt(cropBox.style.height);
-          startCropX = parseInt(cropBox.style.left);
-          startCropY = parseInt(cropBox.style.top);
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      });
-      
-      // Smooth movement and resizing
-      document.addEventListener('mousemove', function(e) {
-        if (!isDragging && !isMoving) return;
-        
-        const cropBox = document.getElementById('crop-box');
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        
-        if (isMoving) {
-          handleCropMove(cropBox, dx, dy);
-        } else if (isDragging) {
-          handleCropResize(cropBox, dx, dy);
-        }
-      });
-      
-      document.addEventListener('mouseup', function() {
-        isDragging = false;
-        isMoving = false;
-        resizeHandle = null;
-      });
-      
-      // Initialize mobile touch events
-      initMobileTouch();
-    }
-
-    // // Apply the crop
-    // function applyCrop() {
-    //   const cropBox = document.getElementById('crop-box');
-    //   const model = currentModel;
-      
-    //   // Calculate crop dimensions relative to iframe
-    //   const iframeRect = cropData.iframe.getBoundingClientRect();
-    //   const boxRect = cropBox.getBoundingClientRect();
-      
-    //   const cropX = boxRect.left - iframeRect.left;
-    //   const cropY = boxRect.top - iframeRect.top;
-    //   const cropWidth = boxRect.width;
-    //   const cropHeight = boxRect.height;
-      
-    //   // Create cropped view
-    //   const croppedView = document.getElementById(`${model}-cropped`);
-    //   const iframe = document.getElementById(`${model}-iframe`);
-      
-    //   croppedView.innerHTML = '';
-    //   const clone = iframe.cloneNode(true);
-    //   clone.style.position = 'absolute';
-    //   clone.style.left = `-${cropX}px`;
-    //   clone.style.top = `-${cropY}px`;
-    //   clone.style.width = `${iframeRect.width}px`;
-    //   clone.style.height = `${iframeRect.height}px`;
-      
-    //   // Create a container to ensure only the cropped area is visible
-    //   const container = document.createElement('div');
-    //   container.style.width = `${cropWidth}px`;
-    //   container.style.height = `${cropHeight}px`;
-    //   container.style.overflow = 'hidden';
-    //   container.style.position = 'relative';
-    //   container.appendChild(clone);
-      
-    //   croppedView.appendChild(container);
-      
-    //   // Set cropped view dimensions
-    //   croppedView.style.width = '100%';
-    //   croppedView.style.height = '100%';
-      
-    //   // Hide overlay
-    //   document.getElementById('crop-overlay').style.display = 'none';
-      
-    //   // Switch to cropped view
-    //   showCroppedView(model);
-    // }
-
-    // Apply the crop
-    function applyCrop() {
-      const cropBox = document.getElementById('crop-box');
-      const model = currentModel;
-      
-      // Calculate crop dimensions relative to iframe
-      const iframeRect = cropData.iframe.getBoundingClientRect();
-      const boxRect = cropBox.getBoundingClientRect();
-      
-      const cropX = boxRect.left - iframeRect.left;
-      const cropY = boxRect.top - iframeRect.top;
-      const cropWidth = boxRect.width;
-      const cropHeight = boxRect.height;
-      
-      // Create cropped view
-      const croppedView = document.getElementById(`${model}-cropped`);
-      const iframe = document.getElementById(`${model}-iframe`);
-      
-      croppedView.innerHTML = '';
-      const clone = iframe.cloneNode(true);
-      clone.style.position = 'absolute';
-      clone.style.left = `-${cropX}px`;
-      clone.style.top = `-${cropY}px`;
-      clone.style.width = `${iframeRect.width}px`;
-      clone.style.height = `${iframeRect.height}px`;
-      
-      // Create a container to ensure only the cropped area is visible
-      const container = document.createElement('div');
-      container.style.width = `${cropWidth}px`;
-      container.style.height = `${cropHeight}px`;
-      container.style.overflow = 'hidden';
-      container.style.position = 'relative';
-      container.appendChild(clone);
-      
-      croppedView.appendChild(container);
-      
-      // Set cropped view dimensions
-      croppedView.style.width = '100%';
-      croppedView.style.height = '100%';
-      
-      // Hide overlay
-      document.getElementById('crop-overlay').style.display = 'none';
-      
-      // Switch to cropped view
-      showCroppedView(model);
-    }
-
-    // Cancel cropping
-    function cancelCrop() {
-      document.getElementById('crop-overlay').style.display = 'none';
-      currentModel = null;
-    }
-
-    // Show full view of model
-    function showFullView(model) {
-      document.getElementById(`${model}-iframe`).classList.remove('hidden');
-      document.getElementById(`${model}-cropped`).classList.add('hidden');
-      
-      // Update toggle buttons
-      const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
-      buttons[0].classList.add('active');
-      buttons[1].classList.remove('active');
-    }
-
-    // Show cropped view of model
-    // function showCroppedView(model) {
-    //   const croppedView = document.getElementById(`${model}-cropped`);
-      
-    //   // Only show if there's a crop applied
-    //   if (croppedView.innerHTML !== '') {
-    //     document.getElementById(`${model}-iframe`).classList.add('hidden');
-    //     croppedView.classList.remove('hidden');
-        
-    //     // Update toggle buttons
-    //     const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
-    //     buttons[0].classList.remove('active');
-    //     buttons[1].classList.add('active');
-    //   } else {
-    //     alert('No crop has been applied to this model yet');
-    //     showFullView(model);
-    //   }
-    // }
-// Show cropped view of model
-function showCroppedView(model) {
-      const croppedView = document.getElementById(`${model}-cropped`);
-      
-      // Only show if there's a crop applied
-      if (croppedView.innerHTML !== '') {
-        document.getElementById(`${model}-iframe`).classList.add('hidden');
-        croppedView.classList.remove('hidden');
-        
-        // Update toggle buttons
-        const buttons = document.querySelectorAll(`#${model} .view-toggle button`);
-        buttons[0].classList.remove('active');
-        buttons[1].classList.add('active');
-      } else {
-        alert('No crop has been applied to this model yet');
-        showFullView(model);
-      }
-    }
     // Reset model to original state
     function resetModel(model) {
-      document.getElementById(`${model}-cropped`).innerHTML = '';
-      showFullView(model);
+      const iframe = document.getElementById(`${model}-iframe`);
+      const modelData = models.find(m => m.id === model);
+      if (iframe && modelData) {
+        iframe.src = modelData.url;
+      }
+    }
+
+    // Show add model form
+    function showAddModelForm() {
+      document.getElementById('addModelContainer').classList.remove('hidden');
+      document.getElementById('newModelTitle').focus();
+    }
+
+    // Hide add model form
+    function hideAddModelForm() {
+      document.getElementById('addModelContainer').classList.add('hidden');
+      document.getElementById('newModelTitle').value = '';
+      document.getElementById('newModelIcon').value = '';
+      document.getElementById('newModelUrl').value = '';
+      document.getElementById('newModelFolder').value = '';
+      document.getElementById('newCustomFolder').value = '';
+      document.getElementById('newCustomFolder').classList.add('hidden');
+    }
+
+    // Add new model
+    function addNewModel() {
+      const title = document.getElementById('newModelTitle').value.trim();
+      const icon = document.getElementById('newModelIcon').value.trim() || '📌';
+      const url = document.getElementById('newModelUrl').value.trim();
+      const folder = document.getElementById('newModelFolder').value;
+      const customFolder = document.getElementById('newCustomFolder').value.trim();
+      
+      if (!title || !url) {
+        alert('Please enter both title and URL');
+        return;
+      }
+      
+      if (folder === 'custom' && !customFolder) {
+        alert('Please enter a custom folder name');
+        return;
+      }
+      
+      // Create new model ID
+      const newId = 'model-' + Date.now();
+      
+      // Determine folder
+      let finalFolder = folder;
+      if (folder === 'custom') {
+        const folderId = customFolder.toLowerCase().replace(/\s+/g, '-');
+        if (!folders[folderId]) {
+          folders[folderId] = { name: customFolder, collapsed: false };
+          saveFoldersToLocalStorage();
+          createFolderStructure();
+        }
+        finalFolder = folderId;
+      }
+      
+      const newModel = {
+        id: newId,
+        title: title,
+        icon: icon,
+        url: url,
+        folder: finalFolder,
+        favorite: finalFolder === 'favorites'
+      };
+      
+      models.push(newModel);
+      saveModelsToLocalStorage();
+      addModelToFolder(newModel);
+      hideAddModelForm();
+    }
+
+    // Show edit modal
+    function showEditModal(modelId) {
+      const model = models.find(m => m.id === modelId);
+      if (!model) return;
+      
+      currentEditModel = modelId;
+      document.getElementById('editModelTitle').value = model.title;
+      document.getElementById('editModelIcon').value = model.icon;
+      document.getElementById('editModelUrl').value = model.url;
+      
+      // Set folder selection
+      const folderSelect = document.getElementById('editModelFolder');
+      const customFolderInput = document.getElementById('editCustomFolder');
+      
+      if (model.folder === 'favorites' || model.folder === 'technical' || model.folder === 'fundamental') {
+        folderSelect.value = model.folder;
+        customFolderInput.classList.add('hidden');
+      } else if (model.folder && folders[model.folder]) {
+        folderSelect.value = 'custom';
+        customFolderInput.value = folders[model.folder].name;
+        customFolderInput.classList.remove('hidden');
+      } else {
+        folderSelect.value = '';
+        customFolderInput.classList.add('hidden');
+      }
+      
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    // Hide edit modal
+    function hideEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+      currentEditModel = null;
+    }
+
+    // Save model changes
+    function saveModelChanges() {
+      if (!currentEditModel) return;
+      
+      const modelIndex = models.findIndex(m => m.id === currentEditModel);
+      if (modelIndex === -1) return;
+      
+      const newTitle = document.getElementById('editModelTitle').value.trim();
+      const newIcon = document.getElementById('editModelIcon').value.trim() || '📌';
+      const newUrl = document.getElementById('editModelUrl').value.trim();
+      const folder = document.getElementById('editModelFolder').value;
+      const customFolder = document.getElementById('editCustomFolder').value.trim();
+      
+      if (!newTitle || !newUrl) {
+        alert('Please enter both title and URL');
+        return;
+      }
+      
+      if (folder === 'custom' && !customFolder) {
+        alert('Please enter a custom folder name');
+        return;
+      }
+      
+      // Determine folder
+      let finalFolder = folder;
+      if (folder === 'custom') {
+        const folderId = customFolder.toLowerCase().replace(/\s+/g, '-');
+        if (!folders[folderId]) {
+          folders[folderId] = { name: customFolder, collapsed: false };
+          saveFoldersToLocalStorage();
+          createFolderStructure();
+        }
+        finalFolder = folderId;
+      }
+      
+      // Check if folder changed
+      const folderChanged = models[modelIndex].folder !== finalFolder;
+      models[modelIndex].title = newTitle;
+      models[modelIndex].icon = newIcon;
+      models[modelIndex].url = newUrl;
+      models[modelIndex].folder = finalFolder;
+      
+      // If moved to favorites, mark as favorite
+      if (finalFolder === 'favorites') {
+        models[modelIndex].favorite = true;
+      }
+      
+      saveModelsToLocalStorage();
+      
+      // If folder changed, recreate the model element in new folder
+      if (folderChanged) {
+        const modelEl = document.getElementById(currentEditModel);
+        if (modelEl) modelEl.remove();
+        
+        addModelToFolder(models[modelIndex]);
+      } else {
+        // Just update the existing model element
+        const modelEl = document.getElementById(currentEditModel);
+        if (modelEl) {
+          const titleEl = modelEl.querySelector('.model-title');
+          if (titleEl) {
+            titleEl.textContent = `${models[modelIndex].icon} ${models[modelIndex].title}`;
+          }
+          
+          const iframe = modelEl.querySelector('iframe');
+          if (iframe) {
+            iframe.src = models[modelIndex].url;
+          }
+          
+          // Update favorite status
+          modelEl.classList.toggle('favorite', models[modelIndex].favorite);
+          const favoriteBtn = modelEl.querySelector('.model-controls button:nth-child(3)');
+          if (favoriteBtn) {
+            favoriteBtn.className = models[modelIndex].favorite ? 'star' : 'secondary';
+            favoriteBtn.textContent = models[modelIndex].favorite ? '⭐' : '☆';
+          }
+        }
+      }
+      
+      hideEditModal();
+    }
+
+    // Toggle favorite status
+    function toggleFavorite(modelId) {
+      const modelIndex = models.findIndex(m => m.id === modelId);
+      if (modelIndex === -1) return;
+      
+      models[modelIndex].favorite = !models[modelIndex].favorite;
+      
+      // If marking as favorite and not in favorites folder, move to favorites
+      if (models[modelIndex].favorite && models[modelIndex].folder !== 'favorites') {
+        models[modelIndex].folder = 'favorites';
+      }
+      
+      saveModelsToLocalStorage();
+      
+      // Update the model element
+      const modelEl = document.getElementById(modelId);
+      if (modelEl) {
+        modelEl.classList.toggle('favorite', models[modelIndex].favorite);
+        
+        const favoriteBtn = modelEl.querySelector('.model-controls button:nth-child(3)');
+        if (favoriteBtn) {
+          favoriteBtn.className = models[modelIndex].favorite ? 'star' : 'secondary';
+          favoriteBtn.textContent = models[modelIndex].favorite ? '⭐' : '☆';
+        }
+        
+        // If favorite status changed, recreate in correct folder
+        const currentFolder = modelEl.parentElement.id.replace('-folder', '');
+        if ((models[modelIndex].favorite && currentFolder !== 'favorites') || 
+            (!models[modelIndex].favorite && currentFolder === 'favorites' && models[modelIndex].folder !== 'favorites')) {
+          modelEl.remove();
+          addModelToFolder(models[modelIndex]);
+        }
+      }
+    }
+
+    // Remove model
+    function removeModel(modelId) {
+      if (!confirm('Are you sure you want to remove this model?')) return;
+      
+      const modelIndex = models.findIndex(m => m.id === modelId);
+      if (modelIndex === -1) return;
+      
+      models.splice(modelIndex, 1);
+      saveModelsToLocalStorage();
+      
+      const modelEl = document.getElementById(modelId);
+      if (modelEl) {
+        modelEl.remove();
+      }
+    }
+
+    // Toggle folder collapse/expand
+    function toggleFolder(folderId) {
+      if (layoutLocked) return;
+      
+      const folderContent = document.getElementById(`${folderId}-folder`);
+      if (!folderContent) return;
+      
+      folderContent.classList.toggle('hidden');
+      folders[folderId].collapsed = folderContent.classList.contains('hidden');
+      saveFoldersToLocalStorage();
+    }
+
+    // Collapse all folders
+    function collapseAllFolders() {
+      for (const folderId in folders) {
+        const folderContent = document.getElementById(`${folderId}-folder`);
+        if (folderContent) {
+          folderContent.classList.add('hidden');
+          folders[folderId].collapsed = true;
+        }
+      }
+      saveFoldersToLocalStorage();
+    }
+
+    // Expand all folders
+    function expandAllFolders() {
+      for (const folderId in folders) {
+        const folderContent = document.getElementById(`${folderId}-folder`);
+        if (folderContent) {
+          folderContent.classList.remove('hidden');
+          folders[folderId].collapsed = false;
+        }
+      }
+      saveFoldersToLocalStorage();
+    }
+
+    // Edit folder
+    function editFolder(folderId) {
+      currentEditFolder = folderId;
+      document.getElementById('editFolderName').value = folders[folderId].name;
+      document.getElementById('folderEditModal').style.display = 'flex';
+    }
+
+    // Hide folder edit modal
+    function hideFolderEditModal() {
+      document.getElementById('folderEditModal').style.display = 'none';
+      currentEditFolder = null;
+    }
+
+    // Confirm folder edit
+    function confirmFolderEdit() {
+      if (!currentEditFolder) return;
+      
+      const newName = document.getElementById('editFolderName').value.trim();
+      if (!newName) {
+        alert('Please enter a folder name');
+        return;
+      }
+      
+      folders[currentEditFolder].name = newName;
+      saveFoldersToLocalStorage();
+      
+      // Update folder title
+      const folderTitle = document.querySelector(`#${currentEditFolder}-section .folder-title`);
+      if (folderTitle) {
+        folderTitle.textContent = newName;
+      }
+      
+      hideFolderEditModal();
+    }
+
+    // Delete folder
+    function deleteFolder() {
+      if (!currentEditFolder || currentEditFolder === 'favorites') return;
+      
+      if (!confirm(`Are you sure you want to delete the "${folders[currentEditFolder].name}" folder? Models will be moved to the main area.`)) {
+        return;
+      }
+      
+      // Move all models in this folder to no folder
+      models.forEach(model => {
+        if (model.folder === currentEditFolder) {
+          model.folder = '';
+        }
+      });
+      
+      // Remove folder
+      delete folders[currentEditFolder];
+      saveFoldersToLocalStorage();
+      saveModelsToLocalStorage();
+      
+      // Rebuild the dashboard
+      initializeDashboard();
+      
+      hideFolderEditModal();
+    }
+
+    // Toggle layout lock
+    function toggleLayoutLock(initialLoad = false) {
+      layoutLocked = !layoutLocked;
+      document.body.classList.toggle('layout-locked', layoutLocked);
+      
+      const lockBtn = document.getElementById('lockLayoutBtn');
+      if (lockBtn) {
+        lockBtn.textContent = layoutLocked ? 'Unlock Layout' : 'Lock Layout';
+        lockBtn.className = layoutLocked ? 'active' : 'secondary';
+      }
+      
+      if (!initialLoad) {
+        localStorage.setItem('layoutLocked', layoutLocked);
+      }
+    }
+
+    // Filter models based on search query
+    function filterModels() {
+      const query = document.getElementById('globalSearch').value.toLowerCase();
+      
+      if (!query) {
+        // Show all models if search is empty
+        document.querySelectorAll('.model-container').forEach(model => {
+          model.style.display = '';
+        });
+        return;
+      }
+      
+      document.querySelectorAll('.model-container').forEach(model => {
+        const modelData = models.find(m => m.id === model.id);
+        if (!modelData) return;
+        
+        const matches = modelData.title.toLowerCase().includes(query) || 
+                       modelData.icon.toLowerCase().includes(query) || 
+                       modelData.url.toLowerCase().includes(query);
+        
+        model.style.display = matches ? '' : 'none';
+      });
+    }
+
+    // Make models draggable
+    function makeModelsDraggable() {
+      const containers = document.querySelectorAll('.model-container');
+      
+      containers.forEach(container => {
+        const header = container.querySelector('.model-header');
+        if (!header) return;
+        
+        header.addEventListener('mousedown', function(e) {
+          if (e.target.tagName === 'BUTTON' || layoutLocked) return;
+          
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startLeft = container.offsetLeft;
+          const startTop = container.offsetTop;
+          
+          function moveElement(e) {
+            container.style.position = 'absolute';
+            container.style.left = (startLeft + e.clientX - startX) + 'px';
+            container.style.top = (startTop + e.clientY - startY) + 'px';
+            container.style.zIndex = '100';
+          }
+          
+          function stopDrag() {
+            document.removeEventListener('mousemove', moveElement);
+            document.removeEventListener('mouseup', stopDrag);
+            
+            // Snap back to grid after a short delay
+            setTimeout(() => {
+              container.style.position = '';
+              container.style.left = '';
+              container.style.top = '';
+              container.style.zIndex = '';
+            }, 100);
+          }
+          
+          document.addEventListener('mousemove', moveElement);
+          document.addEventListener('mouseup', stopDrag);
+        });
+      });
+    }
+
+    // Setup folder toggles
+    function setupFolderToggles() {
+      for (const folderId in folders) {
+        const folderHeader = document.querySelector(`#${folderId}-section .folder-header`);
+        if (folderHeader) {
+          folderHeader.addEventListener('click', () => toggleFolder(folderId));
+        }
+      }
+    }
+
+    // Save models to localStorage
+    function saveModelsToLocalStorage() {
+      localStorage.setItem('dashboardModels', JSON.stringify(models));
+    }
+
+    // Save folders to localStorage
+    function saveFoldersToLocalStorage() {
+      localStorage.setItem('dashboardFolders', JSON.stringify(folders));
+    }
+
+    // Save full screen state to localStorage
+    function saveFullScreenState() {
+      if (fullScreenModel) {
+        localStorage.setItem('fullScreenModel', fullScreenModel);
+      } else {
+        localStorage.removeItem('fullScreenModel');
+      }
     }
 
     // Initialize on load
@@ -941,8 +1308,7 @@ function showCroppedView(model) {
         document.body.classList.add('mobile');
       }
       
-      // Set default view mode
-      setViewMode('single');
+      initializeDashboard();
     });
   </script>
 </body>

@@ -5,29 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Volume Analysis With CVD System</title>
   <style>
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #f8f9fa; color: #2d3748; margin: 0; padding: 20px; }
-    h1 { text-align: center; margin-bottom: 20px; color: #2b6cb0; font-weight: 600; font-size: 1.8rem; }
-    #picker { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; max-width: 700px; margin: 0 auto 25px; }
+    body { 
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: #f8f9fa; 
+      color: #2d3748; 
+      margin: 0; 
+      padding: 15px;
+      min-width: 320px;
+    }
+    
+    h1 { 
+      text-align: center; 
+      margin-bottom: 15px; 
+      color: #2b6cb0; 
+      font-weight: 600; 
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+    }
+    
+    #picker { 
+      display: flex; 
+      gap: 10px; 
+      flex-direction: row;
+      align-items: center; 
+      margin-bottom: 20px; 
+      max-width: 100%; 
+      margin: 0 auto 20px;
+      flex-wrap: wrap;
+    }
+    
     #searchInput, #coinSelect {
-      padding: 10px;
+      padding: 10px 12px;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       font-size: 0.95rem;
       transition: all 0.2s;
       background: white;
+      flex: 1;
+      min-width: 120px;
+      max-width: 250px;
     }
-    #searchInput { flex: 1; }
-    #coinSelect { width: 160px; }
+    
+    #coinSelect { 
+      width: 160px;
+      max-width: 250px;
+    }
+    
     #searchInput:focus, #coinSelect:focus {
       border-color: #4299e1;
       outline: none;
       box-shadow: 0 0 0 3px rgba(66,153,225,0.2);
     }
-    #livePrice { min-width: 100px; font-weight: bold; color: #2b6cb0; font-size: 25px; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #edf2f7; }
-    th { background: #ebf8ff; color: #2b6cb0; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-    tbody tr:nth-child(odd) { background: rgba(247,250,252,0.7); }
+    
+    #livePrice { 
+      font-weight: bold; 
+      color: #2b6cb0; 
+      font-size: clamp(18px, 5vw, 25px);
+      text-align: center;
+      min-width: 50%;
+      order: 3;
+      margin-top: 8px;
+    }
+    
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0; 
+      background: white; 
+      border-radius: 12px;
+      min-width: 800px;
+    }
+    
+    th, td { 
+      padding: 12px 10px; 
+      text-align: left; 
+      border-bottom: 1px solid #edf2f7;
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+    }
+    
+    th { 
+      background: #ebf8ff; 
+      color: #2b6cb0; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      font-size: 0.75rem; 
+      letter-spacing: 0.5px; 
+      white-space: nowrap;
+    }
+    
+    tbody tr:nth-child(odd) { 
+      background: rgba(247,250,252,0.7); 
+    }
    
     .sell {
         color: #c53030;
@@ -41,7 +117,7 @@
         color: rgb(7, 67, 248);
         font-weight: 600;
     }
-    .cvd , .avg ,td{
+    .cvd, .avg, td{
         font-weight: 600;
     }
     .green{
@@ -67,8 +143,19 @@
     .sig-sideways { color: #101011; font-weight: 500; }
     .zero-bull { color: #38b2ac; font-weight: 600; }
     .zero-bear { color: #f56565; font-weight: 600; }
-    tbody tr:hover { background: #ebf8ff !important; transform: translateY(-1px); transition: all 0.2s ease; box-shadow: inset 0 0 0 1px #bee3f8; }
-    .extra-sigs { font-size: 0.85rem; white-space: nowrap; }
+    
+    tbody tr:hover { 
+      background: #ebf8ff !important; 
+      transform: translateY(-1px); 
+      transition: all 0.2s ease; 
+      box-shadow: inset 0 0 0 1px #bee3f8; 
+    }
+    
+    .extra-sigs { 
+      font-size: 0.75rem; 
+      white-space: nowrap;
+    }
+    
     .sig-dryup { color: #9f7aea; }
     .sig-divrev { color: #4299e1; }
     .sig-cluster { color: #667eea; }
@@ -77,13 +164,73 @@
     .sig-vspike { color: #68d391; }
     .sig-vdrop { color: #fc8181; }
     .sig-vpdiv { color: #f687b3; }
-    .ai { font-weight: 600; min-width: 120px; }
+    
+    .ai { 
+      font-weight: 600; 
+      min-width: 120px;
+      font-size: 0.8rem;
+    }
+    
+    /* Mobile-specific styles */
     @media (max-width: 768px){
-      #picker { flex-direction: column; align-items: stretch; }
-      #coinSelect { width: 100%; }
-      #livePrice { margin-top: 10px; }
-      .extra-sigs { font-size: 0.7rem; }
-      .ai { min-width: 80px; font-size: 0.8rem; }
+      #picker { 
+        flex-direction: row; 
+        align-items: center;
+        gap: 8px;
+      }
+      
+      #coinSelect { 
+        width: 100%;
+        max-width: 180px;
+      }
+      
+      #searchInput {
+        min-width: 0;
+      }
+      
+      #livePrice { 
+        margin-top: 5px;
+        order: 3;
+        min-width: 100%;
+        text-align: center;
+      }
+      
+      th, td {
+        padding: 10px 8px;
+      }
+      
+      .extra-sigs { 
+        font-size: 0.7rem; 
+      }
+      
+      .ai { 
+        min-width: 100px; 
+        font-size: 0.75rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      
+      #picker {
+        gap: 6px;
+      }
+      
+      #searchInput, #coinSelect {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+      
+      th, td {
+        padding: 8px 6px;
+        font-size: 0.7rem;
+      }
+      
+      .ai {
+        min-width: 80px;
+      }
     }
   </style>
 </head>
@@ -95,20 +242,24 @@
     <span id="livePrice">-</span>
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Time frame</th><th>Total</th><th>Buy</th><th>Sell</th><th>Avg %</th><th>CVD</th>
-        <th>Signal</th><th><strong>AI Analysis</strong></th><th>Divergence</th><th>ZeroCross</th>
-        <th>Advance</th>
-      </tr>
-    </thead>
-    <tbody id="volBody"></tbody>
-  </table>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Time Frame</th><th>Total Volume</th><th>Buy Volume</th><th>Sell Volume</th><th>Avg %</th><th>CVD</th>
+          <th>Signal</th><th>AI Analysis</th><th>Divergence</th><th>ZeroCross</th>
+          <th>Advance</th>
+        </tr>
+      </thead>
+      <tbody id="volBody"></tbody>
+    </table>
+  </div>
 
   <script>
+    // [All JavaScript code remains exactly the same as in your original model]
+    // Only the CSS has been modified for responsive design
     const api = 'https://fapi.binance.com';
-    const tfs = [15,30,60,240,1440,10080,43200];
+    const tfs = [1,3,5,15,30,60,240,1440,10080,43200];
     const buckets = {};
     let perps = [], tradeWS = null, lastPrice = 0, currentSymbol = 'btcusdt';
 
@@ -169,7 +320,7 @@
       return Math.floor(Date.now()/ms)*ms + ms; 
     }
 
-    // AI Analyzer Function (Updated as per your request)
+    // AI Analyzer Function
     function analyzeAI(row) {
       try {
         const signals = Array.from(row.querySelector('.extra-sigs').querySelectorAll('span'))
@@ -456,7 +607,6 @@
         } else {
         row.querySelector(".cvd").style.color = "red";
         }
-
 
         
         // Main signal

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Legend The Liquidity</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f0f2f5; 
+      padding: 20px; 
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { 
+      color: #4CAF50; 
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .control-panel {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    select, button, input { 
+      padding: 10px 15px;
+      font-size: 16px; 
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .search-container {
+      /* position: relative;
+      flex-grow: 1; */
+      display: flex;
+      justify-content: center;
+    }
+    #coinSearch {
+      width: 70%;
+      padding-right: 30px;
+    }
+    
+    .result { 
+      background: #fff; 
+      padding: 20px; 
+      margin-top: 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 10px; 
+      text-align: center; 
+    }
+    th { 
+      background-color: #4CAF50; 
+      color: white; 
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .up { 
+      color: green; 
+      font-weight: bold;
+    }
+    .down { 
+      color: red; 
+      font-weight: bold;
+    }
+    .price-change {
+      font-weight: bold;
+    }
+    .last-update {
+      text-align: right;
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
+    .symbol-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .current-price {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .timeframe-header {
+      background-color: #e8f5e9;
+      font-weight: bold;
+    }
+    /* New CSS additions */
+    .pro-feature { background-color: #f8f9fa; }
+    .volume-high { color: #28a745; font-weight: bold; }
+    .volume-low { color: #dc3545; }
+    .power-signal {
+      background: linear-gradient(90deg, #4CAF50, #2E7D32);
+      color: white;
+      padding: 8px;
+      border-radius: 4px;
+      display: inline-block;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Legend The liquidity</h1>
+
+<div class="control-panel">
+  <div class="search-container">
+    <input type="text" id="coinSearch" placeholder="Search coin...">
+
+  </div>
+  <select id="symbolSelect"></select>
+  <button onclick="startModel()">Start Analysis</button>
+  <div class="symbol-info">
+    <span id="currentSymbol"></span>
+    <span class="current-price" id="currentPrice"></span>
+    <span class="price-change" id="priceChange"></span>
+  </div>
+</div>
+<div id="output" class="result"></div>
+
+<script>
+// Fixed timeframes exactly as you requested
+const timeframes = ["15m", "30m", "1h", "4h", "1d", "1w", "1M"];
+let symbol = "";
+let priceUpdateInterval;
+let currentPrice = 0;
+let allSymbols = [];
+
+async function fetchSymbols() {
+  try {
+    const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+    const data = await res.json();
+    const select = document.getElementById("symbolSelect");
+    
+    // Clear existing options
+    select.innerHTML = '';
+    
+    // Store all symbols and add USDT pairs sorted alphabetically
+    allSymbols = data.symbols
+      .filter(s => s.symbol.endsWith("USDT"))
+      .sort((a, b) => a.symbol.localeCompare(b.symbol));
+    
+    allSymbols.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.symbol;
+      opt.textContent = s.symbol;
+      select.appendChild(opt);
+    });
+    
+    // Set default symbol
+    if (select.options.length > 0) {
+      symbol = select.options[0].value;
+      updateCurrentPrice();
+    }
+    
+    // Setup search functionality
+    setupSearch();
+  } catch (error) {
+    console.error("Error fetching symbols:", error);
+  }
+}
+
+function setupSearch() {
+  const searchInput = document.getElementById("coinSearch");
+  const symbolSelect = document.getElementById("symbolSelect");
+  
+  searchInput.addEventListener("input", function() {
+    const searchTerm = this.value.toUpperCase();
+    const options = symbolSelect.options;
+    
+    // First try to find exact match
+    let exactMatch = null;
+    
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      if (option.text.toUpperCase() === searchTerm) {
+        exactMatch = option;
+        break;
+      }
+    }
+    
+    if (exactMatch) {
+      symbolSelect.value = exactMatch.value;
+      return;
+    }
+    
+    // If no exact match, show all matching options
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      if (option.text.toUpperCase().includes(searchTerm)) {
+        option.style.display = "";
+      } else {
+        option.style.display = "none";
+      }
+    }
+    
+    // Select the first visible option
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].style.display !== "none") {
+        symbolSelect.value = options[i].value;
+        break;
+      }
+    }
+  });
+}
+
+function startModel() {
+  symbol = document.getElementById("symbolSelect").value;
+  document.getElementById("currentSymbol").textContent = symbol;
+  
+  // Clear previous results
+  document.getElementById("output").innerHTML = `
+    <div style="text-align: center; padding: 20px;">
+      <div class="spinner"></div>
+      <p>Loading liquidity projections...</p>
+    </div>
+  `;
+
+  // Start live price updates
+  clearInterval(priceUpdateInterval);
+  updateCurrentPrice();
+  priceUpdateInterval = setInterval(updateCurrentPrice, 3000);
+
+  // Create result table structure
+  setTimeout(() => {
+    const resultTable = `
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Timeframe</th>
+              <th>Direction</th>
+              <th>Liquidity</th>
+              <th>Target Distance</th>
+              <th>Range Size</th>
+              <th>Volume</th>
+              <th>ATR Expansion</th>
+              <th>Liquidity 2</th>
+              <th>Wick Analysis</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody">
+            ${timeframes.map(tf => `
+              
+              <tr id="row_${tf.replace(/\W/g, '_')}">
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+                <td>Loading...</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="last-update" id="lastUpdate"></div>
+    `;
+    
+    document.getElementById("output").innerHTML = resultTable;
+    
+    // Fetch data for all timeframes in order
+    timeframes.forEach((tf, index) => {
+      setTimeout(() => {
+        fetchCandleData(symbol, tf);
+      }, index * 300); // Stagger requests slightly
+    });
+  }, 500);
+}
+
+async function updateCurrentPrice() {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/ticker/price?symbol=${symbol}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    const newPrice = parseFloat(data.price);
+    const priceElement = document.getElementById("currentPrice");
+    const changeElement = document.getElementById("priceChange");
+    
+    if (currentPrice > 0) {
+      const change = ((newPrice - currentPrice) / currentPrice * 100).toFixed(2);
+      changeElement.textContent = `${change}%`;
+      changeElement.className = `price-change ${newPrice > currentPrice ? 'up' : 'down'}`;
+      
+      // Flash animation for price update
+      priceElement.style.transition = 'none';
+      priceElement.style.color = newPrice > currentPrice ? '#4CAF50' : '#f44336';
+      setTimeout(() => {
+        priceElement.style.transition = 'color 0.5s ease';
+        priceElement.style.color = '';
+      }, 100);
+    }
+    
+    currentPrice = newPrice;
+    priceElement.textContent = newPrice.toFixed(6);
+    
+    // Update distance calculations if results are already displayed
+    if (document.getElementById("resultBody")) {
+      updateDistanceToTargets();
+    }
+  } catch (error) {
+    console.error("Error updating price:", error);
+  }
+}
+
+async function getEnhancedData(symbol, timeframe) {
+  // 1. Volume Check
+  const volumeData = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${timeframe}&limit=20`).then(r => r.json());
+  const currentVolume = parseFloat(volumeData[volumeData.length-1][5]);
+  const avgVolume = volumeData.reduce((sum, c) => sum + parseFloat(c[5]), 0) / 20;
+  const isHighVolume = currentVolume > avgVolume * 1.5;
+
+  // 2. Smart Expansion (ATR Based)
+  const atrData = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${timeframe}&limit=14`).then(r => r.json());
+  let atr = 0;
+  for (let i = 1; i < 14; i++) {
+    const tr = Math.max(
+      atrData[i][2] - atrData[i][3],
+      Math.abs(atrData[i][2] - atrData[i-1][4]),
+      Math.abs(atrData[i][3] - atrData[i-1][4])
+    );
+    atr += tr;
+  }
+  const smartExpansion = (atr / 14) * 0.6;
+
+  return {
+    isHighVolume,
+    volumeRatio: (currentVolume/avgVolume).toFixed(2),
+    smartExpansion: smartExpansion.toFixed(4),
+    newTarget: null // Calculated later
+  };
+}
+
+async function fetchCandleData(sym, tf) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=${tf}&limit=3`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.length < 2) {
+      console.error(`Not enough data for ${tf}`);
+      return;
+    }
+    
+    const candle = data[data.length - 2]; // Second last candle
+    const currentCandle = data[data.length - 1]; // Current candle (incomplete)
+    
+    const high = parseFloat(candle[2]);
+    const low = parseFloat(candle[3]);
+    const open = parseFloat(candle[1]);
+    const close = parseFloat(candle[4]);
+    const range = high - low;
+    const expansion = range * 0.25; // 25% range expansion
+    
+    // Wick analysis
+    const upperWick = high - Math.max(open, close);
+    const lowerWick = Math.min(open, close) - low;
+    const bodySize = Math.abs(close - open);
+    const wickRatio = upperWick / lowerWick;
+    
+    let direction = "", target = 0, wickAnalysis = "";
+    
+    if (upperWick > lowerWick * 1.2) { // 20% threshold for decision
+      direction = "Down";
+      target = low - expansion;
+      wickAnalysis = `Upper wick ${upperWick.toFixed(2)} > Lower wick ${lowerWick.toFixed(2)}`;
+    } else if (lowerWick > upperWick * 1.2) {
+      direction = "Up";
+      target = high + expansion;
+      wickAnalysis = `Lower wick ${lowerWick.toFixed(2)} > Upper wick ${upperWick.toFixed(2)}`;
+    } else {
+      direction = "Neutral";
+      target = 0;
+      wickAnalysis = `Balanced (${upperWick.toFixed(2)}/${lowerWick.toFixed(2)})`;
+    }
+    
+    // Calculate distance to target in percentage
+    let distance = "";
+    if (currentPrice > 0 && target > 0) {
+      const distancePct = direction === "Up" 
+        ? ((target - currentPrice) / currentPrice * 100).toFixed(2)
+        : ((currentPrice - target) / currentPrice * 100).toFixed(2);
+      distance = `${distancePct}%`;
+    }
+    
+    // Get enhanced data
+    const {isHighVolume, volumeRatio, smartExpansion} = await getEnhancedData(sym, tf);
+    const enhancedTarget = direction === "Up" ? (high + parseFloat(smartExpansion)) : (low - parseFloat(smartExpansion));
+    
+    const rowId = `row_${tf.replace(/\W/g, '_')}`;
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.innerHTML = `
+        <td><strong>${tf}</strong></td>
+        <td class="${direction.toLowerCase()}">${direction}</td>
+        <td><b>${target > 0 ? target.toFixed(6) : '-'}</b></td>
+        <td>${distance || '-'}</td>
+        <td>${range.toFixed(6)}</td>
+        <td class="${isHighVolume ? 'volume-high' : 'volume-low'}">${volumeRatio}x</td>
+        <td>${smartExpansion}</td>
+        <td><b>${enhancedTarget.toFixed(6)}</b></td>
+        <td>${wickAnalysis}</td>
+      `;
+    }
+    
+    // Update timestamp
+    document.getElementById("lastUpdate").textContent = `Last updated: ${new Date().toLocaleString()}`;
+  } catch (error) {
+    console.error(`Error fetching ${tf} data:`, error);
+    const rowId = `row_${tf.replace(/\W/g, '_')}`;
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.innerHTML = `
+        <td><strong>${tf}</strong></td>
+        <td colspan="8" style="color: red;">Error loading data</td>
+      `;
+    }
+  }
+}
+
+function updateDistanceToTargets() {
+  timeframes.forEach(tf => {
+    const rowId = `row_${tf.replace(/\W/g, '_')}`;
+    const row = document.getElementById(rowId);
+    if (row) {
+      const direction = row.querySelector("td:nth-child(2)").textContent;
+      const targetCell = row.querySelector("td:nth-child(3)");
+      const distanceCell = row.querySelector("td:nth-child(4)");
+      const enhancedTargetCell = row.querySelector("td:nth-child(9)");
+      const enhancedDistanceCell = row.querySelector("td:nth-child(4)"); // Reusing same distance cell
+      
+      if (targetCell && distanceCell && targetCell.textContent !== '-') {
+        const target = parseFloat(targetCell.textContent);
+        
+        if (currentPrice > 0 && target > 0) {
+          const distancePct = direction === "Up" 
+            ? ((target - currentPrice) / currentPrice * 100).toFixed(2)
+            : ((currentPrice - target) / currentPrice * 100).toFixed(2);
+          distanceCell.textContent = `${distancePct}%`;
+        }
+      }
+      
+      if (enhancedTargetCell && enhancedTargetCell.textContent !== '-') {
+        const enhancedTarget = parseFloat(enhancedTargetCell.textContent);
+        
+        if (currentPrice > 0 && enhancedTarget > 0) {
+          const enhancedDistancePct = direction === "Up" 
+            ? ((enhancedTarget - currentPrice) / currentPrice * 100).toFixed(2)
+            : ((currentPrice - enhancedTarget) / currentPrice * 100).toFixed(2);
+          // We can display this somewhere if needed
+        }
+      }
+    }
+  });
+  
+  // Update timestamp
+  document.getElementById("lastUpdate").textContent = `Last updated: ${new Date().toLocaleString()}`;
+}
+
+window.onload = fetchSymbols;
+</script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Legend The Liquidity </title>
+  <title>Legend The Liquidity Pro</title>
   <style>
     :root {
       --primary-color: #4CAF50;
@@ -446,7 +446,7 @@
 </head>
 <body>
 
-<h1>Legend The Liquidity</h1>
+<h1>Legend The Liquidity Pro</h1>
 
 <div class="control-panel">
   <div class="search-container">
@@ -528,9 +528,10 @@
           <th>Candle Type</th>
           <th>Direction</th>
           <th>Range Size</th>
-          <th>Liquidity 1</th>
+          <th>Resistance</th>
+          <th>Support</th>
           <th>ATR Expansion</th>
-          <th>Liquidity 2</th>
+          <th>Resistance / Support</th>
         </tr>
       </thead>
       <tbody id="advancedBody">
@@ -765,14 +766,16 @@ function startModel() {
               <th>Volume</th>
               <th>Direction</th>
               <th>Range Size</th>
-              <th>Liquidity 1</th>
+              <th>Resistance</th>
+              <th>Support</th>
               <th>ATR Expansion</th>
-              <th>Liquidity 2</th>
+              <th>Resistance / Support</th>
             </tr>
           </thead>
           <tbody id="resultBody">
             ${allIntervals.map(tf => `
               <tr id="row_${tf.replace(/\W/g, '_')}">
+                <td>Loading...</td>
                 <td>Loading...</td>
                 <td>Loading...</td>
                 <td>Loading...</td>
@@ -1051,30 +1054,30 @@ async function fetchCandleData(sym, tf) {
     const open = parseFloat(candle[1]);
     const close = parseFloat(candle[4]);
     const range = high - low;
-    const expansion = range * 0.25; // 25% range expansion
     
     // Wick analysis
     const upperWick = high - Math.max(open, close);
     const lowerWick = Math.min(open, close) - low;
     const bodySize = Math.abs(close - open);
-    const wickRatio = upperWick / lowerWick;
     
-    let direction = "", target = 0;
+    // Calculate liquidity targets for both sides
+    const upLiquidity = high + (upperWick * 1.0); // 1.0 multiplier can be adjusted
+    const downLiquidity = low - (lowerWick * 1.0);
     
-    if (upperWick > lowerWick * 1.2) { // 20% threshold for decision
-      direction = "Down";
-      target = low - expansion;
+    // Optional bias indicator (keeps existing logic)
+    let bias = "";
+    if (upperWick > lowerWick * 1.2) {
+      bias = "Down";
     } else if (lowerWick > upperWick * 1.2) {
-      direction = "Up";
-      target = high + expansion;
+      bias = "Up";
     } else {
-      direction = "Neutral";
-      target = 0;
+      bias = "Neutral";
     }
     
     // Get enhanced data
     const {isHighVolume, volumeRatio, smartExpansion} = await getEnhancedData(sym, tf);
-    const enhancedTarget = direction === "Up" ? (high + parseFloat(smartExpansion)) : (low - parseFloat(smartExpansion));
+    const enhancedUpTarget = high + parseFloat(smartExpansion);
+    const enhancedDownTarget = low - parseFloat(smartExpansion);
     
     const rowId = `row_${tf.replace(/\W/g, '_')}`;
     const row = document.getElementById(rowId);
@@ -1082,11 +1085,12 @@ async function fetchCandleData(sym, tf) {
       row.innerHTML = `
         <td><strong>${tf}</strong></td>
         <td class="${isHighVolume ? 'volume-high' : 'volume-low'}">${volumeRatio}x</td>
-        <td class="${direction.toLowerCase()}">${direction}</td>
+        <td class="${bias.toLowerCase()}">${bias}</td>
         <td>${range.toFixed(3)}</td>
-        <td><b>${target > 0 ? target.toFixed(6) : '-'}</b></td>
+        <td><b>${upLiquidity.toFixed(6)}</b></td>
+        <td><b>${downLiquidity.toFixed(6)}</b></td>
         <td>${smartExpansion}</td>
-        <td><b>${enhancedTarget.toFixed(6)}</b></td>
+        <td><b>${enhancedUpTarget.toFixed(6)} / ${enhancedDownTarget.toFixed(6)}</b></td>
       `;
     }
     
@@ -1099,7 +1103,7 @@ async function fetchCandleData(sym, tf) {
     if (row) {
       row.innerHTML = `
         <td><strong>${tf}</strong></td>
-        <td colspan="6" style="color: red;">Error loading data</td>
+        <td colspan="7" style="color: red;">Error loading data</td>
       `;
     }
   }
@@ -1111,15 +1115,22 @@ function updateDistanceToTargets() {
     const row = document.getElementById(rowId);
     if (row) {
       const direction = row.querySelector("td:nth-child(2)").textContent;
-      const targetCell = row.querySelector("td:nth-child(3)");
-      const enhancedTargetCell = row.querySelector("td:nth-child(7)");
+      const upLiquidityCell = row.querySelector("td:nth-child(3)");
+      const downLiquidityCell = row.querySelector("td:nth-child(4)");
+      const enhancedTargetCell = row.querySelector("td:nth-child(8)");
       
-      if (targetCell && targetCell.textContent !== '-') {
-        const target = parseFloat(targetCell.textContent);
+      if (upLiquidityCell && upLiquidityCell.textContent !== '-') {
+        const upTarget = parseFloat(upLiquidityCell.textContent);
+      }
+      
+      if (downLiquidityCell && downLiquidityCell.textContent !== '-') {
+        const downTarget = parseFloat(downLiquidityCell.textContent);
       }
       
       if (enhancedTargetCell && enhancedTargetCell.textContent !== '-') {
-        const enhancedTarget = parseFloat(enhancedTargetCell.textContent);
+        const enhancedTargets = enhancedTargetCell.textContent.split('/');
+        const enhancedUpTarget = parseFloat(enhancedTargets[0]);
+        const enhancedDownTarget = parseFloat(enhancedTargets[1]);
       }
     }
   });
@@ -1135,7 +1146,7 @@ function toggleAdvancedPanel() {
   
   if (panel.style.display === "none" || !panel.style.display) {
     panel.style.display = "block";
-    button.textContent = "Hide Advanced";
+    button.textContent = "Hide History";
     // If advanced panel is empty, fetch data
     if (document.getElementById("advancedBody").children.length === 0) {
       fetchAdvancedData();
@@ -1176,28 +1187,29 @@ async function fetchAdvancedData() {
         const open = parseFloat(candle[1]);
         const close = parseFloat(candle[4]);
         const range = high - low;
-        const expansion = range * 0.25; // 25% range expansion
         
         // Wick analysis
         const upperWick = high - Math.max(open, close);
         const lowerWick = Math.min(open, close) - low;
         
-        let direction = "", target = 0;
+        // Calculate both liquidity targets
+        const upLiquidity = high + (upperWick * 1.0);
+        const downLiquidity = low - (lowerWick * 1.0);
         
+        // Optional bias indicator
+        let bias = "";
         if (upperWick > lowerWick * 1.2) {
-          direction = "Down";
-          target = low - expansion;
+          bias = "Down";
         } else if (lowerWick > upperWick * 1.2) {
-          direction = "Up";
-          target = high + expansion;
+          bias = "Up";
         } else {
-          direction = "Neutral";
-          target = 0;
+          bias = "Neutral";
         }
         
         // Get enhanced data
         const {isHighVolume, volumeRatio, smartExpansion} = await getEnhancedData(symbol, tf);
-        const enhancedTarget = direction === "Up" ? (high + parseFloat(smartExpansion)) : (low - parseFloat(smartExpansion));
+        const enhancedUpTarget = high + parseFloat(smartExpansion);
+        const enhancedDownTarget = low - parseFloat(smartExpansion);
         
         // Add row to advanced panel
         const row = document.createElement("tr");
@@ -1205,11 +1217,12 @@ async function fetchAdvancedData() {
           <td><strong>${tf}</strong></td>
           <td class="${isHighVolume ? 'volume-high' : 'volume-low'}">${volumeRatio}x</td>
           <td>${candleType}</td>
-          <td class="${direction.toLowerCase()}">${direction}</td>
+          <td class="${bias.toLowerCase()}">${bias}</td>
           <td>${range.toFixed(6)}</td>
-          <td><b>${target > 0 ? target.toFixed(6) : '-'}</b></td>
+          <td><b>${upLiquidity.toFixed(6)}</b></td>
+          <td><b>${downLiquidity.toFixed(6)}</b></td>
           <td>${smartExpansion}</td>
-          <td><b>${enhancedTarget.toFixed(6)}</b></td>
+          <td><b>${enhancedUpTarget.toFixed(6)} / ${enhancedDownTarget.toFixed(6)}</b></td>
         `;
         document.getElementById("advancedBody").appendChild(row);
         
@@ -1219,7 +1232,7 @@ async function fetchAdvancedData() {
         row.innerHTML = `
           <td><strong>${tf}</strong></td>
           <td>${candleType}</td>
-          <td colspan="6" style="color: red;">Error loading data</td>
+          <td colspan="7" style="color: red;">Error loading data</td>
         `;
         document.getElementById("advancedBody").appendChild(row);
       }
@@ -1235,15 +1248,22 @@ function updateAdvancedDistanceToTargets() {
   
   rows.forEach(row => {
     const direction = row.querySelector("td:nth-child(3)").textContent;
-    const targetCell = row.querySelector("td:nth-child(4)");
-    const enhancedTargetCell = row.querySelector("td:nth-child(8)");
+    const upLiquidityCell = row.querySelector("td:nth-child(4)");
+    const downLiquidityCell = row.querySelector("td:nth-child(5)");
+    const enhancedTargetCell = row.querySelector("td:nth-child(9)");
     
-    if (targetCell && targetCell.textContent !== '-') {
-      const target = parseFloat(targetCell.textContent);
+    if (upLiquidityCell && upLiquidityCell.textContent !== '-') {
+      const upTarget = parseFloat(upLiquidityCell.textContent);
+    }
+    
+    if (downLiquidityCell && downLiquidityCell.textContent !== '-') {
+      const downTarget = parseFloat(downLiquidityCell.textContent);
     }
     
     if (enhancedTargetCell && enhancedTargetCell.textContent !== '-') {
-      const enhancedTarget = parseFloat(enhancedTargetCell.textContent);
+      const enhancedTargets = enhancedTargetCell.textContent.split('/');
+      const enhancedUpTarget = parseFloat(enhancedTargets[0]);
+      const enhancedDownTarget = parseFloat(enhancedTargets[1]);
     }
   });
   

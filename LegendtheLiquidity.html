@@ -1135,14 +1135,14 @@ function toggleAdvancedPanel() {
   
   if (panel.style.display === "none" || !panel.style.display) {
     panel.style.display = "block";
-    button.textContent = "Hide Advanced";
+    button.textContent = "Hide History";
     // If advanced panel is empty, fetch data
     if (document.getElementById("advancedBody").children.length === 0) {
       fetchAdvancedData();
     }
   } else {
     panel.style.display = "none";
-    button.textContent = "Show Advanced";
+    button.textContent = "Show History";
   }
 }
 

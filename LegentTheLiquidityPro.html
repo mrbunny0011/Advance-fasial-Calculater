@@ -1120,11 +1120,11 @@ async function fetchCandleData(sym, tf) {
         <td class="${isHighVolume ? 'volume-high' : 'volume-low'}">${volumeRatio}x</td>
         <td class="${bias.toLowerCase()}">${bias}</td>
         <td>${range.toFixed(3)}</td>
-        <td><b>${upLiquidity.toFixed(6)}</b></td>
-        <td><b>${downLiquidity.toFixed(6)}</b></td>
+        <td class="red"><b>${upLiquidity.toFixed(6)}</b></td>
+        <td class="green"><b>${downLiquidity.toFixed(6)}</b></td>
         <td>${smartExpansion}</td>
-        <td><b>${enhancedUpTarget.toFixed(6)} / ${enhancedDownTarget.toFixed(6)}</b></td>
-      `;
+        <td><b> <span class="red"> ${enhancedUpTarget.toFixed(6)}</span> / <span class="green">${enhancedDownTarget.toFixed(6)}</span></b></td>
+      `; 
     }
     
     // Update timestamp
@@ -1257,6 +1257,7 @@ async function fetchAdvancedData() {
           <td>${smartExpansion}</td>
           <td><b>${enhancedUpTarget.toFixed(6)} / ${enhancedDownTarget.toFixed(6)}</b></td>
         `;
+
         document.getElementById("advancedBody").appendChild(row);
         
       } catch (error) {

@@ -24,7 +24,6 @@
       padding: 20px;
       margin: 0;
       transition: all 0.3s ease;
-      /* max-width: 1200px; */
       margin: 0 auto;
     }
 
@@ -169,7 +168,7 @@
       border-spacing: 0;
       margin-top: 10px;
       font-size: 13px;
-      min-width: 600px;
+      min-width: 700px;
     }
 
     th { 
@@ -198,6 +197,8 @@
       text-align: center; 
       border-bottom: 1px solid var(--border-color);
       transition: background 0.2s;
+      font-weight: 600;
+      font-size: 18px;
     }
 
     tr:hover td {
@@ -523,7 +524,7 @@
     <table>
       <thead>
         <tr>
-          <th>Timeframe</th>
+          <th>Time Frame</th>
           <th>Volume</th>
           <th>Candle Type</th>
           <th>Direction</th>
@@ -550,6 +551,7 @@ const allIntervals = ["15m", "30m", "1h", "4h", "1d", "1w", "1M"];
 let activeIntervals = ["15m", "30m", "1h", "4h", "1d", "1w", "1M"];
 let symbol = "";
 let priceUpdateInterval;
+let autoUpdateInterval; // Added for automatic updates
 let currentPrice = 0;
 let allSymbols = [];
 let sockets = {};
@@ -623,6 +625,34 @@ function initTimeframeCheckboxes() {
     div.appendChild(label);
     container.appendChild(div);
   });
+}
+
+// Added function for automatic updates
+function startAutoUpdate() {
+  // Clear any existing interval
+  if (autoUpdateInterval) {
+    clearInterval(autoUpdateInterval);
+  }
+  
+  // Start new interval (5000ms = 5 seconds)
+  autoUpdateInterval = setInterval(() => {
+    if (symbol) {
+      // Update the main analysis
+      allIntervals.forEach(tf => {
+        fetchCandleData(symbol, tf);
+      });
+      
+      // Update the dashboard levels
+      activeIntervals.forEach(interval => {
+        if (lastClosedCandles[interval]) {
+          calculateLevels(interval);
+        }
+      });
+      
+      // Update current price
+      updateCurrentPrice();
+    }
+  }, 5000);
 }
 
 async function fetchSymbols() {
@@ -755,6 +785,9 @@ function startModel() {
   updateCurrentPrice();
   priceUpdateInterval = setInterval(updateCurrentPrice, 3000);
 
+  // Start auto-update every 5 seconds
+  startAutoUpdate();
+
   // Create result table structure for standard analysis
   setTimeout(() => {
     const resultTable = `
@@ -762,7 +795,7 @@ function startModel() {
         <table>
           <thead>
             <tr>
-              <th>Timeframe</th>
+              <th>Time Frame</th>
               <th>Volume</th>
               <th>Direction</th>
               <th>Range Size</th>

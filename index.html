@@ -1,311 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Faisal Calculator 8.0</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</head>
-<body>
-
+  </head>
+  <body>
     <section id="home">
-
-    
-    <!-- Nav bar -->
-    <nav>
+      <!-- Nav bar -->
+      <nav>
         <div>
-            <button class="menu-btn" onclick="openSidebar()">☰</button>
-                <div class="sidebar" id="sidebar">
-                    <span class="close-btn" onclick="closeSidebar()">×</span>
-                    <a href="#home">Home</a>
-                    <a href="allTechnical1.html">All Website's</a>
-                    <a href="MarketTrandSystem.html">Market Trend System</a>
-                    <a href="GoldClculation.html">Gold Calculation</a>
-                    <a href="OrderBook.html">Order Book</a>
-                    <a href="dimand.html">Diamond</a>
-                    <a href="Advance_diamond.html">Advance Diamond</a>
-                    <a href="MultanCalculationPro.html"> Multan Calculation Pro</a>
-                    <a href="MultanCalculation.html">Multan Calculation</a>
-                    <a href="LegentTheLiquidityPro.html">Legend The liquidity Pro</a>
-                    <a href="LegendtheLiquidity.html"> Legend The liquidity</a>
-                    <a href="LiquidityConfirmation.html"> Liquiditiy Confirmation </a>
-                    <a href="LegendTheliquidityZone.html">Legend The liquidity Zone</a>
-                    <a href="BinanceFuturePerpetualCoinMarket.html">Binance Future Market</a>
-                    <a href="LiquiditiyHeatMap.html">Liquiditiy Heat Map</a>
-                    <a href="VolumWithCVDSystemPro.html">Volume With CVD System Pro</a>
-                    <a href="PriceAction.html">Price Action</a>
-                    <a href="VolumeAnalysis.html">Volume Analysis</a>
-                    
-                    <a href="VolumeMomentumTrendAnalysis.html">Volume Momentum Trend Analysis</a>
-                    <a href="EMA.html">EMA Analysis With RSI</a>
-                    <a href="volumProfile.html">Volume Profile</a>
-                    <a href="VOlumeProfileWithAnalysis.html">VOlume Profile With Analysis</a>
-                    <a href="#Analysis">Analysis</a>
-                    <a href="MarketAlert.html">Market Alert</a>
-                    <a href="#" class="popup-btn" onclick="openPopup()">About</a>
-                    <a href="#">Contact</a>
-                </div>
-            </div>
-            <img src="img/Asset 8FC 21.png" alt="logo" class="logo">
-        <h1>Faisal's Market</h1>
-    </nav>
-
-    <!-- Mid bar -->
-<div>
-    <div class="mid-bar">
-        <button class="add-btn" onclick="showModal()" title="Add Calculator">+</button>
-        <div class="mid-bar-manu">
-            <img src="img/paint.png" alt="" class="icon" title="paint">
-            <img src="img/full screen.png" alt="full screen" class="icon" onclick="toggleFullScreen()" title="Full Screen">
-            <img src="img/screenshot.png" alt="takeScreenshot" onclick="takeScreenshot()" class="icon" title="Take ScreenShot">
+          <button class="menu-btn" onclick="openSidebar()">☰</button>
+          <div class="sidebar" id="sidebar">
+            <span class="close-btn" onclick="closeSidebar()">×</span>
+            <a href="#home">Home</a>
+            <a href="allTechnical1.html">All Website's</a>
+            <a href="MarketTrandSystem.html">Market Trend System</a>
+            <a href="GoldClculation.html">Gold Calculation</a>
+            <a href="OrderBook.html">Order Book</a>
+            <a href="MultanCalculation.html"> Multan Calculation </a>
+            <a href="LegentTheLiquidityPro.html">Legend The liquidity </a>
+            <a href="LiquidityConfirmation.html"> Liquiditiy Confirmation </a>
+            <a href="BinanceFuturePerpetualCoinMarket.html">Binance Future Market</a>
+            <a href="LiquiditiyHeatMap.html">Liquiditiy Heat Map</a>
+            <a href="PriceAction.html">Price Action</a>
+            <a href="VolumeAnalysis.html">Volume Analysis</a>
+            <a href="VolumeMomentumTrendAnalysis.html">Volume Momentum Trend Analysis</a>
+            <a href="EMA.html">EMA Analysis With RSI</a>
+            <a href="VOlumeProfileWithAnalysis.html">VOlume Profile With Analysis</a>
+            <a href="BinanceCalculator.html">Binance Calculator</a>
+            <a href="#Analysis">Analysis</a>
+            <a href="#" class="popup-btn" onclick="openPopup()">About</a>
+            <a href="#">Contact</a>
+          </div>
         </div>
-    </div>
-</div>
-    
-<!-- Calculator Container -->
-    <div class="container" id="calcContainer">
-    
-    </div>
+        <img src="img/Asset 8FC 21.png" alt="logo" class="logo" />
+        <h1>Faisal's Market</h1>
+      </nav>
 
-    <!-- Modal for selecting calculator type -->
-    <div class="overlay" id="overlay"></div>
-    <div class="modal" id="modal">
+      <!-- Mid bar -->
+      <div>
+        <div class="mid-bar">
+          <button class="add-btn" onclick="showModal()" title="Add Calculator">
+            +
+          </button>
+          <div class="mid-bar-manu">
+            <img src="img/paint.png" alt="" class="icon" title="paint" />
+            <img
+              src="img/full screen.png"
+              alt="full screen"
+              class="icon"
+              onclick="toggleFullScreen()"
+              title="Full Screen"
+            />
+            <img
+              src="img/screenshot.png"
+              alt="takeScreenshot"
+              onclick="takeScreenshot()"
+              class="icon"
+              title="Take ScreenShot"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculator Container -->
+      <div class="container" id="calcContainer"></div>
+
+      <!-- Modal for selecting calculator type -->
+      <div class="overlay" id="overlay"></div>
+      <div class="modal" id="modal">
         <h2>Select Calculator Type</h2>
         <div class="box">
-        <div class="one">
-            <button onclick="addCalculator('Calculator')" class="but">Calculator</button>
-            <button onclick="addCalculator('Silver')" class="but">Silver</button>
+          <div class="one">
+            <button onclick="addCalculator('Calculator')" class="but">
+              Calculator
+            </button>
+            <button onclick="addCalculator('Silver')" class="but">
+              Silver
+            </button>
             <button onclick="addCalculator('Gold')" class="but">Gold</button>
             <button class="but"><a href="dimand.html">Diamond</a></button>
-            <button onclick="addCalculator('Legend')" class="but">Legend</button>
-        </div>
-        
-        <div class="two">
-            <button onclick="addCalculator('Galaxy')" class="but">Galaxy</button>
+            <button onclick="addCalculator('Legend')" class="but">
+              Legend
+            </button>
+          </div>
+
+          <div class="two">
+            <button onclick="addCalculator('Galaxy')" class="but">
+              Galaxy
+            </button>
             <button onclick="addCalculator('Star')" class="but">Star</button>
             <button onclick="addCalculator('Moon')" class="but">Moon</button>
             <button onclick="addCalculator('Sun')" class="but">Sun</button>
             <button onclick="hideModal()" class="but">Cancel</button>
+          </div>
         </div>
-    </div>
-    </div>
+      </div>
 
-    <!-- Model For Selecting Calculator type For repeat input  -->
-     
+      <!-- Model For Selecting Calculator type For repeat input  -->
 
-    <!-- About code  -->
-    <div class="popup-overlay" id="popupOverlay">
+      <!-- About code  -->
+      <div class="popup-overlay" id="popupOverlay">
         <div class="popup">
-            <button class="close-btnn" onclick="closePopup()">×</button>
-            <h2>About Faisal's Market </h2>
-            <img src="img/Asset 8FC 21.png" alt="logo" class="logo"><span>Faisal's Market</span>
-            <p>This product is licensed to 
-                Faisal Inc</p>
-                <p>
-                    Mathematician & Technical Analysis Israr Ahmad
-                </p>
-                <p> Owner of this Website Muhammad Faisal</p>
-                <p>Design by Abdul Basit </p>
-                <p>Warning: This computer program is protected by copyright law 
-                    and international treaties. Unauthorized reproduction or distribution 
-                    of this program, or any portion of it, may result in severe civil and 
-                    criminal penalties, and will be prosecuted to the maximum extent possible 
-                    under the law.
-                    </p>
-                    <p>
-                        Copyright 2025 Faisal Inc . All rights  reserved.    </p>
+          <button class="close-btnn" onclick="closePopup()">×</button>
+          <h2>About Faisal's Market</h2>
+          <img src="img/Asset 8FC 21.png" alt="logo" class="logo" /><span
+            >Faisal's Market</span
+          >
+          <p>This product is licensed to Faisal Inc</p>
+          <p>Mathematician & Technical Analysis Israr Ahmad</p>
+          <p>Owner of this Website Muhammad Faisal</p>
+          <p>Design by Abdul Basit</p>
+          <p>
+            Warning: This computer program is protected by copyright law and
+            international treaties. Unauthorized reproduction or distribution of
+            this program, or any portion of it, may result in severe civil and
+            criminal penalties, and will be prosecuted to the maximum extent
+            possible under the law.
+          </p>
+          <p>Copyright 2025 Faisal Inc . All rights reserved.</p>
 
-                        <img src="img/Asset 11.png" alt="img" class="corner_img">
-
+          <img src="img/Asset 11.png" alt="img" class="corner_img" />
         </div>
+      </div>
 
-
-    </div>
-
-    <!--  HV Calculator code -->
-    <div class="popup-overlay-hv" id="popupOverlay-hv">
-        <div class="popup-hv">
-            <button class="close-btnn-hv" onclick="closePopup_hv()">×</button>
-            <h2>Historical Volatility Calculator</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Closing Price</th>
-                    </tr>
-                </thead>
-                <tbody id="priceTable">
-                    <tr><td><input type="number" class="price"></td></tr>
-                    <tr><td><input type="number" class="price"></td></tr>
-                </tbody>
-            </table>
-            <button onclick="addRow()" class="hv-btn">Add Row</button>
-            <button onclick="calculateHV()" class="hv-btn">Calculate HV</button>
-            <button onclick="clean()" class="hv-btn">Clear</button>
+     
     
-            <p id="result"></p>
-    
-
-        </div>
-
-
-    </div>  
-    
-</section>
-<!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
- <!-- =====================Market/ Analysis Seation ================================     -->
-<section id="Analysis">
-
-     <!-- BOX -->
-     <div class="outer_box">
-    <!-- Left 1 table -->
-     <div class="Current_Candle_Data">
-        <h1>Futures Second Last Candle</h1>
-        <select id="coinSelector_FSLC" onchange="updateValues_FSLC()">
-            <option value="">Loading USDT Perpetual pairs...</option>
-        </select>
-        <select id="timeFrame_FSLC" onchange="updateValues_FSLC()">
-            <option value="15m">15 Minutes</option>
-            <option value="30m">30 Minutes</option>
-            <option value="1h">1 Hour</option>
-            <option value="4h">4 Hours</option>
-            <option value="1d">1 Day</option>
-            <option value="1w">1 Week</option>
-            <option value="1M">1 Month</option>
-        </select>
-        <table>
-            <tr><th>Indicator</th><th>Value</th></tr>
-            <tr><td>Open</td><td id="open_FSLC">Loading...</td></tr>
-            <tr><td>High</td><td id="high_FSLC">Loading...</td></tr>
-            <tr><td>Low</td><td id="low_FSLC">Loading...</td></tr>
-            <tr><td>Close</td><td id="close_FSLC">Loading...</td></tr>
-            <tr><td>Volume</td><td id="volume_FSLC">Loading...</td></tr>
-            <tr><td>Momentum</td><td id="momentum_FSLC">Loading...</td></tr>
-            <tr><td>15 Candle Volume Avg</td><td id="avgVolume_FSLC">Loading...</td></tr>
-            <tr><td>15 Candle Avg Momentum</td><td id="avgMomentum_FSLC">Loading...</td></tr>
-        </table>
-    
-     </div>
-    
-    <!-- Left 2 table -->
-     <div class="Second_Last_Candle_Data">
-
-                <h1>Sport Second Last Candle</h1>
-                <select id="coinSelector-SLCD" onchange="updateValues_SLDC()">
-                    <option value="">Loading USDT pairs...</option>
-                </select>
-                <select id="timeFrame_SLCD" onchange="updateValues_SLDC()">
-                    <option value="15m">15 Minutes</option>
-                    <option value="30m">30 Minutes</option>
-                    <option value="1h">1 Hour</option>
-                    <option value="4h">4 Hours</option>
-                    <option value="1d">1 Day</option>
-                    <option value="1w">1 Week</option>
-                    <option value="1M">1 Month</option>
-                </select>
-                <table>
-                    <tr><th>Indicator</th><th>Value</th></tr>
-                    <tr><td>Open</td><td id="open">Loading...</td></tr>
-                    <tr><td>High</td><td id="high">Loading...</td></tr>
-                    <tr><td>Low</td><td id="low">Loading...</td></tr>
-                    <tr><td>Close</td><td id="close">Loading...</td></tr>
-                    <tr><td>Volume</td><td id="volume">Loading...</td></tr>
-                    <tr><td>Momentum</td><td id="momentum">Loading...</td></tr>
-                    <tr><td>15 Candle Volume Avg</td><td id="avgVolume">Loading...</td></tr>
-                    <tr><td>15 Candle Avg Momentum</td><td id="avgMomentum">Loading...</td></tr>
-                </table>
-                
-     </div>
-
-    <!-- Right 1 table -->
-    <div class="container_BFC">
-        <h1>Binance Futures Calculator</h1>
-        
-        <label for="coinPair">Select Coin Pair:</label>
-        <select id="coinPair"></select>
-        
-        <label for="positionType">Position Type:</label>
-        <select id="positionType">
-            <option value="long">Long</option>
-            <option value="short">Short</option>
-        </select>
-        
-        <label for="leverage">Leverage:</label>
-        <input type="number" id="leverage" value="10" min="1" max="125">
-        
-        <label for="entryPrice">Entry Price (USDT):</label>
-        <input type="number" id="entryPrice" value="2100">
-        
-        <label for="exitPrice">Exit Price (USDT):</label>
-        <input type="number" id="exitPrice" value="2200">
-        
-        <label for="quantity">Quantity (USDT):</label>
-        <input type="number" id="quantity" value="100">
-        
-        <button onclick="calculatePnL()">Calculate</button>
-        
-        <table>
-            <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>Initial Margin</td><td id="initialMargin">-</td></tr>
-            <tr><td>PnL</td><td id="pnl">-</td></tr>
-            <tr><td>ROI (%)</td><td id="roi">-</td></tr>
-        </table>
-    </div>
-    <!-- Right 2 table -->
-    <div class="market-coin-section">
-        
-    <h1>Market Trend Analysis</h1>
-
-    <!-- Dropdown for coin selection -->
-    <select id="coinSelector" onchange="updateValues()">
-        <option value="">Loading USDT pairs...</option>
-    </select>
-
-    <select id="timeFrame" onchange="updateValues()">
-        <option value="15m">15 Minutes</option>
-        <option value="30m">30 Minutes</option>
-        <option value="1h">1 Hour</option>
-        <option value="4h">4 Hours</option>
-        <option value="1d">1 Day</option>
-        <option value="1w">1 Week</option>
-        <option value="1m">1 Month</option>
-    </select>
-
-    <table>
-        <tr>
-            <th>Indicator</th>
-            <th>Value</th>
-        </tr>
-        <tr><td>Price</td><td id="price">Loading...</td></tr>
-        <tr><td>RVol (Last 15 Candles)</td><td id="rvol-coin">Loading...</td></tr>
-        <tr><td>RVol (Previous 15 Candles)</td><td id="rvolPrev-coin">Loading...</td></tr>
-        <tr><td>LAR</td><td id="lar-coin">Loading...</td></tr>
-        <tr><td>LMC</td><td id="lmc-coin">Loading...</td></tr>
-        <tr><td>PAS</td><td id="pas-coin">Loading...</td></tr>
-        <tr><td>ATR</td><td id="atr-coin">Loading...</td></tr>
-        <tr><td>SMP</td><td id="smp-coin">Loading...</td></tr>
-        <tr><td>PAC</td><td id="pac-coin">Loading...</td></tr>
-        <tr><td>LSS</td><td id="lss-coin">Loading...</td></tr>
-    </table>
-    
-    <h2>Market Trend: <span id="marketTrend-coin">Calculating...</span></h2>
-    
-    <h3>Selected Coin Trend:</h3>
-    <div id="coinTrend"></div>
-    </div>
- </div>
-</section>
-
-
-<!-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: -->
- <!-- =====================BINANACE FUTURE CALCULATOR ================================     -->
-  <section id="BinanceFuturesCalculator">
-
-  </section>
     <!-- footer code -->
     <footer>
-        <p>&copy; 2025 | All Rights Reserved.Faisal Inc. | Designed by <span>Abdul Basit</span></p>
+      <p>
+        &copy; 2025 | All Rights Reserved.Faisal Inc. | Designed by
+        <span>Abdul Basit</span>
+      </p>
     </footer>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

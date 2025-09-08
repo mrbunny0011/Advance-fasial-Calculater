@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binance Futures Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #ffffff;
+            --accent-color: #f9fafb;
+            --text-color: #333333;
+            --light-text: #666666;
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --success-color: #02c076;
+            --danger-color: #e74c3c;
+            --border-color: #e0e0e0;
+            --input-bg: #ffffff;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 28px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--light-text);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        select, input {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 15px;
+            outline: none;
+        }
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background-color: #6db7f8;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .results {
+            margin-top: 30px;
+            background: var(--accent-color);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        .result-label {
+            color: var(--light-text);
+            font-size: 14px;
+        }
+        .result-value {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .long {
+            color: var(--success-color);
+        }
+        .short {
+            color: var(--danger-color);
+        }
+        .refresh-btn {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 16px;
+            width: auto;
+            padding: 0;
+        }
+        .position-indicator {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .long-indicator {
+            background-color: rgba(2, 192, 118, 0.2);
+            color: var(--success-color);
+        }
+        .short-indicator {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+        }
+        
+        /* Search container styles */
+        .search-container {
+            position: relative;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 40px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 15px;
+            outline: none;
+        }
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            color: var(--light-text);
+        }
+        .coin-options {
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 5px;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        .coin-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .coin-option:last-child {
+            border-bottom: none;
+        }
+        .coin-option:hover {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-calculator"></i> Binance Future Calculator</h1>
+        
+        <div class="input-group">
+            <label for="coinSearch">Search Coin Pair</label>
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="coinSearch" class="search-input" placeholder="Search for a coin...">
+                <div id="coinOptions" class="coin-options"></div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="coinPair">Selected Coin Pair</label>
+            <select id="coinPair"></select>
+        </div>
+        
+        <div class="input-group">
+            <label for="positionType">Position Type</label>
+            <select id="positionType">
+                <option value="long">Long</option>
+                <option value="short">Short</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="leverage">Leverage</label>
+            <input type="number" id="leverage" value="10" min="1" max="125">
+        </div>
+        <div class="input-group">
+            <label for="entryPrice">Entry Price (USDT)</label>
+            <input type="number" id="entryPrice" value="0">
+            <button class="refresh-btn" onclick="updateMarketPrice()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div class="input-group">
+            <label for="exitPrice">Exit Price (USDT)</label>
+            <input type="number" id="exitPrice" value="0">
+        </div>
+        <div class="input-group">
+            <label for="quantity">Position Size (USDT)</label>
+            <input type="number" id="quantity" value="100">
+        </div>
+        <button onclick="calculatePnL()"><i class="fas fa-calculator"></i> Calculate PnL</button>
+        <div class="results">
+            <div class="result-row">
+                <span class="result-label">Initial Margin</span>
+                <span class="result-value" id="initialMargin">- USDT</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Profit & Loss</span>
+                <span class="result-value" id="pnl">- USDT</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">ROI</span>
+                <span class="result-value" id="roi">- %</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        let allCoinPairs = [];
+        
+        async function fetchUSDTCoins() {
+            try {
+                let response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
+                let data = await response.json();
+                let select = document.getElementById("coinPair");
+                allCoinPairs = data.symbols
+                    .filter(symbol => symbol.quoteAsset === "USDT" && symbol.status === "TRADING")
+                    .map(symbol => symbol.symbol)
+                    .sort();
+                
+                // Populate the dropdown
+                allCoinPairs.forEach(symbol => {
+                    let option = document.createElement("option");
+                    option.value = symbol;
+                    option.text = symbol;
+                    select.appendChild(option);
+                });
+                
+                if (allCoinPairs.includes("BTCUSDT")) {
+                    select.value = "BTCUSDT";
+                    updateMarketPrice();
+                }
+            } catch (error) {
+                console.error("Error fetching USDT coins:", error);
+            }
+        }
+        
+        async function updateMarketPrice() {
+            let coin = document.getElementById("coinPair").value;
+            if (!coin) return;
+            try {
+                let response = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${coin}`);
+                let data = await response.json();
+                document.getElementById("entryPrice").value = parseFloat(data.price).toFixed(2);
+                document.getElementById("exitPrice").value = parseFloat(data.price).toFixed(2);
+            } catch (error) {
+                console.error("Error fetching market price:", error);
+            }
+        }
+        
+        function calculatePnL() {
+            let positionType = document.getElementById("positionType").value;
+            let leverage = parseFloat(document.getElementById("leverage").value);
+            let entryPrice = parseFloat(document.getElementById("entryPrice").value);
+            let exitPrice = parseFloat(document.getElementById("exitPrice").value);
+            let quantity = parseFloat(document.getElementById("quantity").value);
+            
+            if (isNaN(entryPrice)) entryPrice = 0;
+            if (isNaN(exitPrice)) exitPrice = 0;
+            if (isNaN(quantity)) quantity = 0;
+            if (isNaN(leverage)) leverage = 1;
+            
+            let initialMargin = quantity / leverage;
+            let pnl = (positionType === "long") ? 
+                (exitPrice - entryPrice) * (quantity / entryPrice) : 
+                (entryPrice - exitPrice) * (quantity / entryPrice);
+            let roi = (pnl / initialMargin) * 100;
+            
+            const formatNumber = num => {
+                return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            };
+            
+            document.getElementById("initialMargin").innerText = formatNumber(initialMargin) + " USDT";
+            
+            const pnlElement = document.getElementById("pnl");
+            pnlElement.innerText = formatNumber(pnl) + " USDT";
+            pnlElement.className = pnl >= 0 ? "result-value long" : "result-value short";
+            
+            const roiElement = document.getElementById("roi");
+            roiElement.innerText = formatNumber(roi) + " %";
+            roiElement.className = roi >= 0 ? "result-value long" : "result-value short";
+        }
+        
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('coinSearch');
+            const coinOptions = document.getElementById('coinOptions');
+            const coinPairSelect = document.getElementById('coinPair');
+            
+            searchInput.addEventListener('input', function() {
+                const searchText = this.value.toUpperCase();
+                const filteredCoins = allCoinPairs.filter(coin => 
+                    coin.includes(searchText)
+                );
+                
+                // Clear previous options
+                coinOptions.innerHTML = '';
+                
+                if (searchText && filteredCoins.length > 0) {
+                    // Add filtered options
+                    filteredCoins.forEach(coin => {
+                        const option = document.createElement('div');
+                        option.className = 'coin-option';
+                        option.textContent = coin;
+                        option.addEventListener('click', function() {
+                            coinPairSelect.value = coin;
+                            searchInput.value = '';
+                            coinOptions.style.display = 'none';
+                            updateMarketPrice();
+                        });
+                        coinOptions.appendChild(option);
+                    });
+                    
+                    coinOptions.style.display = 'block';
+                } else {
+                    coinOptions.style.display = 'none';
+                }
+            });
+            
+            // Hide options when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !coinOptions.contains(e.target)) {
+                    coinOptions.style.display = 'none';
+                }
+            });
+            
+            // Update search when dropdown selection changes
+            coinPairSelect.addEventListener('change', function() {
+                searchInput.value = this.value;
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchUSDTCoins();
+            document.getElementById("coinPair").addEventListener('change', updateMarketPrice);
+            setupSearch();
+        });
+    </script>
+</body>
+</html>

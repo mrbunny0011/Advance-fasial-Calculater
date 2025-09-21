@@ -1,1789 +1,2344 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Book</title>
-  <style>
-    /* Global Styles */
-    :root {
-      --primary-green: #e8f5e9;
-      --light-green: #f1f8e9;
-      --accent-orange: #ffcc80;
-      --accent-red: #ffcdd2;
-      --text-dark: #263238;
-      --text-medium: #546e7a;
-      --text-light: #78909c;
-      --border-light: #cfd8dc;
-      --shadow-light: rgba(0,0,0,0.05);
-    }
-    
-    body {
-      font-family: 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #fafafa;
-      margin: 0;
-      padding: 20px;
-      color: var(--text-dark);
-      line-height: 1.6;
-    }
-    
-    .dashboard {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 25px;
-      max-width: 1800px;
-      margin: 0 auto;
-    }
-
-    
-    .panel {
-      flex: 1;
-      min-width: 350px;
-      background: white;
-      padding: 25px;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px var(--shadow-light);
-      margin-bottom: 20px;
-      border: 1px solid var(--border-light);
-      transition: transform 0.2s, box-shadow 0.2s;
-      max-height: 300vh;
-      overflow-y: scroll;
-    }
-    
-    .panel:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
-    }
-    
-    .panel h1, .panel h2, .panel h3, .panel h4 {
-      text-align: center;
-      color: var(--text-dark);
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-weight: 600;
-    }
-    
-    .panel h1 {
-      font-size: 24px;
-      color: #2e7d32;
-      padding-bottom: 15px;
-      border-bottom: 1px solid var(--border-light);
-    }
-    
-    .panel h2 {
-      font-size: 20px;
-      color: #5c6bc0;
-    }
-    
-    .panel h3 {
-      font-size: 18px;
-      color: var(--text-medium);
-    }
-    
-    .control-panel {
-      margin-bottom: 25px;
-      text-align: center;
-      padding: 20px;
-      background: var(--light-green);
-      border-radius: 12px;
-      border: 1px solid var(--border-light);
-    }
-    
-    .control-panel label {
-      font-weight: 500;
-      margin-right: 8px;
-      color: var(--text-medium);
-      font-size: 14px;
-    }
-    
-    .control-panel select,
-    .control-panel input {
-      padding: 10px 15px;
-      font-size: 14px;
-      margin-right: 12px;
-      margin-bottom: 12px;
-      border: 1px solid var(--border-light);
-      border-radius: 8px;
-      background: white;
-      min-width: 120px;
-      transition: border 0.2s;
-    }
-    
-    .control-panel select:focus,
-    .control-panel input:focus {
-      outline: none;
-      border-color: #81c784;
-      box-shadow: 0 0 0 2px rgba(129, 199, 132, 0.2);
-    }
-    
-    .control-panel button {
-      padding: 10px 20px;
-      font-size: 14px;
-      margin-right: 12px;
-      margin-bottom: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #66bb6a;
-      color: white;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-    
-    .control-panel button:hover {
-      background: #4caf50;
-      transform: translateY(-1px);
-    }
-    
-    #orderBookContainer, #analysisResult {
-      margin-top: 20px;
-      
-    }
-    #analysisResult p{
-      font-size: 18px;
-    }
-    
-    .order-book {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
-    }
-    
-    .order-column {
-      width: 55%;
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 10px;
-      background: white;
-      overflow-x: scroll;
-      box-shadow: 0 2px 8px var(--shadow-light);
-      white-space: nowrap;
-      scroll-snap-type: none;
-     
-    }
-    
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 13px;
-    }
-    
-    th, td {
-      border-bottom: 1px solid var(--border-light);
-      padding: 10px 8px;
-      text-align: right;
-    }
-    
-    th {
-      background-color: #e8f5e9;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      color: var(--text-dark);
-    }
-    
-    tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .live-price {
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 20px 0;
-      padding: 15px;
-      background: #e8f5e9;
-      border-radius: 10px;
-      color: #2e7d32;
-      box-shadow: 0 2px 8px var(--shadow-light);
-      border: 1px solid #c8e6c9;
-    }
-    
-    .analysis-detail {
-      margin-top: 20px;
-      text-align: left;
-      font-size: 14px;
-      line-height: 1.7;
-      color: var(--text-medium);
-    }
-    
-    /* Enhanced Volume Panel */
-    #volumePanel {
-      margin-bottom: 30px;
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 12px var(--shadow-light);
-      border: 1px solid var(--border-light);
-      overflow-x: scroll;
-    }
-    .volume_changed{
-        width: 100px;
-    }
-    #volumePanel h2 {
-      color: #5c6bc0;
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 18px;
-    }
-    
-    #volumePanel table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 13px;
-    }
-    
-    #volumePanel th {
-      background: #5c6bc0;
-      color: white;
-      padding: 12px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      font-weight: 500;
-    }
-    
-    #volumePanel td {
-      padding: 10px 12px;
-      text-align: center;
-      border-bottom: 1px solid var(--border-light);
-    }
-    
-    #volumePanel tr:hover {
-      background-color: #f5f5f5;
-    }
-    
-    .highlight-row {
-      background-color: #fff3e0 !important;
-      font-weight: bold;
-    }
-    
-    .filled-bucket {
-      background-color: var(--accent-red) !important;
-      color: #c62828;
-    }
-    
-    .buy-dominant {
-      color: #2e7d32;
-      font-weight: bold;
-    }
-    
-    .sell-dominant {
-      color: #c62828;
-      font-weight: bold;
-    }
-    
-    .volume-change {
-      font-size: 12px;
-      
-    }
-
-    
-    .positive-change {
-      color: #2e7d32;
-    }
-    
-    .negative-change {
-      color: #c62828;
-    }
-    
-    /* Pivot Panel Styles */
-    #pivotPanel {
-      margin-bottom: 25px;
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 12px var(--shadow-light);
-      border: 1px solid var(--border-light);
-    }
-    
-    #pivotPanel h2 {
-      color: #5c6bc0;
-      margin-bottom: 20px;
-    }
-    
-    #pivotPanel table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-    
-    #pivotPanel th, #pivotPanel td {
-      border-bottom: 1px solid var(--border-light);
-      padding: 10px;
-      text-align: center;
-      font-weight: 800;
-      font-size: 18px;
-    }
-    
-    #pivotPanel th {
-      background: #e8f5e9;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-    
-    /* Modal Popup CSS for Pivot Settings */
-    .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 1000; 
-      left: 0;
-      top: 0;
-      width: 100%; 
-      height: 100%; 
-      overflow: auto; 
-      background-color: rgba(0,0,0,0.4); 
-    }
-    
-    .modal-content {
-      background-color: white;
-      margin: 10% auto; 
-      padding: 30px;
-      border: 1px solid var(--border-light);
-      width: 90%;
-      max-width: 600px;
-      border-radius: 16px;
-      position: relative;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-    }
-    
-    .close {
-      color: var(--text-light);
-      position: absolute;
-      top: 20px;
-      right: 25px;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    
-    .close:hover {
-      color: var(--text-dark);
-    }
-    
-    .setting-item {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
-    
-    .setting-item:hover {
-      background: var(--light-green);
-    }
-    
-    .setting-item label {
-      display: inline-block;
-      width: 180px;
-      font-weight: 500;
-      color: var(--text-medium);
-    }
-    
-    .setting-item input[type="color"] {
-      margin-right: 15px;
-      height: 30px;
-      width: 50px;
-      border: 1px solid var(--border-light);
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    @media (max-width: 480px) {
-        .cc{
-        display: flex;
-        flex-wrap: nowrap;
-        flex-direction: column;
-        background-color: #0288D1;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Book</title>
+    <style>
+      /* Global Styles */
+      :root {
+        --primary-green: #e8f5e9;
+        --light-green: #f1f8e9;
+        --accent-orange: #ffcc80;
+        --accent-red: #ffcdd2;
+        --text-dark: #263238;
+        --text-medium: #546e7a;
+        --text-light: #78909c;
+        --border-light: #cfd8dc;
+        --shadow-light: rgba(0, 0, 0, 0.05);
       }
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 1200px) {
+
+      body {
+        font-family: "Segoe UI", "Roboto", -apple-system, BlinkMacSystemFont,
+          sans-serif;
+        background: #fafafa;
+        margin: 0;
+        padding: 20px;
+        color: var(--text-dark);
+        line-height: 1.6;
+      }
+
       .dashboard {
-        flex-direction: column;
-      }
-      .panel {
-        min-width: 100%;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .control-panel {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
+        gap: 25px;
+        max-width: 1800px;
+        margin: 0 auto;
       }
-      .control-panel > * {
-        margin: 5px;
-        flex: 1 1 120px;
-      }
-      .order-book {
-        flex-direction: column;
-      }
-      .order-column {
-        width: 100%;
-        margin-bottom: 15px;
-      }
-      #volumePanel table {
-        font-size: 12px;
-      }
-      #pivotPanel th, #pivotPanel td {
-        font-size: 14px;
-        padding: 8px;
-      }
-    }
 
-    @media (max-width: 480px) {
-      #orderBookContainer{
-        height: 400px;
+      .panel {
+        flex: 1;
+        min-width: 350px;
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px var(--shadow-light);
+        margin-bottom: 20px;
+        border: 1px solid var(--border-light);
+        transition: transform 0.2s, box-shadow 0.2s;
+        max-height: 300vh;
         overflow-y: scroll;
       }
-      .control-panel > * {
-        flex: 1 1 100%;
+
+      .panel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
       }
-      #volumePanel table {
-        display: block;
-        overflow-x: auto;
+
+      .panel h1,
+      .panel h2,
+      .panel h3,
+      .panel h4 {
+        text-align: center;
+        color: var(--text-dark);
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-weight: 600;
       }
-      .modal-content {
-        width: 95%;
-        padding: 15px;
+
+      .panel h1 {
+        font-size: 24px;
+        color: #2e7d32;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-light);
       }
-      .setting-item {
-        flex-direction: column;
+
+      .panel h2 {
+        font-size: 20px;
+        color: #5c6bc0;
       }
-      .setting-item label {
+
+      .panel h3 {
+        font-size: 18px;
+        color: var(--text-medium);
+      }
+
+      .control-panel {
+        margin-bottom: 25px;
+        text-align: center;
+        padding: 20px;
+        background: var(--light-green);
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+      }
+
+      .control-panel label {
+        font-weight: 500;
+        margin-right: 8px;
+        color: var(--text-medium);
+        font-size: 14px;
+      }
+
+      .control-panel select,
+      .control-panel input {
+        padding: 10px 15px;
+        font-size: 14px;
+        margin-right: 12px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        background: white;
+        min-width: 120px;
+        transition: border 0.2s;
+      }
+
+      .control-panel select:focus,
+      .control-panel input:focus {
+        outline: none;
+        border-color: #81c784;
+        box-shadow: 0 0 0 2px rgba(129, 199, 132, 0.2);
+      }
+
+      .control-panel button {
+        padding: 10px 20px;
+        font-size: 14px;
+        margin-right: 12px;
+        margin-bottom: 12px;
+        border: none;
+        border-radius: 8px;
+        background: #66bb6a;
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+      }
+
+      .control-panel button:hover {
+        background: #4caf50;
+        transform: translateY(-1px);
+      }
+
+      #orderBookContainer,
+      #analysisResult {
+        margin-top: 20px;
+      }
+      #analysisResult p {
+        font-size: 18px;
+      }
+
+      .order-book {
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+      }
+
+      .order-column {
+        width: 55%;
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        padding: 10px;
+        background: white;
+        overflow-x: scroll;
+        box-shadow: 0 2px 8px var(--shadow-light);
+        white-space: nowrap;
+        scroll-snap-type: none;
+      }
+
+      table {
         width: 100%;
-        margin-bottom: 5px;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
       }
-    }
-    
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: #a5d6a7;
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: #81c784;
-    }
-    
-    /* Animation for live updates */
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-    
-    .live-update {
-      animation: pulse 0.5s ease-in-out;
-    }
-    
-    /* Tooltip styles */
-    .tooltip {
-      position: relative;
-      display: inline-block;
-      border-bottom: 1px dotted var(--text-light);
-    }
-    
-    .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 200px;
-      background-color: var(--text-dark);
-      color: white;
-      text-align: center;
-      border-radius: 6px;
-      padding: 8px;
-      position: absolute;
-      z-index: 1;
-      bottom: 125%;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 12px;
-      font-weight: normal;
-    }
-    
-    .tooltip:hover .tooltiptext {
-      visibility: visible;
-      opacity: 1;
-    }
-    
-    /* Status indicators */
-    .status-indicator {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-    
-    .status-active {
-      background: #66bb6a;
-    }
-    
-    .status-inactive {
-      background: #ef9a9a;
-    }
-    .green{
-        color: #2E7D32;
-    }
-    
-    #volumePanelBody td{
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border-light);
+        padding: 10px 8px;
+        text-align: right;
+      }
+
+      th {
+        background-color: #e8f5e9;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        color: var(--text-dark);
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .live-price {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 20px 0;
+        padding: 15px;
+        background: #e8f5e9;
+        border-radius: 10px;
+        color: #2e7d32;
+        box-shadow: 0 2px 8px var(--shadow-light);
+        border: 1px solid #c8e6c9;
+      }
+
+      .analysis-detail {
+        margin-top: 20px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text-medium);
+      }
+
+      /* Enhanced Volume Panel */
+      #volumePanel {
+        margin-bottom: 30px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px var(--shadow-light);
+        border: 1px solid var(--border-light);
+        overflow-x: scroll;
+      }
+      .volume_changed {
+        width: 100px;
+      }
+      #volumePanel h2 {
+        color: #5c6bc0;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 18px;
+      }
+
+      #volumePanel table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+      }
+
+      #volumePanel th {
+        background: #5c6bc0;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        position: sticky;
+        top: 0;
+        font-weight: 500;
+      }
+
+      #volumePanel td {
+        padding: 10px 12px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      #volumePanel tr:hover {
+        background-color: #f5f5f5;
+      }
+
+      .highlight-row {
+        background-color: #fff3e0 !important;
+        font-weight: bold;
+      }
+
+      .filled-bucket {
+        background-color: var(--accent-red) !important;
+        color: #c62828;
+      }
+
+      .buy-dominant {
+        color: #2e7d32;
+        font-weight: bold;
+      }
+
+      .sell-dominant {
+        color: #c62828;
+        font-weight: bold;
+      }
+
+      .volume-change {
+        font-size: 12px;
+      }
+
+      .positive-change {
+        color: #2e7d32;
+      }
+
+      .negative-change {
+        color: #c62828;
+      }
+
+      /* Pivot Panel Styles */
+      #pivotPanel {
+        margin-bottom: 25px;
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px var(--shadow-light);
+        border: 1px solid var(--border-light);
+      }
+
+      #pivotPanel h2 {
+        color: #5c6bc0;
+        margin-bottom: 20px;
+      }
+
+      #pivotPanel table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      #pivotPanel th,
+      #pivotPanel td {
+        border-bottom: 1px solid var(--border-light);
+        padding: 10px;
+        text-align: center;
+        font-weight: 800;
+        font-size: 18px;
+      }
+
+      #pivotPanel th {
+        background: #e8f5e9;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      /* Modal Popup CSS for Pivot Settings */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      .modal-content {
         background-color: white;
-    }
-    /* Loading animation */
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(76, 175, 80, 0.3);
-      border-radius: 50%;
-      border-top-color: #4caf50;
-      animation: spin 1s ease-in-out infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+        margin: 10% auto;
+        padding: 30px;
+        border: 1px solid var(--border-light);
+        width: 90%;
+        max-width: 600px;
+        border-radius: 16px;
+        position: relative;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      }
 
-    /* Save notification */
-    .save-notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 4px;
-      z-index: 1000;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      opacity: 1;
-      transition: opacity 0.5s;
-    }
-  </style>
-</head>
-<body>
-  <div class="dashboard cc">
-    <!-- Live Order Book Viewer Panel -->
-    <div class="panel" id="orderBookPanel">
-      <h1>📊 Live Order Book</h1>
-      <div class="control-panel">
-        <label for="marketSelect">Market:</label>
-        <select id="marketSelect">
-          <option value="spot">Spot</option>
-          <option value="future">Futures (USDT Perpetual)</option>
-        </select>
-        
-        <label for="symbolSearch">Search Symbol:</label>
-        <input type="text" id="symbolSearch" placeholder="e.g., BTCUSDT" />
-        
-        <label for="symbolSelect">Symbol:</label>
-        <select id="symbolSelect"></select>
-        
-        <label for="priceStepSelect">Price Step:</label>
-        <select id="priceStepSelect">
-          <option value="0.0001">0.0001</option>
-          <option value="0.001">0.001</option>
-          <option value="0.01">0.01</option>
-          <option value="0.1">0.1</option>
-          <option value="1" selected>1</option>
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="200">200</option>
-          <option value="500">500</option>
-          <option value="1000">1000</option>
-        </select>
-        
-        <label for="orderCountSelect">Top Orders:</label>
-        <select id="orderCountSelect">
-          <option value="10">10</option>
-          <option value="20">20</option>
-          <option value="30">30</option>
-          <option value="40">40</option>
-          <option value="50">50</option>
-          <option value="60">60</option>
-          <option value="70">70</option>
-          <option value="80">80</option>
-          <option value="90">90</option>
-          <option value="100">100</option>
-        </select>
-        
-        <button id="connectBtn">🔌 Connect</button>
-      </div>
-      <div id="livePrice" class="live-price">Live Price: --</div>
-      <div id="orderBookContainer">
-        <!-- Live order book will appear here -->
-      </div>
-    </div>
+      .close {
+        color: var(--text-light);
+        position: absolute;
+        top: 20px;
+        right: 25px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
 
-    <!-- Advanced Analysis Panel -->
-    <div class="panel" id="analysisPanel">
-      <h1>📈 Advanced Market Analysis</h1>
-      <div class="control-panel">
-        <label for="timeFrameSelect">Time Frame:</label>
-        <select id="timeFrameSelect">
-          <option value="15m" selected>15m</option>
-          <option value="30m">30m</option>
-          <option value="1h">1h</option>
-          <option value="4h">4h</option>
-          <option value="1d">1d</option>
-          <option value="1w">1w</option>
-          <option value="1M">1M</option>
-        </select>
-        <button id="analyzeBtn">🔍 Run Analysis</button>
-      </div>
-      
-      <!-- Enhanced Volume Panel -->
-      <div id="volumePanel">
-        <h2>📊 Volume Analysis</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Price Level</th>
-              <th>Total Volume</th>
-              <th>Buy Volume</th>
-              <th>Sell Volume</th>
-              <th>Buy/Sell Ratio</th>
-              <th>Fill Status</th>
-              <th >Volume Trend</th>
-            </tr>
-          </thead>
-          <tbody id="volumePanelBody">
-            <tr>
-              <td colspan="7" style="text-align: center; padding: 20px; ">Waiting for market data...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
+      .close:hover {
+        color: var(--text-dark);
+      }
 
-       <!-- Analysis Result -->
-       <div id="analysisResult">
-        <!-- Technical analysis output will appear here -->
-      </div>
-      <!-- Pivot Point Calculation Panel -->
-      <div id="pivotPanel">
-        <h2>📌 Gold Calculation</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicator</th>
-              <th>Value</th>
-              <th>Order Book</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr id="row-resistance3" style="background-color: #FFE0B2; color: #E65100;">
-              <td>Resistance 3</td>
-              <td id="resistance3-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midR3R2" style="background-color: #FFCC80; color: #EF6C00;">
-              <td>Mid (R3-R2)</td>
-              <td id="midR3R2-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-resistance2" style="background-color: #FFB74D; color: #F57C00;">
-              <td>Resistance 2</td>
-              <td id="resistance2-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midR2R1" style="background-color: #FFA726; color: #FB8C00;">
-              <td>Mid (R2-R1)</td>
-              <td id="midR2R1-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-resistance1" style="background-color: #FF9800; color: #FFA000;">
-              <td>Resistance 1</td>
-              <td id="resistance1-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midR1PP" style="background-color: #FFD54F; color: #FFB300;">
-              <td>Mid (R1-PP)</td>
-              <td id="midR1PP-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-pivotPoint" style="background-color: #81C784; color: #2E7D32;">
-              <td>Pivot Point</td>
-              <td id="pivotPoint-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midPPS1" style="background-color: #4DB6AC; color: #00897B;">
-              <td>Mid (PP-S1)</td>
-              <td id="midPPS1-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-support1" style="background-color: #4FC3F7; color: #0288D1;">
-              <td>Support 1</td>
-              <td id="support1-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midS1S2" style="background-color: #7986CB; color: #3949AB;">
-              <td>Mid (S1-S2)</td>
-              <td id="midS1S2-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-support2" style="background-color: #BA68C8; color: #7B1FA2;">
-              <td>Support 2</td>
-              <td id="support2-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-midS2S3" style="background-color: #F06292; color: #C2185B;">
-              <td>Mid (S2-S3)</td>
-              <td id="midS2S3-td"></td>
-              <td>-</td>
-            </tr>
-            <tr id="row-support3" style="background-color: #E57373; color: #D32F2F;">
-              <td>Support 3</td>
-              <td id="support3-td"></td>
-              <td>-</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- Button to Open Pivot Settings Modal -->
-      <div style="text-align: center; margin-top: 15px;">
-        <button onclick="openSettings()">⚙️ Pivot Settings</button>
-      </div>
-      
-     
-    </div>
-  </div>
+      .setting-item {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
 
-  <!-- Pivot Settings Modal -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeSettings()">&times;</span>
-      <h3>🎨 Pivot Panel Customization</h3>
-      <div class="setting-item">
-        <label>Resistance 3</label>
-        BG <input type="color" id="bg-resistance3" value="#FFE0B2" onchange="updateRowColor('resistance3')">
-        Font <input type="color" id="font-resistance3" value="#E65100" onchange="updateRowColor('resistance3')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (R3-R2)</label>
-        BG <input type="color" id="bg-midR3R2" value="#FFCC80" onchange="updateRowColor('midR3R2')">
-        Font <input type="color" id="font-midR3R2" value="#EF6C00" onchange="updateRowColor('midR3R2')">
-      </div>
-      <div class="setting-item">
-        <label>Resistance 2</label>
-        BG <input type="color" id="bg-resistance2" value="#FFB74D" onchange="updateRowColor('resistance2')">
-        Font <input type="color" id="font-resistance2" value="#F57C00" onchange="updateRowColor('resistance2')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (R2-R1)</label>
-        BG <input type="color" id="bg-midR2R1" value="#FFA726" onchange="updateRowColor('midR2R1')">
-        Font <input type="color" id="font-midR2R1" value="#FB8C00" onchange="updateRowColor('midR2R1')">
-      </div>
-      <div class="setting-item">
-        <label>Resistance 1</label>
-        BG <input type="color" id="bg-resistance1" value="#FF9800" onchange="updateRowColor('resistance1')">
-        Font <input type="color" id="font-resistance1" value="#FFA000" onchange="updateRowColor('resistance1')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (R1-PP)</label>
-        BG <input type="color" id="bg-midR1PP" value="#FFD54F" onchange="updateRowColor('midR1PP')">
-        Font <input type="color" id="font-midR1PP" value="#FFB300" onchange="updateRowColor('midR1PP')">
-      </div>
-      <div class="setting-item">
-        <label>Pivot Point</label>
-        BG <input type="color" id="bg-pivotPoint" value="#81C784" onchange="updateRowColor('pivotPoint')">
-        Font <input type="color" id="font-pivotPoint" value="#2E7D32" onchange="updateRowColor('pivotPoint')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (PP-S1)</label>
-        BG <input type="color" id="bg-midPPS1" value="#4DB6AC" onchange="updateRowColor('midPPS1')">
-        Font <input type="color" id="font-midPPS1" value="#00897B" onchange="updateRowColor('midPPS1')">
-      </div>
-      <div class="setting-item">
-        <label>Support 1</label>
-        BG <input type="color" id="bg-support1" value="#4FC3F7" onchange="updateRowColor('support1')">
-        Font <input type="color" id="font-support1" value="#0288D1" onchange="updateRowColor('support1')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (S1-S2)</label>
-        BG <input type="color" id="bg-midS1S2" value="#7986CB" onchange="updateRowColor('midS1S2')">
-        Font <input type="color" id="font-midS1S2" value="#3949AB" onchange="updateRowColor('midS1S2')">
-      </div>
-      <div class="setting-item">
-        <label>Support 2</label>
-        BG <input type="color" id="bg-support2" value="#BA68C8" onchange="updateRowColor('support2')">
-        Font <input type="color" id="font-support2" value="#7B1FA2" onchange="updateRowColor('support2')">
-      </div>
-      <div class="setting-item">
-        <label>Mid (S2-S3)</label>
-        BG <input type="color" id="bg-midS2S3" value="#F06292" onchange="updateRowColor('midS2S3')">
-        Font <input type="color" id="font-midS2S3" value="#C2185B" onchange="updateRowColor('midS2S3')">
-      </div>
-      <div class="setting-item">
-        <label>Support 3</label>
-        BG <input type="color" id="bg-support3" value="#E57373" onchange="updateRowColor('support3')">
-        Font <input type="color" id="font-support3" value="#D32F2F" onchange="updateRowColor('support3')">
-      </div>
-      <!-- Live Price Customization -->
-      <div class="setting-item">
-        <label>Live Price</label>
-        BG <input type="color" id="bg-livePrice" value="#e8f5e9" onchange="updateLivePriceColor()">
-        Font <input type="color" id="font-livePrice" value="#2e7d32" onchange="updateLivePriceColor()">
-      </div>
-    </div>
-  </div>
+      .setting-item:hover {
+        background: var(--light-green);
+      }
 
-  <script>
-    /* Global Variables */
-    let ws = null;
-    let localOrderBook = { bids: {}, asks: {} };
-    let lastUpdateId = null;
-    let currentMarket = "spot";
-    let currentSymbol = "";
-    let currentLivePrice = 0;
-    let spotSymbols = [];
-    let futureSymbols = [];
-    let priceTickerInterval = null;
-    let trackedBuckets = {};
-    let currentActiveBucket = null;
-    let previousVolumeData = {};
-    let volumeHistory = {};
-    const VOLUME_HISTORY_LENGTH = 5;
+      .setting-item label {
+        display: inline-block;
+        width: 180px;
+        font-weight: 500;
+        color: var(--text-medium);
+      }
 
-    /* Initialize Dashboard */
-    window.onload = function() {
-      loadSymbols();
-      loadSettingsFromLocalStorage(); // Load saved settings
-      
-      // Set up event listeners
-      document.getElementById("marketSelect").addEventListener("change", function() {
-        loadSymbols();
-        saveSettingsToLocalStorage();
-      });
-      document.getElementById("symbolSearch").addEventListener("input", filterSymbolDropdown);
-      document.getElementById("orderCountSelect").addEventListener("change", function() {
-        if (currentSymbol) { renderOrderBook(currentSymbol); }
-        saveSettingsToLocalStorage();
-      });
-      document.getElementById("priceStepSelect").addEventListener("change", function() {
-        if (currentSymbol) { renderOrderBook(currentSymbol); }
-        saveSettingsToLocalStorage();
-      });
-      document.getElementById("connectBtn").addEventListener("click", connectToMarket);
-      document.getElementById("analyzeBtn").addEventListener("click", runTechnicalAnalysis);
-      document.getElementById("timeFrameSelect").addEventListener("change", function() {
-        if (currentSymbol) {
-          updatePivotCalculation(currentSymbol);
-          runTechnicalAnalysis();
+      .setting-item input[type="color"] {
+        margin-right: 15px;
+        height: 30px;
+        width: 50px;
+        border: 1px solid var(--border-light);
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      @media (max-width: 480px) {
+        .cc {
+          display: flex;
+          flex-wrap: nowrap;
+          flex-direction: column;
+          background-color: #0288d1;
         }
-        saveSettingsToLocalStorage();
-      });
-      
-      // Add color picker change listeners
-      const colorInputs = document.querySelectorAll('input[type="color"]');
-      colorInputs.forEach(input => {
-        input.addEventListener("change", function() {
-          const rowKey = this.id.split('-')[1];
-          if (rowKey === 'livePrice') {
-            updateLivePriceColor();
-          } else {
-            updateRowColor(rowKey);
-          }
-          saveSettingsToLocalStorage();
-        });
-      });
-      
-      // Set up periodic updates
-      setInterval(updatePivotOrderBook, 1000);
-      setInterval(runTechnicalAnalysis, 15 * 60 * 1000);
-    };
+      }
 
-    /* Local Storage Functions */
-    function saveSettingsToLocalStorage() {
-      const settings = {
-        market: document.getElementById("marketSelect").value,
-        symbol: document.getElementById("symbolSelect").value,
-        priceStep: document.getElementById("priceStepSelect").value,
-        orderCount: document.getElementById("orderCountSelect").value,
-        timeFrame: document.getElementById("timeFrameSelect").value,
-        pivotColors: {}
+      /* Responsive adjustments */
+      @media (max-width: 1200px) {
+        .dashboard {
+          flex-direction: column;
+        }
+        .panel {
+          min-width: 100%;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .control-panel {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .control-panel > * {
+          margin: 5px;
+          flex: 1 1 120px;
+        }
+        .order-book {
+          flex-direction: column;
+        }
+        .order-column {
+          width: 100%;
+          margin-bottom: 15px;
+        }
+        #volumePanel table {
+          font-size: 12px;
+        }
+        #pivotPanel th,
+        #pivotPanel td {
+          font-size: 14px;
+          padding: 8px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        #orderBookContainer {
+          height: 400px;
+          overflow-y: scroll;
+        }
+        .control-panel > * {
+          flex: 1 1 100%;
+        }
+        #volumePanel table {
+          display: block;
+          overflow-x: auto;
+        }
+        .modal-content {
+          width: 95%;
+          padding: 15px;
+        }
+        .setting-item {
+          flex-direction: column;
+        }
+        .setting-item label {
+          width: 100%;
+          margin-bottom: 5px;
+        }
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #a5d6a7;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #81c784;
+      }
+
+      /* Animation for live updates */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.02);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .live-update {
+        animation: pulse 0.5s ease-in-out;
+      }
+
+      /* Tooltip styles */
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted var(--text-light);
+      }
+
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 200px;
+        background-color: var(--text-dark);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+        font-weight: normal;
+      }
+
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+      }
+
+      /* Status indicators */
+      .status-indicator {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+
+      .status-active {
+        background: #66bb6a;
+      }
+
+      .status-inactive {
+        background: #ef9a9a;
+      }
+      .green {
+        color: #2e7d32;
+      }
+
+      #volumePanelBody td {
+        background-color: white;
+      }
+      /* Loading animation */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(76, 175, 80, 0.3);
+        border-radius: 50%;
+        border-top-color: #4caf50;
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Save notification */
+      .save-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        opacity: 1;
+        transition: opacity 0.5s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard cc">
+      <!-- Live Order Book Viewer Panel -->
+      <div class="panel" id="orderBookPanel">
+        <h1>📊 Live Order Book</h1>
+        <div class="control-panel">
+          <label for="marketSelect">Market:</label>
+          <select id="marketSelect">
+            <option value="spot">Spot</option>
+            <option value="future">Futures (USDT Perpetual)</option>
+          </select>
+
+          <label for="symbolSearch">Search Symbol:</label>
+          <input type="text" id="symbolSearch" placeholder="e.g., BTCUSDT" />
+
+          <label for="symbolSelect">Symbol:</label>
+          <select id="symbolSelect"></select>
+
+          <label for="priceStepSelect">Price Step:</label>
+          <select id="priceStepSelect">
+            <option value="0.0001">0.0001</option>
+            <option value="0.001">0.001</option>
+            <option value="0.01">0.01</option>
+            <option value="0.1">0.1</option>
+            <option value="1" selected>1</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+
+          <label for="orderCountSelect">Top Orders:</label>
+          <select id="orderCountSelect">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+            <option value="50">50</option>
+            <option value="60">60</option>
+            <option value="70">70</option>
+            <option value="80">80</option>
+            <option value="90">90</option>
+            <option value="100">100</option>
+          </select>
+
+          <button id="connectBtn">🔌 Connect</button>
+        </div>
+        <!-- Order Flow Imbalance Panel -->
+        <div class="panel" id="ofiPanel">
+          <h1>📊 Order Flow Imbalance (OFI)</h1>
+          <div id="ofiResult">
+            <p>Waiting for calculation...</p>
+          </div>
+           <div id="ofiBar" style="margin-top:20px; height:25px; width:100%; background:#eee; border-radius:12px; overflow:hidden; box-shadow:inset 0 2px 5px rgba(0,0,0,0.2); display:flex;">
+    <div id="buyBar" style="height:100%; background:#4CAF50; text-align:center; color:white; font-size:12px; line-height:25px;"></div>
+    <div id="sellBar" style="height:100%; background:#E53935; text-align:center; color:white; font-size:12px; line-height:25px;"></div>
+  </div>
+        </div>
+        <div id="livePrice" class="live-price">Live Price: --</div>
+        <div id="orderBookContainer">
+
+          <!--  -->
+<!-- Progress Bar Line -->
+ 
+          <!--  -->
+          <!-- Live order book will appear here -->
+        </div>
+      </div>
+
+      <!-- Advanced Analysis Panel -->
+      <div class="panel" id="analysisPanel">
+        <h1>📈 Advanced Market Analysis</h1>
+        <div class="control-panel">
+          <label for="timeFrameSelect">Time Frame:</label>
+          <select id="timeFrameSelect">
+            <option value="15m" selected>15m</option>
+            <option value="30m">30m</option>
+            <option value="1h">1h</option>
+            <option value="4h">4h</option>
+            <option value="1d">1d</option>
+            <option value="1w">1w</option>
+            <option value="1M">1M</option>
+          </select>
+          <button id="analyzeBtn">🔍 Run Analysis</button>
+        </div>
+
+        <!-- Enhanced Volume Panel -->
+        <div id="volumePanel">
+          <h2>📊 Volume Analysis</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Price Level</th>
+                <th>Total Volume</th>
+                <th>Buy Volume</th>
+                <th>Sell Volume</th>
+                <th>Buy/Sell Ratio</th>
+                <th>Fill Status</th>
+                <th>Volume Trend</th>
+              </tr>
+            </thead>
+            <tbody id="volumePanelBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 20px">
+                  Waiting for market data...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Analysis Result -->
+        <div id="analysisResult">
+          <!-- Technical analysis output will appear here -->
+        </div>
+        <!-- Pivot Point Calculation Panel -->
+        <div id="pivotPanel">
+          <h2>📌 Gold Calculation</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>Value</th>
+                <th>Order Book</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                id="row-resistance3"
+                style="background-color: #ffe0b2; color: #e65100"
+              >
+                <td>Resistance 3</td>
+                <td id="resistance3-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midR3R2"
+                style="background-color: #ffcc80; color: #ef6c00"
+              >
+                <td>Mid (R3-R2)</td>
+                <td id="midR3R2-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-resistance2"
+                style="background-color: #ffb74d; color: #f57c00"
+              >
+                <td>Resistance 2</td>
+                <td id="resistance2-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midR2R1"
+                style="background-color: #ffa726; color: #fb8c00"
+              >
+                <td>Mid (R2-R1)</td>
+                <td id="midR2R1-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-resistance1"
+                style="background-color: #ff9800; color: #ffa000"
+              >
+                <td>Resistance 1</td>
+                <td id="resistance1-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midR1PP"
+                style="background-color: #ffd54f; color: #ffb300"
+              >
+                <td>Mid (R1-PP)</td>
+                <td id="midR1PP-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-pivotPoint"
+                style="background-color: #81c784; color: #2e7d32"
+              >
+                <td>Pivot Point</td>
+                <td id="pivotPoint-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midPPS1"
+                style="background-color: #4db6ac; color: #00897b"
+              >
+                <td>Mid (PP-S1)</td>
+                <td id="midPPS1-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-support1"
+                style="background-color: #4fc3f7; color: #0288d1"
+              >
+                <td>Support 1</td>
+                <td id="support1-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midS1S2"
+                style="background-color: #7986cb; color: #3949ab"
+              >
+                <td>Mid (S1-S2)</td>
+                <td id="midS1S2-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-support2"
+                style="background-color: #ba68c8; color: #7b1fa2"
+              >
+                <td>Support 2</td>
+                <td id="support2-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-midS2S3"
+                style="background-color: #f06292; color: #c2185b"
+              >
+                <td>Mid (S2-S3)</td>
+                <td id="midS2S3-td"></td>
+                <td>-</td>
+              </tr>
+              <tr
+                id="row-support3"
+                style="background-color: #e57373; color: #d32f2f"
+              >
+                <td>Support 3</td>
+                <td id="support3-td"></td>
+                <td>-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Button to Open Pivot Settings Modal -->
+        <div style="text-align: center; margin-top: 15px">
+          <button onclick="openSettings()">⚙️ Pivot Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pivot Settings Modal -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeSettings()">&times;</span>
+        <h3>🎨 Pivot Panel Customization</h3>
+        <div class="setting-item">
+          <label>Resistance 3</label>
+          BG
+          <input
+            type="color"
+            id="bg-resistance3"
+            value="#FFE0B2"
+            onchange="updateRowColor('resistance3')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-resistance3"
+            value="#E65100"
+            onchange="updateRowColor('resistance3')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (R3-R2)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midR3R2"
+            value="#FFCC80"
+            onchange="updateRowColor('midR3R2')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midR3R2"
+            value="#EF6C00"
+            onchange="updateRowColor('midR3R2')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Resistance 2</label>
+          BG
+          <input
+            type="color"
+            id="bg-resistance2"
+            value="#FFB74D"
+            onchange="updateRowColor('resistance2')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-resistance2"
+            value="#F57C00"
+            onchange="updateRowColor('resistance2')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (R2-R1)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midR2R1"
+            value="#FFA726"
+            onchange="updateRowColor('midR2R1')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midR2R1"
+            value="#FB8C00"
+            onchange="updateRowColor('midR2R1')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Resistance 1</label>
+          BG
+          <input
+            type="color"
+            id="bg-resistance1"
+            value="#FF9800"
+            onchange="updateRowColor('resistance1')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-resistance1"
+            value="#FFA000"
+            onchange="updateRowColor('resistance1')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (R1-PP)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midR1PP"
+            value="#FFD54F"
+            onchange="updateRowColor('midR1PP')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midR1PP"
+            value="#FFB300"
+            onchange="updateRowColor('midR1PP')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Pivot Point</label>
+          BG
+          <input
+            type="color"
+            id="bg-pivotPoint"
+            value="#81C784"
+            onchange="updateRowColor('pivotPoint')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-pivotPoint"
+            value="#2E7D32"
+            onchange="updateRowColor('pivotPoint')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (PP-S1)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midPPS1"
+            value="#4DB6AC"
+            onchange="updateRowColor('midPPS1')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midPPS1"
+            value="#00897B"
+            onchange="updateRowColor('midPPS1')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Support 1</label>
+          BG
+          <input
+            type="color"
+            id="bg-support1"
+            value="#4FC3F7"
+            onchange="updateRowColor('support1')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-support1"
+            value="#0288D1"
+            onchange="updateRowColor('support1')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (S1-S2)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midS1S2"
+            value="#7986CB"
+            onchange="updateRowColor('midS1S2')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midS1S2"
+            value="#3949AB"
+            onchange="updateRowColor('midS1S2')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Support 2</label>
+          BG
+          <input
+            type="color"
+            id="bg-support2"
+            value="#BA68C8"
+            onchange="updateRowColor('support2')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-support2"
+            value="#7B1FA2"
+            onchange="updateRowColor('support2')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Mid (S2-S3)</label>
+          BG
+          <input
+            type="color"
+            id="bg-midS2S3"
+            value="#F06292"
+            onchange="updateRowColor('midS2S3')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-midS2S3"
+            value="#C2185B"
+            onchange="updateRowColor('midS2S3')"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Support 3</label>
+          BG
+          <input
+            type="color"
+            id="bg-support3"
+            value="#E57373"
+            onchange="updateRowColor('support3')"
+          />
+          Font
+          <input
+            type="color"
+            id="font-support3"
+            value="#D32F2F"
+            onchange="updateRowColor('support3')"
+          />
+        </div>
+        <!-- Live Price Customization -->
+        <div class="setting-item">
+          <label>Live Price</label>
+          BG
+          <input
+            type="color"
+            id="bg-livePrice"
+            value="#e8f5e9"
+            onchange="updateLivePriceColor()"
+          />
+          Font
+          <input
+            type="color"
+            id="font-livePrice"
+            value="#2e7d32"
+            onchange="updateLivePriceColor()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* Global Variables */
+      let ws = null;
+      let localOrderBook = { bids: {}, asks: {} };
+      let lastUpdateId = null;
+      let currentMarket = "spot";
+      let currentSymbol = "";
+      let currentLivePrice = 0;
+      let spotSymbols = [];
+      let futureSymbols = [];
+      let priceTickerInterval = null;
+      let trackedBuckets = {};
+      let currentActiveBucket = null;
+      let previousVolumeData = {};
+      let volumeHistory = {};
+      const VOLUME_HISTORY_LENGTH = 5;
+
+
+// New Function ////////////////////////////
+
+// === Order Flow Imbalance Full Calculation ===
+function calculateOFI_Panel(aggregatedBids, aggregatedAsks) {
+//new code 
+// Update imbalance bar
+
+///
+
+  let totalBuyQty = 0, totalBuyUSD = 0;
+  let totalSellQty = 0, totalSellUSD = 0;
+
+  aggregatedBids.forEach(item => {
+    const price = item[0];
+    const qty = item[1];
+    totalBuyQty += qty;
+    totalBuyUSD += price * qty;
+  });
+
+  aggregatedAsks.forEach(item => {
+    const price = item[0];
+    const qty = item[1];
+    totalSellQty += qty;
+    totalSellUSD += price * qty;
+  });
+
+  const grandTotalUSD = totalBuyUSD + totalSellUSD;
+
+  // Buy % and Sell % share
+  const buyPercent = (totalBuyUSD / grandTotalUSD) * 100;
+  const sellPercent = (totalSellUSD / grandTotalUSD) * 100;
+
+  // Difference in %
+  const diffPercent = Math.abs(buyPercent - sellPercent);
+  const leader = buyPercent > sellPercent ? "Buyers" : "Sellers";
+
+  // Ratio
+  const ratio = (totalBuyUSD / totalSellUSD).toFixed(2);
+
+  // Order Flow Imbalance (OFI formula)
+  const ofi = ((totalBuyUSD - totalSellUSD) / grandTotalUSD) * 100;
+
+  
+  // Show result
+  let html = `
+    <p><strong>Buy Quantity:</strong> ${totalBuyQty.toFixed(2)} | 
+       <strong>Buy Value:</strong> ${formatUSDValue(totalBuyUSD)} (${buyPercent.toFixed(2)}%)</p>
+    <p><strong>Sell Quantity:</strong> ${totalSellQty.toFixed(2)} | 
+       <strong>Sell Value:</strong> ${formatUSDValue(totalSellUSD)} (${sellPercent.toFixed(2)}%)</p>
+       <p><strong>📈 Extra Difference:</strong></p>
+<ul>
+  <li><strong>Quantity:</strong> ${(Math.abs(totalBuyQty - totalSellQty)).toFixed(2)} 
+      (${((Math.abs(totalBuyQty - totalSellQty) / (totalBuyQty + totalSellQty)) * 100).toFixed(2)}%)</li>
+  <li><strong>Value:</strong> ${formatUSDValue(Math.abs(totalBuyUSD - totalSellUSD))} 
+      (${diffPercent.toFixed(2)}%)</li>
+</ul>
+    <p><strong>⚖️ Difference:</strong> ${leader} are stronger by ${diffPercent.toFixed(2)}%</p>
+    <p><strong>📊 Ratio (Buy/Sell):</strong> ${ratio}</p>
+    <p><strong>🔮 OFI Score:</strong> ${ofi.toFixed(2)}%</p>
+  `;
+
+  document.getElementById("ofiResult").innerHTML = html;
+
+  // 
+  // === Update Progress Bar ===
+const buyBar = document.getElementById("buyBar");
+const sellBar = document.getElementById("sellBar");
+
+buyBar.style.width = buyPercent.toFixed(2) + "%";
+sellBar.style.width = sellPercent.toFixed(2) + "%";
+
+buyBar.textContent = buyPercent.toFixed(1) + "%";
+sellBar.textContent = sellPercent.toFixed(1) + "%";
+  // 
+}
+
+
+//////////////////////////////////////////////
+      /* Initialize Dashboard */
+      window.onload = function () {
+        loadSymbols();
+        loadSettingsFromLocalStorage(); // Load saved settings
+
+        // Set up event listeners
+        document
+          .getElementById("marketSelect")
+          .addEventListener("change", function () {
+            loadSymbols();
+            saveSettingsToLocalStorage();
+          });
+        document
+          .getElementById("symbolSearch")
+          .addEventListener("input", filterSymbolDropdown);
+        document
+          .getElementById("orderCountSelect")
+          .addEventListener("change", function () {
+            if (currentSymbol) {
+              renderOrderBook(currentSymbol);
+            }
+            saveSettingsToLocalStorage();
+          });
+        document
+          .getElementById("priceStepSelect")
+          .addEventListener("change", function () {
+            if (currentSymbol) {
+              renderOrderBook(currentSymbol);
+            }
+            saveSettingsToLocalStorage();
+          });
+        document
+          .getElementById("connectBtn")
+          .addEventListener("click", connectToMarket);
+        document
+          .getElementById("analyzeBtn")
+          .addEventListener("click", runTechnicalAnalysis);
+        document
+          .getElementById("timeFrameSelect")
+          .addEventListener("change", function () {
+            if (currentSymbol) {
+              updatePivotCalculation(currentSymbol);
+              runTechnicalAnalysis();
+            }
+            saveSettingsToLocalStorage();
+          });
+
+        // Add color picker change listeners
+        const colorInputs = document.querySelectorAll('input[type="color"]');
+        colorInputs.forEach((input) => {
+          input.addEventListener("change", function () {
+            const rowKey = this.id.split("-")[1];
+            if (rowKey === "livePrice") {
+              updateLivePriceColor();
+            } else {
+              updateRowColor(rowKey);
+            }
+            saveSettingsToLocalStorage();
+          });
+        });
+
+        // Set up periodic updates
+        setInterval(updatePivotOrderBook, 1000);
+        setInterval(runTechnicalAnalysis, 15 * 60 * 1000);
       };
 
-      // Save pivot colors
-      const pivotRows = ['resistance3', 'midR3R2', 'resistance2', 'midR2R1', 'resistance1', 
-                        'midR1PP', 'pivotPoint', 'midPPS1', 'support1', 'midS1S2', 
-                        'support2', 'midS2S3', 'support3', 'livePrice'];
-      
-      pivotRows.forEach(row => {
-        settings.pivotColors[row] = {
-          bg: document.getElementById(`bg-${row}`).value,
-          font: document.getElementById(`font-${row}`).value
+      /* Local Storage Functions */
+      function saveSettingsToLocalStorage() {
+        const settings = {
+          market: document.getElementById("marketSelect").value,
+          symbol: document.getElementById("symbolSelect").value,
+          priceStep: document.getElementById("priceStepSelect").value,
+          orderCount: document.getElementById("orderCountSelect").value,
+          timeFrame: document.getElementById("timeFrameSelect").value,
+          pivotColors: {},
         };
-      });
 
-      localStorage.setItem('binanceDashboardSettings', JSON.stringify(settings));
-      showSaveNotification();
-    }
+        // Save pivot colors
+        const pivotRows = [
+          "resistance3",
+          "midR3R2",
+          "resistance2",
+          "midR2R1",
+          "resistance1",
+          "midR1PP",
+          "pivotPoint",
+          "midPPS1",
+          "support1",
+          "midS1S2",
+          "support2",
+          "midS2S3",
+          "support3",
+          "livePrice",
+        ];
 
-    function loadSettingsFromLocalStorage() {
-      const savedSettings = localStorage.getItem('binanceDashboardSettings');
-      if (!savedSettings) return;
+        pivotRows.forEach((row) => {
+          settings.pivotColors[row] = {
+            bg: document.getElementById(`bg-${row}`).value,
+            font: document.getElementById(`font-${row}`).value,
+          };
+        });
 
-      try {
-        const settings = JSON.parse(savedSettings);
-        
-        // Load basic settings
-        if (settings.market) document.getElementById("marketSelect").value = settings.market;
-        if (settings.symbol) document.getElementById("symbolSelect").value = settings.symbol;
-        if (settings.priceStep) document.getElementById("priceStepSelect").value = settings.priceStep;
-        if (settings.orderCount) document.getElementById("orderCountSelect").value = settings.orderCount;
-        if (settings.timeFrame) document.getElementById("timeFrameSelect").value = settings.timeFrame;
-        
-        // Load pivot colors
-        if (settings.pivotColors) {
-          Object.keys(settings.pivotColors).forEach(row => {
-            const color = settings.pivotColors[row];
-            const bgInput = document.getElementById(`bg-${row}`);
-            const fontInput = document.getElementById(`font-${row}`);
-            
-            if (bgInput && fontInput) {
-              bgInput.value = color.bg;
-              fontInput.value = color.font;
-              if (row === 'livePrice') {
-                updateLivePriceColor();
-              } else {
-                updateRowColor(row);
+        localStorage.setItem(
+          "binanceDashboardSettings",
+          JSON.stringify(settings)
+        );
+        showSaveNotification();
+      }
+
+      function loadSettingsFromLocalStorage() {
+        const savedSettings = localStorage.getItem("binanceDashboardSettings");
+        if (!savedSettings) return;
+
+        try {
+          const settings = JSON.parse(savedSettings);
+
+          // Load basic settings
+          if (settings.market)
+            document.getElementById("marketSelect").value = settings.market;
+          if (settings.symbol)
+            document.getElementById("symbolSelect").value = settings.symbol;
+          if (settings.priceStep)
+            document.getElementById("priceStepSelect").value =
+              settings.priceStep;
+          if (settings.orderCount)
+            document.getElementById("orderCountSelect").value =
+              settings.orderCount;
+          if (settings.timeFrame)
+            document.getElementById("timeFrameSelect").value =
+              settings.timeFrame;
+
+          // Load pivot colors
+          if (settings.pivotColors) {
+            Object.keys(settings.pivotColors).forEach((row) => {
+              const color = settings.pivotColors[row];
+              const bgInput = document.getElementById(`bg-${row}`);
+              const fontInput = document.getElementById(`font-${row}`);
+
+              if (bgInput && fontInput) {
+                bgInput.value = color.bg;
+                fontInput.value = color.font;
+                if (row === "livePrice") {
+                  updateLivePriceColor();
+                } else {
+                  updateRowColor(row);
+                }
               }
-            }
-          });
-        }
-        
-        // Trigger market load if symbol is set
-        if (settings.symbol) {
-          setTimeout(() => {
-            document.getElementById("connectBtn").click();
-          }, 500);
-        }
-      } catch (e) {
-        console.error("Error loading settings:", e);
-      }
-    }
+            });
+          }
 
-    function showSaveNotification() {
-      const notification = document.createElement('div');
-      notification.className = 'save-notification';
-      notification.textContent = 'Settings saved!';
-      
-      document.body.appendChild(notification);
-      
-      setTimeout(() => {
-        notification.style.opacity = '0';
+          // Trigger market load if symbol is set
+          if (settings.symbol) {
+            setTimeout(() => {
+              document.getElementById("connectBtn").click();
+            }, 500);
+          }
+        } catch (e) {
+          console.error("Error loading settings:", e);
+        }
+      }
+
+      function showSaveNotification() {
+        const notification = document.createElement("div");
+        notification.className = "save-notification";
+        notification.textContent = "Settings saved!";
+
+        document.body.appendChild(notification);
+
         setTimeout(() => {
-          document.body.removeChild(notification);
-        }, 500);
-      }, 2000);
-    }
+          notification.style.opacity = "0";
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 500);
+        }, 2000);
+      }
 
-    /* Market Data Functions */
-    async function loadSymbols() {
-      const market = document.getElementById("marketSelect").value;
-      if (market === "spot") {
-        if (spotSymbols.length === 0) {
-          spotSymbols = await fetchSymbols("spot");
+      /* Market Data Functions */
+      async function loadSymbols() {
+        const market = document.getElementById("marketSelect").value;
+        if (market === "spot") {
+          if (spotSymbols.length === 0) {
+            spotSymbols = await fetchSymbols("spot");
+          }
+          populateSymbolDropdown(spotSymbols);
+        } else {
+          if (futureSymbols.length === 0) {
+            futureSymbols = await fetchSymbols("future");
+          }
+          populateSymbolDropdown(futureSymbols);
         }
-        populateSymbolDropdown(spotSymbols);
-      } else {
-        if (futureSymbols.length === 0) {
-          futureSymbols = await fetchSymbols("future");
+      }
+
+      async function fetchSymbols(market) {
+        try {
+          const endpoint =
+            market === "spot"
+              ? "https://api.binance.com/api/v3/exchangeInfo"
+              : "https://fapi.binance.com/fapi/v1/exchangeInfo";
+
+          const response = await fetch(endpoint);
+          const data = await response.json();
+
+          return market === "spot"
+            ? data.symbols
+                .filter(
+                  (sym) => sym.quoteAsset === "USDT" && sym.status === "TRADING"
+                )
+                .map((sym) => sym.symbol)
+                .sort()
+            : data.symbols
+                .filter((sym) => sym.contractType === "PERPETUAL")
+                .map((sym) => sym.symbol)
+                .sort();
+        } catch (error) {
+          console.error("Error fetching symbols:", error);
+          return [];
         }
-        populateSymbolDropdown(futureSymbols);
       }
-    }
 
-    async function fetchSymbols(market) {
-      try {
-        const endpoint = market === "spot" 
-          ? "https://api.binance.com/api/v3/exchangeInfo" 
-          : "https://fapi.binance.com/fapi/v1/exchangeInfo";
-        
-        const response = await fetch(endpoint);
-        const data = await response.json();
-        
-        return market === "spot"
-          ? data.symbols
-              .filter(sym => sym.quoteAsset === "USDT" && sym.status === "TRADING")
-              .map(sym => sym.symbol)
-              .sort()
-          : data.symbols
-              .filter(sym => sym.contractType === "PERPETUAL")
-              .map(sym => sym.symbol)
-              .sort();
-      } catch (error) {
-        console.error("Error fetching symbols:", error);
-        return [];
+      function populateSymbolDropdown(symbols) {
+        const select = document.getElementById("symbolSelect");
+        select.innerHTML = "";
+        symbols.forEach((symbol) => {
+          const option = document.createElement("option");
+          option.value = symbol;
+          option.textContent = symbol;
+          select.appendChild(option);
+        });
       }
-    }
 
-    function populateSymbolDropdown(symbols) {
-      const select = document.getElementById("symbolSelect");
-      select.innerHTML = "";
-      symbols.forEach(symbol => {
-        const option = document.createElement("option");
-        option.value = symbol;
-        option.textContent = symbol;
-        select.appendChild(option);
-      });
-    }
-
-    function filterSymbolDropdown() {
-      const searchValue = document.getElementById("symbolSearch").value.toUpperCase();
-      const select = document.getElementById("symbolSelect");
-      for (let option of select.options) {
-        option.style.display = option.value.includes(searchValue) ? "" : "none";
+      function filterSymbolDropdown() {
+        const searchValue = document
+          .getElementById("symbolSearch")
+          .value.toUpperCase();
+        const select = document.getElementById("symbolSelect");
+        for (let option of select.options) {
+          option.style.display = option.value.includes(searchValue)
+            ? ""
+            : "none";
+        }
       }
-    }
 
-    /* Order Book Functions */
-    function aggregateOrders(orders, step) {
-      let aggregated = {};
-      Object.keys(orders).forEach(priceStr => {
-        let price = parseFloat(priceStr);
-        let bucket = Math.floor(price / step) * step;
-        aggregated[bucket] = (aggregated[bucket] || 0) + orders[priceStr];
-      });
-      return Object.entries(aggregated).map(([bucket, volume]) => [parseFloat(bucket), volume]);
-    }
+      /* Order Book Functions */
+      function aggregateOrders(orders, step) {
+        let aggregated = {};
+        Object.keys(orders).forEach((priceStr) => {
+          let price = parseFloat(priceStr);
+          let bucket = Math.floor(price / step) * step;
+          aggregated[bucket] = (aggregated[bucket] || 0) + orders[priceStr];
+        });
+        return Object.entries(aggregated).map(([bucket, volume]) => [
+          parseFloat(bucket),
+          volume,
+        ]);
+      }
 
-    function renderOrderBook(symbol) {
-      const step = parseFloat(document.getElementById("priceStepSelect").value) || 1;
-      const topOrderCount = parseInt(document.getElementById("orderCountSelect").value) || 100;
-      
-      const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
-      const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
-      
-      const bidStartBucket = Math.floor(currentLivePrice / step) * step - step;
-      const bidLowerBound = bidStartBucket - (topOrderCount - 1) * step;
-      const filteredBids = aggregatedBids
-        .filter(item => item[0] <= bidStartBucket && item[0] >= bidLowerBound)
-        .sort((a, b) => b[0] - a[0]);
-      
-      const askStartBucket = Math.ceil(currentLivePrice / step) * step;
-      const askUpperBound = askStartBucket + (topOrderCount - 1) * step;
-      const filteredAsks = aggregatedAsks
-        .filter(item => item[0] >= askStartBucket && item[0] <= askUpperBound)
-        .sort((a, b) => a[0] - b[0]);
-      
-      let html = `<h2>${symbol} Live Order Book (Bucket: ${step} USDT, Top ${topOrderCount} Orders)</h2>`;
-      html += `<div class="order-book">`;
-      
-      // Asks table
-      html += `<div class="order-column">
+      function renderOrderBook(symbol) {
+        const step =
+          parseFloat(document.getElementById("priceStepSelect").value) || 1;
+        const topOrderCount =
+          parseInt(document.getElementById("orderCountSelect").value) || 100;
+
+        const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
+        const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
+
+        const bidStartBucket =
+          Math.floor(currentLivePrice / step) * step - step;
+        const bidLowerBound = bidStartBucket - (topOrderCount - 1) * step;
+        const filteredBids = aggregatedBids
+          .filter(
+            (item) => item[0] <= bidStartBucket && item[0] >= bidLowerBound
+          )
+          .sort((a, b) => b[0] - a[0]);
+
+        const askStartBucket = Math.ceil(currentLivePrice / step) * step;
+        const askUpperBound = askStartBucket + (topOrderCount - 1) * step;
+        const filteredAsks = aggregatedAsks
+          .filter(
+            (item) => item[0] >= askStartBucket && item[0] <= askUpperBound
+          )
+          .sort((a, b) => a[0] - b[0]);
+
+        let html = `<h2>${symbol} Live Order Book (Bucket: ${step} USDT, Top ${topOrderCount} Orders)</h2>`;
+        html += `<div class="order-book">`;
+
+        // Asks table
+        html += `<div class="order-column">
                  <h3>💹 Selling Orders (Asks)</h3>
                  <table>
                    <tr><th>Price</th><th>Quantity</th><th>Value (USD)</th></tr>`;
-      filteredAsks.forEach(item => {
-        const usdValue = item[0] * item[1];
-        html += `<tr>
+        filteredAsks.forEach((item) => {
+          const usdValue = item[0] * item[1];
+          html += `<tr>
                   <td>${item[0].toFixed(getPricePrecision(item[0]))}</td>
                   <td>${item[1].toFixed(2)}</td>
                   <td>${formatUSDValue(usdValue)}</td>
                 </tr>`;
-      });
-      html += `</table></div>`;
-      
-      // Bids table
-      html += `<div class="order-column">
+        });
+        html += `</table></div>`;
+
+        // Bids table
+        html += `<div class="order-column">
                  <h3>📉 Buying Orders (Bids)</h3>
                  <table>
                    <tr><th>Price</th><th>Quantity</th><th>Value (USD)</th></tr>`;
-      filteredBids.forEach(item => {
-        const usdValue = item[0] * item[1];
-        html += `<tr>
+        filteredBids.forEach((item) => {
+          const usdValue = item[0] * item[1];
+          html += `<tr>
                   <td>${item[0].toFixed(getPricePrecision(item[0]))}</td>
                   <td>${item[1].toFixed(2)}</td>
                   <td>${formatUSDValue(usdValue)}</td>
                 </tr>`;
-      });
-      html += `</table></div>`;
-      html += `</div>`;
-      
-      document.getElementById("orderBookContainer").innerHTML = html;
-      checkPriceInBuckets();
-    }
-
-    /* Connection Management */
-    function connectToMarket() {
-      currentMarket = document.getElementById("marketSelect").value;
-      currentSymbol = document.getElementById("symbolSelect").value;
-      
-      if (!currentSymbol) {
-        alert("Please select a valid trading pair");
-        return;
-      }
-      
-      if (ws) { ws.close(); }
-      if (priceTickerInterval) clearInterval(priceTickerInterval);
-      
-      localOrderBook = { bids: {}, asks: {} };
-      lastUpdateId = null;
-      trackedBuckets = {};
-      currentActiveBucket = null;
-      
-      document.getElementById("orderBookContainer").innerHTML = `<h2>Loading snapshot for ${currentSymbol}...</h2>`;
-      document.getElementById("analysisResult").innerHTML = `<h2>Analysis for ${currentSymbol} will appear here</h2>`;
-      document.getElementById("volumePanelBody").innerHTML = `<tr><td colspan="7" style="text-align: center;">Waiting for data...</td></tr>`;
-      
-      fetchSnapshotAndConnect(currentMarket, currentSymbol);
-      updateLivePrice(currentMarket, currentSymbol);
-      priceTickerInterval = setInterval(() => updateLivePrice(currentMarket, currentSymbol), 2000);
-      updatePivotCalculation(currentSymbol);
-      saveSettingsToLocalStorage();
-    }
-
-    async function fetchSnapshotAndConnect(market, symbol) {
-      const endpoint = market === "spot"
-        ? `https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=100`
-        : `https://fapi.binance.com/fapi/v1/depth?symbol=${symbol}&limit=100`;
-      
-      try {
-        const response = await fetch(endpoint);
-        const snapshot = await response.json();
-        
-        lastUpdateId = snapshot.lastUpdateId;
-        snapshot.bids.forEach(bid => {
-          localOrderBook.bids[bid[0]] = parseFloat(bid[1]);
         });
-        snapshot.asks.forEach(ask => {
-          localOrderBook.asks[ask[0]] = parseFloat(ask[1]);
-        });
-        
-        renderOrderBook(symbol);
-        connectWebSocket(market, symbol);
-      } catch (error) {
-        console.error("Error fetching snapshot:", error);
-        document.getElementById("orderBookContainer").innerHTML = `<p class="error">Error loading snapshot for ${symbol}</p>`;
-      }
-    }
+        html += `</table></div>`;
+        html += `</div>`;
 
-    function connectWebSocket(market, symbol) {
-      const endpoint = market === "spot"
-        ? `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth@100ms`
-        : `wss://fstream.binance.com/ws/${symbol.toLowerCase()}@depth@100ms`;
-      
-      ws = new WebSocket(endpoint);
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.u <= lastUpdateId) return;
-        
-        // Process bids
-        data.b.forEach(item => {
-          const price = item[0];
-          const qty = parseFloat(item[1]);
-          if (qty === 0) {
-            delete localOrderBook.bids[price];
-          } else {
-            localOrderBook.bids[price] = qty;
-          }
-        });
-        
-        // Process asks
-        data.a.forEach(item => {
-          const price = item[0];
-          const qty = parseFloat(item[1]);
-          if (qty === 0) {
-            delete localOrderBook.asks[price];
-          } else {
-            localOrderBook.asks[price] = qty;
-          }
-        });
-        
-        lastUpdateId = data.u;
-        renderOrderBook(symbol);
-      };
-      
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-      };
-      
-      ws.onclose = () => {
-        console.log("WebSocket closed, reconnecting...");
-        setTimeout(() => connectWebSocket(market, symbol), 1000);
-      };
-    }
-
-    /* Price Updates */
-    async function updateLivePrice(market, symbol) {
-      try {
-        const endpoint = market === "spot"
-          ? `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
-          : `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${symbol}`;
-        
-        const response = await fetch(endpoint);
-        const data = await response.json();
-        
-        currentLivePrice = parseFloat(data.lastPrice);
-        document.getElementById("livePrice").innerText = `📊 Live Price: ${currentLivePrice.toFixed(7)}`;
-        
-        if (document.getElementById("pivotPanel")) {
-          updatePivotPanelLivePricePosition();
-        }
-        
+        document.getElementById("orderBookContainer").innerHTML = html;
         checkPriceInBuckets();
-      } catch (error) {
-        console.error("Error fetching ticker data:", error);
+        calculateOFI_Panel(filteredBids, filteredAsks);
       }
-    }
 
-    /* Volume Analysis Functions */
-    function checkPriceInBuckets() {
-      if (!currentSymbol || !currentLivePrice) return;
-      
-      const step = parseFloat(document.getElementById("priceStepSelect").value) || 1;
-      const bucket = Math.floor(currentLivePrice / step) * step;
-      
-      const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
-      const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
-      
-      const bidInBucket = aggregatedBids.find(item => item[0] === bucket) || [bucket, 0];
-      const askInBucket = aggregatedAsks.find(item => item[0] === bucket) || [bucket, 0];
-      
-      const bidVolume = bidInBucket[1];
-      const askVolume = askInBucket[1];
-      const totalVolume = bidVolume + askVolume;
-      
-      // Calculate USD values
-      const totalUSD = totalVolume * currentLivePrice;
-      const buyUSD = bidVolume * currentLivePrice;
-      const sellUSD = askVolume * currentLivePrice;
-      
-      // Calculate ratio in percentage
-      let ratioPercentage = "50% / 50%";
-      let ratioClass = "";
-      if (totalVolume > 0) {
-        const buyRatio = (bidVolume / totalVolume) * 100;
-        const sellRatio = (askVolume / totalVolume) * 100;
-        ratioPercentage = `${buyRatio.toFixed(1)}% / ${sellRatio.toFixed(1)}%`;
-        
-        if (buyRatio > 60) ratioClass = "buy-dominant";
-        else if (sellRatio > 60) ratioClass = "sell-dominant";
+      /* Connection Management */
+      function connectToMarket() {
+        currentMarket = document.getElementById("marketSelect").value;
+        currentSymbol = document.getElementById("symbolSelect").value;
+
+        if (!currentSymbol) {
+          alert("Please select a valid trading pair");
+          return;
+        }
+
+        if (ws) {
+          ws.close();
+        }
+        if (priceTickerInterval) clearInterval(priceTickerInterval);
+
+        localOrderBook = { bids: {}, asks: {} };
+        lastUpdateId = null;
+        trackedBuckets = {};
+        currentActiveBucket = null;
+
+        document.getElementById(
+          "orderBookContainer"
+        ).innerHTML = `<h2>Loading snapshot for ${currentSymbol}...</h2>`;
+        document.getElementById(
+          "analysisResult"
+        ).innerHTML = `<h2>Analysis for ${currentSymbol} will appear here</h2>`;
+        document.getElementById(
+          "volumePanelBody"
+        ).innerHTML = `<tr><td colspan="7" style="text-align: center;">Waiting for data...</td></tr>`;
+
+        fetchSnapshotAndConnect(currentMarket, currentSymbol);
+        updateLivePrice(currentMarket, currentSymbol);
+        priceTickerInterval = setInterval(
+          () => updateLivePrice(currentMarket, currentSymbol),
+          2000
+        );
+        updatePivotCalculation(currentSymbol);
+        saveSettingsToLocalStorage();
       }
-      
-      // Check if this bucket is filled
-      const isFilled = checkIfBucketFilled(bucket, buyUSD, sellUSD);
-      
-      // Track volume changes
-      const volumeChange = calculateVolumeChange(bucket, totalUSD, buyUSD, sellUSD);
-      
-      // Update volume panel
-      updateVolumePanel(
-        bucket, 
-        totalUSD, 
-        buyUSD, 
-        sellUSD, 
-        ratioPercentage, 
-        ratioClass,
-        isFilled,
-        volumeChange
-      );
-      
-      // Update current active bucket
-      if (currentActiveBucket !== bucket) {
-        currentActiveBucket = bucket;
-        // Reset highlight for all rows
-        document.querySelectorAll('#volumePanelBody tr').forEach(row => {
-          row.classList.remove('highlight-row');
+
+      async function fetchSnapshotAndConnect(market, symbol) {
+        const endpoint =
+          market === "spot"
+            ? `https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=100`
+            : `https://fapi.binance.com/fapi/v1/depth?symbol=${symbol}&limit=100`;
+
+        try {
+          const response = await fetch(endpoint);
+          const snapshot = await response.json();
+
+          lastUpdateId = snapshot.lastUpdateId;
+          snapshot.bids.forEach((bid) => {
+            localOrderBook.bids[bid[0]] = parseFloat(bid[1]);
+          });
+          snapshot.asks.forEach((ask) => {
+            localOrderBook.asks[ask[0]] = parseFloat(ask[1]);
+          });
+
+          renderOrderBook(symbol);
+          connectWebSocket(market, symbol);
+        } catch (error) {
+          console.error("Error fetching snapshot:", error);
+          document.getElementById(
+            "orderBookContainer"
+          ).innerHTML = `<p class="error">Error loading snapshot for ${symbol}</p>`;
+        }
+      }
+
+      function connectWebSocket(market, symbol) {
+        const endpoint =
+          market === "spot"
+            ? `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth@100ms`
+            : `wss://fstream.binance.com/ws/${symbol.toLowerCase()}@depth@100ms`;
+
+        ws = new WebSocket(endpoint);
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.u <= lastUpdateId) return;
+
+          // Process bids
+          data.b.forEach((item) => {
+            const price = item[0];
+            const qty = parseFloat(item[1]);
+            if (qty === 0) {
+              delete localOrderBook.bids[price];
+            } else {
+              localOrderBook.bids[price] = qty;
+            }
+          });
+
+          // Process asks
+          data.a.forEach((item) => {
+            const price = item[0];
+            const qty = parseFloat(item[1]);
+            if (qty === 0) {
+              delete localOrderBook.asks[price];
+            } else {
+              localOrderBook.asks[price] = qty;
+            }
+          });
+
+          lastUpdateId = data.u;
+          renderOrderBook(symbol);
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+        };
+
+        ws.onclose = () => {
+          console.log("WebSocket closed, reconnecting...");
+          setTimeout(() => connectWebSocket(market, symbol), 1000);
+        };
+      }
+
+      /* Price Updates */
+      async function updateLivePrice(market, symbol) {
+        try {
+          const endpoint =
+            market === "spot"
+              ? `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
+              : `https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=${symbol}`;
+
+          const response = await fetch(endpoint);
+          const data = await response.json();
+
+          currentLivePrice = parseFloat(data.lastPrice);
+          document.getElementById(
+            "livePrice"
+          ).innerText = `📊 Live Price: ${currentLivePrice.toFixed(7)}`;
+
+          if (document.getElementById("pivotPanel")) {
+            updatePivotPanelLivePricePosition();
+          }
+
+          checkPriceInBuckets();
+        } catch (error) {
+          console.error("Error fetching ticker data:", error);
+        }
+      }
+
+      /* Volume Analysis Functions */
+      function checkPriceInBuckets() {
+        if (!currentSymbol || !currentLivePrice) return;
+
+        const step =
+          parseFloat(document.getElementById("priceStepSelect").value) || 1;
+        const bucket = Math.floor(currentLivePrice / step) * step;
+
+        const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
+        const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
+
+        const bidInBucket = aggregatedBids.find(
+          (item) => item[0] === bucket
+        ) || [bucket, 0];
+        const askInBucket = aggregatedAsks.find(
+          (item) => item[0] === bucket
+        ) || [bucket, 0];
+
+        const bidVolume = bidInBucket[1];
+        const askVolume = askInBucket[1];
+        const totalVolume = bidVolume + askVolume;
+
+        // Calculate USD values
+        const totalUSD = totalVolume * currentLivePrice;
+        const buyUSD = bidVolume * currentLivePrice;
+        const sellUSD = askVolume * currentLivePrice;
+
+        // Calculate ratio in percentage
+        let ratioPercentage = "50% / 50%";
+        let ratioClass = "";
+        if (totalVolume > 0) {
+          const buyRatio = (bidVolume / totalVolume) * 100;
+          const sellRatio = (askVolume / totalVolume) * 100;
+          ratioPercentage = `${buyRatio.toFixed(1)}% / ${sellRatio.toFixed(
+            1
+          )}%`;
+
+          if (buyRatio > 60) ratioClass = "buy-dominant";
+          else if (sellRatio > 60) ratioClass = "sell-dominant";
+        }
+
+        // Check if this bucket is filled
+        const isFilled = checkIfBucketFilled(bucket, buyUSD, sellUSD);
+
+        // Track volume changes
+        const volumeChange = calculateVolumeChange(
+          bucket,
+          totalUSD,
+          buyUSD,
+          sellUSD
+        );
+
+        // Update volume panel
+        updateVolumePanel(
+          bucket,
+          totalUSD,
+          buyUSD,
+          sellUSD,
+          ratioPercentage,
+          ratioClass,
+          isFilled,
+          volumeChange
+        );
+
+        // Update current active bucket
+        if (currentActiveBucket !== bucket) {
+          currentActiveBucket = bucket;
+          // Reset highlight for all rows
+          document.querySelectorAll("#volumePanelBody tr").forEach((row) => {
+            row.classList.remove("highlight-row");
+          });
+        }
+
+        // Store current data for change calculation
+        previousVolumeData[bucket] = {
+          totalUSD,
+          buyUSD,
+          sellUSD,
+          timestamp: Date.now(),
+        };
+      }
+
+      function calculateVolumeChange(bucket, totalUSD, buyUSD, sellUSD) {
+        if (!volumeHistory[bucket]) {
+          volumeHistory[bucket] = [];
+        }
+
+        // Add current data to history
+        volumeHistory[bucket].push({
+          total: totalUSD,
+          buy: buyUSD,
+          sell: sellUSD,
+          time: Date.now(),
         });
+
+        // Keep only the last N entries
+        if (volumeHistory[bucket].length > VOLUME_HISTORY_LENGTH) {
+          volumeHistory[bucket].shift();
+        }
+
+        // Calculate changes if we have enough history
+        if (volumeHistory[bucket].length > 1) {
+          const oldest = volumeHistory[bucket][0];
+          const latest =
+            volumeHistory[bucket][volumeHistory[bucket].length - 1];
+
+          const totalChange = latest.total - oldest.total;
+          const buyChange = latest.buy - oldest.buy;
+          const sellChange = latest.sell - oldest.sell;
+
+          const percentChange =
+            totalChange > 0
+              ? ((totalChange / oldest.total) * 100).toFixed(1) + "% ▲"
+              : ((Math.abs(totalChange) / oldest.total) * 100).toFixed(1) +
+                "% ▼";
+
+          return {
+            total: totalChange,
+            buy: buyChange,
+            sell: sellChange,
+            percent: percentChange,
+            direction: totalChange > 0 ? "up" : "down",
+          };
+        }
+
+        return {
+          total: 0,
+          buy: 0,
+          sell: 0,
+          percent: "0%",
+          direction: "neutral",
+        };
       }
-      
-      // Store current data for change calculation
-      previousVolumeData[bucket] = {
+
+      function checkIfBucketFilled(bucket, buyUSD, sellUSD) {
+        // Dynamic threshold based on average volume
+        const avgVolume =
+          Object.values(previousVolumeData).reduce((sum, data) => {
+            return sum + data.totalUSD;
+          }, 0) / Math.max(1, Object.keys(previousVolumeData).length);
+
+        const threshold = avgVolume * 0.75; // 75% of average volume
+        return buyUSD + sellUSD > threshold;
+      }
+
+      function updateVolumePanel(
+        price,
         totalUSD,
         buyUSD,
         sellUSD,
-        timestamp: Date.now()
-      };
-    }
-    
-    function calculateVolumeChange(bucket, totalUSD, buyUSD, sellUSD) {
-      if (!volumeHistory[bucket]) {
-        volumeHistory[bucket] = [];
-      }
-      
-      // Add current data to history
-      volumeHistory[bucket].push({
-        total: totalUSD,
-        buy: buyUSD,
-        sell: sellUSD,
-        time: Date.now()
-      });
-      
-      // Keep only the last N entries
-      if (volumeHistory[bucket].length > VOLUME_HISTORY_LENGTH) {
-        volumeHistory[bucket].shift();
-      }
-      
-      // Calculate changes if we have enough history
-      if (volumeHistory[bucket].length > 1) {
-        const oldest = volumeHistory[bucket][0];
-        const latest = volumeHistory[bucket][volumeHistory[bucket].length - 1];
-        
-        const totalChange = latest.total - oldest.total;
-        const buyChange = latest.buy - oldest.buy;
-        const sellChange = latest.sell - oldest.sell;
-        
-        const percentChange = totalChange > 0 
-          ? ((totalChange / oldest.total) * 100).toFixed(1) + '% ▲' 
-          : ((Math.abs(totalChange) / oldest.total) * 100).toFixed(1) + '% ▼';
-        
-        return {
-          total: totalChange,
-          buy: buyChange,
-          sell: sellChange,
-          percent: percentChange,
-          direction: totalChange > 0 ? 'up' : 'down'
-        };
-      }
-      
-      return {
-        total: 0,
-        buy: 0,
-        sell: 0,
-        percent: '0%',
-        direction: 'neutral'
-      };
-    }
-    
-    function checkIfBucketFilled(bucket, buyUSD, sellUSD) {
-      // Dynamic threshold based on average volume
-      const avgVolume = Object.values(previousVolumeData).reduce((sum, data) => {
-        return sum + data.totalUSD;
-      }, 0) / Math.max(1, Object.keys(previousVolumeData).length);
-      
-      const threshold = avgVolume * 0.75; // 75% of average volume
-      return (buyUSD + sellUSD) > threshold;
-    }
-    
-    function updateVolumePanel(price, totalUSD, buyUSD, sellUSD, ratio, ratioClass, isFilled, change) {
-      const tbody = document.getElementById("volumePanelBody");
-      
-      // Create or update the row
-      let row = document.getElementById(`volumeRow-${price}`);
-      if (!row) {
-        row = document.createElement("tr");
-        row.id = `volumeRow-${price}`;
-        tbody.prepend(row);
-        
-        // Keep only the last 5 buckets in display
-        const rows = tbody.querySelectorAll('tr');
-        if (rows.length > 5) {
-          tbody.removeChild(rows[rows.length - 1]);
+        ratio,
+        ratioClass,
+        isFilled,
+        change
+      ) {
+        const tbody = document.getElementById("volumePanelBody");
+
+        // Create or update the row
+        let row = document.getElementById(`volumeRow-${price}`);
+        if (!row) {
+          row = document.createElement("tr");
+          row.id = `volumeRow-${price}`;
+          tbody.prepend(row);
+
+          // Keep only the last 5 buckets in display
+          const rows = tbody.querySelectorAll("tr");
+          if (rows.length > 5) {
+            tbody.removeChild(rows[rows.length - 1]);
+          }
         }
-      }
-      
-      // Highlight if active bucket
-      row.className = price === currentActiveBucket ? "highlight-row" : "";
-      
-      // Set filled status
-      if (isFilled) {
-        row.classList.add("filled-bucket");
-      } else {
-        row.classList.remove("filled-bucket");
-      }
-      
-      // Format values
-      const formattedPrice = price.toFixed(getPricePrecision(price));
-      const formattedTotal = formatUSDValue(totalUSD);
-      const formattedBuy = formatUSDValue(buyUSD);
-      const formattedSell = formatUSDValue(sellUSD);
-      
-      // Format change indicator
-      let changeIndicator = '';
-      if (change) {
-        const changeClass = change.direction === 'up' ? 'positive-change' : 'negative-change';
-        changeIndicator = `<span class="${changeClass} volume-change">${change.percent}</span>`;
-      }
-      
-      // Update row content
-      row.innerHTML = `
+
+        // Highlight if active bucket
+        row.className = price === currentActiveBucket ? "highlight-row" : "";
+
+        // Set filled status
+        if (isFilled) {
+          row.classList.add("filled-bucket");
+        } else {
+          row.classList.remove("filled-bucket");
+        }
+
+        // Format values
+        const formattedPrice = price.toFixed(getPricePrecision(price));
+        const formattedTotal = formatUSDValue(totalUSD);
+        const formattedBuy = formatUSDValue(buyUSD);
+        const formattedSell = formatUSDValue(sellUSD);
+
+        // Format change indicator
+        let changeIndicator = "";
+        if (change) {
+          const changeClass =
+            change.direction === "up" ? "positive-change" : "negative-change";
+          changeIndicator = `<span class="${changeClass} volume-change">${change.percent}</span>`;
+        }
+
+        // Update row content
+        row.innerHTML = `
         <td>${formattedPrice}</td>
         <td>${formattedTotal} ${changeIndicator}</td>
         <td class="green">${formattedBuy}</td>
         <td>${formattedSell}</td>
         <td class="${ratioClass}">${ratio}</td>
-        <td>${isFilled ? 'FILLED' : 'Active'}</td>
-        <td class="volume-change ${change.direction === 'up' ? 'positive-change' : 'negative-change'} vala">
-          ${change ? formatUSDValue(change.total) : 'N/A'}
+        <td>${isFilled ? "FILLED" : "Active"}</td>
+        <td class="volume-change ${
+          change.direction === "up" ? "positive-change" : "negative-change"
+        } vala">
+          ${change ? formatUSDValue(change.total) : "N/A"}
         </td>
       `;
-    }
-
-    /* Technical Analysis Functions */
-    async function runTechnicalAnalysis() {
-      if (!currentSymbol) {
-        alert("Please select a symbol from Live Order Book Viewer first.");
-        return;
       }
-      
-      const market = currentMarket;
-      const timeFrame = document.getElementById("timeFrameSelect").value;
-      
-      try {
-        // Fetch klines data
-        const klinesEndpoint = market === "spot"
-          ? `https://api.binance.com/api/v3/klines?symbol=${currentSymbol}&interval=${timeFrame}&limit=200`
-          : `https://fapi.binance.com/fapi/v1/klines?symbol=${currentSymbol}&interval=${timeFrame}&limit=200`;
-        
-        const response = await fetch(klinesEndpoint);
-        const klines = await response.json();
-        
-        // Process klines data
-        const closes = klines.map(candle => parseFloat(candle[4]));
-        const highs = klines.map(candle => parseFloat(candle[2]));
-        const lows = klines.map(candle => parseFloat(candle[3]));
-        const volumes = klines.map(candle => parseFloat(candle[5]));
-        
-        // Calculate basic indicators
-        const currentClose = closes[closes.length - 1];
-        const high = Math.max(...highs);
-        const low = Math.min(...lows);
-        const avgVolume = volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
-        
-        // Order book analysis
-        const step = parseFloat(document.getElementById("priceStepSelect").value) || 1;
-        const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
+
+      /* Technical Analysis Functions */
+      async function runTechnicalAnalysis() {
+        if (!currentSymbol) {
+          alert("Please select a symbol from Live Order Book Viewer first.");
+          return;
+        }
+
+        const market = currentMarket;
+        const timeFrame = document.getElementById("timeFrameSelect").value;
+
+        try {
+          // Fetch klines data
+          const klinesEndpoint =
+            market === "spot"
+              ? `https://api.binance.com/api/v3/klines?symbol=${currentSymbol}&interval=${timeFrame}&limit=200`
+              : `https://fapi.binance.com/fapi/v1/klines?symbol=${currentSymbol}&interval=${timeFrame}&limit=200`;
+
+          const response = await fetch(klinesEndpoint);
+          const klines = await response.json();
+
+          // Process klines data
+          const closes = klines.map((candle) => parseFloat(candle[4]));
+          const highs = klines.map((candle) => parseFloat(candle[2]));
+          const lows = klines.map((candle) => parseFloat(candle[3]));
+          const volumes = klines.map((candle) => parseFloat(candle[5]));
+
+          // Calculate basic indicators
+          const currentClose = closes[closes.length - 1];
+          const high = Math.max(...highs);
+          const low = Math.min(...lows);
+          const avgVolume =
+            volumes.reduce((sum, vol) => sum + vol, 0) / volumes.length;
+
+          // Order book analysis
+          const step =
+            parseFloat(document.getElementById("priceStepSelect").value) || 1;
+          const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
+          const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
+
+          aggregatedBids.sort((a, b) => b[0] - a[0]);
+          aggregatedAsks.sort((a, b) => a[0] - b[0]);
+
+          const maxBidVol = aggregatedBids.length
+            ? Math.max(...aggregatedBids.map((item) => item[1]))
+            : 0;
+          const maxAskVol = aggregatedAsks.length
+            ? Math.max(...aggregatedAsks.map((item) => item[1]))
+            : 0;
+
+          const thresholdBid = maxBidVol * 0.5;
+          const thresholdAsk = maxAskVol * 0.5;
+
+          const bigBids = aggregatedBids.filter(
+            (item) => item[0] < currentLivePrice && item[1] >= thresholdBid
+          );
+          const bigAsks = aggregatedAsks.filter(
+            (item) => item[0] > currentLivePrice && item[1] >= thresholdAsk
+          );
+
+          const recommendedSupport = bigBids.length
+            ? bigBids.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev))
+            : null;
+          const recommendedResistance = bigAsks.length
+            ? bigAsks.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev))
+            : null;
+
+          let forecastLower = recommendedSupport
+            ? (
+                recommendedSupport[0] -
+                (currentLivePrice - recommendedSupport[0])
+              ).toFixed(getPricePrecision(currentLivePrice))
+            : "N/A";
+          let forecastUpper = recommendedResistance
+            ? (
+                recommendedResistance[0] +
+                (recommendedResistance[0] - currentLivePrice)
+              ).toFixed(getPricePrecision(currentLivePrice))
+            : "N/A";
+
+          // Generate HTML
+          let html = `<h2>📊 Analysis for ${currentSymbol} (${timeFrame} Interval)</h2>`;
+          html += `<div class="analysis-detail">`;
+
+          // Price Summary
+          html += `<h3>💰 Price Summary</h3>`;
+          html += `<p><strong>Latest Close Price:</strong> ${currentClose.toFixed(
+            getPricePrecision(currentClose)
+          )}</p>`;
+          html += `<p><strong>High:</strong> ${high.toFixed(
+            getPricePrecision(high)
+          )} | <strong>Low:</strong> ${low.toFixed(
+            getPricePrecision(low)
+          )}</p>`;
+          html += `<p><strong>Average Volume:</strong> ${formatUSDValue(
+            avgVolume * currentLivePrice
+          )}</p>`;
+
+          // Order Book Analysis
+          html += `<h3>📊 Order Book Analysis</h3>`;
+          html += `<p><strong>Cumulative Bid Buy Volume:</strong> ${formatUSDValue(
+            aggregatedBids.reduce((sum, item) => sum + item[0] * item[1], 0)
+          )}</p>`;
+          html += `<p><strong>Cumulative Ask Sell Volume:</strong> ${formatUSDValue(
+            aggregatedAsks.reduce((sum, item) => sum + item[0] * item[1], 0)
+          )}</p>`;
+
+          if (recommendedSupport) {
+            const supportValue = recommendedSupport[0] * recommendedSupport[1];
+            html += `<p><strong>✅ Recommended Support:</strong> ${recommendedSupport[0].toFixed(
+              getPricePrecision(recommendedSupport[0])
+            )} (Volume: ${formatUSDValue(supportValue)})</p>`;
+          } else {
+            html += `<p><strong>✅ Recommended Support:</strong> Data insufficient</p>`;
+          }
+
+          if (recommendedResistance) {
+            const resistanceValue =
+              recommendedResistance[0] * recommendedResistance[1];
+            html += `<p><strong>❌ Recommended Resistance:</strong> ${recommendedResistance[0].toFixed(
+              getPricePrecision(recommendedResistance[0])
+            )} (Volume: ${formatUSDValue(resistanceValue)})</p>`;
+          } else {
+            html += `<p><strong>❌ Recommended Resistance:</strong> Data insufficient</p>`;
+          }
+
+          html += `<p><strong>🔮 Price Forecast:</strong> If support breaks, next target around ${forecastLower}. If resistance breaks, next target around ${forecastUpper}.</p>`;
+
+          // Volume Analysis
+          html += `<h3>📈 Volume Analysis</h3>`;
+          if (currentActiveBucket !== null) {
+            const bucketData = previousVolumeData[currentActiveBucket] || {};
+            html += `<p><strong>Current Price Level:</strong> ${currentActiveBucket.toFixed(
+              getPricePrecision(currentActiveBucket)
+            )}</p>`;
+            html += `<p><strong>Total Volume:</strong> ${formatUSDValue(
+              bucketData.totalUSD || 0
+            )}</p>`;
+            html += `<p><strong>Buy Volume:</strong> ${formatUSDValue(
+              bucketData.buyUSD || 0
+            )}</p>`;
+            html += `<p><strong>Sell Volume:</strong> ${formatUSDValue(
+              bucketData.sellUSD || 0
+            )}</p>`;
+          } else {
+            html += `<p>Waiting for volume data...</p>`;
+          }
+
+          html += `</div>`;
+
+          document.getElementById("analysisResult").innerHTML = html;
+        } catch (error) {
+          console.error("Error in analysis:", error);
+          document.getElementById(
+            "analysisResult"
+          ).innerHTML = `<p class="error">Error fetching analysis data</p>`;
+        }
+      }
+
+      /* Pivot Point Calculation */
+      async function updatePivotCalculation(symbol) {
+        const timeFrame =
+          document.getElementById("timeFrameSelect").value || "15m";
+        const endpoint = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${timeFrame}&limit=20`;
+
+        try {
+          const response = await fetch(endpoint);
+          const data = await response.json();
+
+          if (data.length < 2) return;
+
+          const pivotCandle = data[data.length - 2];
+          const high = parseFloat(pivotCandle[2]);
+          const low = parseFloat(pivotCandle[3]);
+          const close = parseFloat(pivotCandle[4]);
+
+          // Calculate pivot levels
+          const pivot = (high + low + close) / 3;
+          const s1 = pivot * 2 - high;
+          const s2 = pivot - (high - low);
+          const s3 = low - 2 * (high - pivot);
+          const r1 = pivot * 2 - low;
+          const r2 = pivot + (high - low);
+          const r3 = high + 2 * (pivot - low);
+
+          // Calculate mid-points
+          const midR3R2 = ((r3 + r2) / 2).toFixed(getPricePrecision(r3));
+          const midR2R1 = ((r2 + r1) / 2).toFixed(getPricePrecision(r2));
+          const midR1PP = ((r1 + pivot) / 2).toFixed(getPricePrecision(r1));
+          const midPPS1 = ((pivot + s1) / 2).toFixed(getPricePrecision(pivot));
+          const midS1S2 = ((s1 + s2) / 2).toFixed(getPricePrecision(s1));
+          const midS2S3 = ((s2 + s3) / 2).toFixed(getPricePrecision(s2));
+
+          // Update pivot table
+          document.getElementById("pivotPoint-td").textContent = pivot.toFixed(
+            getPricePrecision(pivot)
+          );
+          document.getElementById("support1-td").textContent = s1.toFixed(
+            getPricePrecision(s1)
+          );
+          document.getElementById("support2-td").textContent = s2.toFixed(
+            getPricePrecision(s2)
+          );
+          document.getElementById("support3-td").textContent = s3.toFixed(
+            getPricePrecision(s3)
+          );
+          document.getElementById("resistance1-td").textContent = r1.toFixed(
+            getPricePrecision(r1)
+          );
+          document.getElementById("resistance2-td").textContent = r2.toFixed(
+            getPricePrecision(r2)
+          );
+          document.getElementById("resistance3-td").textContent = r3.toFixed(
+            getPricePrecision(r3)
+          );
+
+          document.getElementById("midR3R2-td").textContent = midR3R2;
+          document.getElementById("midR2R1-td").textContent = midR2R1;
+          document.getElementById("midR1PP-td").textContent = midR1PP;
+          document.getElementById("midPPS1-td").textContent = midPPS1;
+          document.getElementById("midS1S2-td").textContent = midS1S2;
+          document.getElementById("midS2S3-td").textContent = midS2S3;
+
+          updatePivotPanelLivePricePosition();
+        } catch (err) {
+          console.error("Error updating pivot values", err);
+        }
+      }
+
+      function updatePivotPanelLivePricePosition() {
+        if (!currentLivePrice) return;
+
+        const levelOrder = [
+          {
+            id: "resistance3",
+            value: parseFloat(
+              document.getElementById("resistance3-td").textContent || 0
+            ),
+          },
+          {
+            id: "midR3R2",
+            value: parseFloat(
+              document.getElementById("midR3R2-td").textContent || 0
+            ),
+          },
+          {
+            id: "resistance2",
+            value: parseFloat(
+              document.getElementById("resistance2-td").textContent || 0
+            ),
+          },
+          {
+            id: "midR2R1",
+            value: parseFloat(
+              document.getElementById("midR2R1-td").textContent || 0
+            ),
+          },
+          {
+            id: "resistance1",
+            value: parseFloat(
+              document.getElementById("resistance1-td").textContent || 0
+            ),
+          },
+          {
+            id: "midR1PP",
+            value: parseFloat(
+              document.getElementById("midR1PP-td").textContent || 0
+            ),
+          },
+          {
+            id: "pivotPoint",
+            value: parseFloat(
+              document.getElementById("pivotPoint-td").textContent || 0
+            ),
+          },
+          {
+            id: "midPPS1",
+            value: parseFloat(
+              document.getElementById("midPPS1-td").textContent || 0
+            ),
+          },
+          {
+            id: "support1",
+            value: parseFloat(
+              document.getElementById("support1-td").textContent || 0
+            ),
+          },
+          {
+            id: "midS1S2",
+            value: parseFloat(
+              document.getElementById("midS1S2-td").textContent || 0
+            ),
+          },
+          {
+            id: "support2",
+            value: parseFloat(
+              document.getElementById("support2-td").textContent || 0
+            ),
+          },
+          {
+            id: "midS2S3",
+            value: parseFloat(
+              document.getElementById("midS2S3-td").textContent || 0
+            ),
+          },
+          {
+            id: "support3",
+            value: parseFloat(
+              document.getElementById("support3-td").textContent || 0
+            ),
+          },
+        ].filter((item) => !isNaN(item.value));
+
+        const tbody = document.querySelector("#pivotPanel tbody");
+        if (!tbody) return;
+
+        // Remove old live price row
+        const oldLiveRow = document.getElementById("livePriceRow");
+        if (oldLiveRow) oldLiveRow.remove();
+
+        // Create new live price row
+        const liveRow = document.createElement("tr");
+        liveRow.id = "livePriceRow";
+
+        const tdLabel = document.createElement("td");
+        tdLabel.textContent = "Live Price";
+
+        const tdValue = document.createElement("td");
+        tdValue.textContent = currentLivePrice.toFixed(
+          getPricePrecision(currentLivePrice)
+        );
+
+        const tdOrderBook = document.createElement("td");
+        tdOrderBook.textContent = "-";
+
+        liveRow.appendChild(tdLabel);
+        liveRow.appendChild(tdValue);
+        liveRow.appendChild(tdOrderBook);
+
+        // Apply styling
+        const liveBG = document.getElementById("bg-livePrice").value;
+        const liveFont = document.getElementById("font-livePrice").value;
+        liveRow.style.backgroundColor = liveBG;
+        liveRow.style.color = liveFont;
+
+        // Insert at correct position
+        let inserted = false;
+        for (let i = 0; i < levelOrder.length; i++) {
+          if (currentLivePrice >= levelOrder[i].value) {
+            const rowElement = document.getElementById(
+              "row-" + levelOrder[i].id
+            );
+            if (rowElement) {
+              rowElement.parentNode.insertBefore(liveRow, rowElement);
+              inserted = true;
+              break;
+            }
+          }
+        }
+
+        if (!inserted) {
+          tbody.appendChild(liveRow);
+        }
+      }
+
+      /* Pivot Order Book Column Updates */
+      function updatePivotOrderBook() {
+        if (!currentSymbol) return;
+
+        const step =
+          parseFloat(document.getElementById("priceStepSelect").value) || 1;
         const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
-        
-        aggregatedBids.sort((a, b) => b[0] - a[0]);
+        const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
+
         aggregatedAsks.sort((a, b) => a[0] - b[0]);
-        
-        const maxBidVol = aggregatedBids.length ? Math.max(...aggregatedBids.map(item => item[1])) : 0;
-        const maxAskVol = aggregatedAsks.length ? Math.max(...aggregatedAsks.map(item => item[1])) : 0;
-        
-        const thresholdBid = maxBidVol * 0.5;
-        const thresholdAsk = maxAskVol * 0.5;
-        
-        const bigBids = aggregatedBids.filter(item => item[0] < currentLivePrice && item[1] >= thresholdBid);
-        const bigAsks = aggregatedAsks.filter(item => item[0] > currentLivePrice && item[1] >= thresholdAsk);
-        
-        const recommendedSupport = bigBids.length ? bigBids.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev)) : null;
-        const recommendedResistance = bigAsks.length ? bigAsks.reduce((prev, curr) => (curr[1] > prev[1] ? curr : prev)) : null;
-        
-        let forecastLower = recommendedSupport 
-          ? (recommendedSupport[0] - (currentLivePrice - recommendedSupport[0])).toFixed(getPricePrecision(currentLivePrice)) 
-          : "N/A";
-        let forecastUpper = recommendedResistance 
-          ? (recommendedResistance[0] + (recommendedResistance[0] - currentLivePrice)).toFixed(getPricePrecision(currentLivePrice)) 
-          : "N/A";
-        
-        // Generate HTML
-        let html = `<h2>📊 Analysis for ${currentSymbol} (${timeFrame} Interval)</h2>`;
-        html += `<div class="analysis-detail">`;
-        
-        // Price Summary
-        html += `<h3>💰 Price Summary</h3>`;
-        html += `<p><strong>Latest Close Price:</strong> ${currentClose.toFixed(getPricePrecision(currentClose))}</p>`;
-        html += `<p><strong>High:</strong> ${high.toFixed(getPricePrecision(high))} | <strong>Low:</strong> ${low.toFixed(getPricePrecision(low))}</p>`;
-        html += `<p><strong>Average Volume:</strong> ${formatUSDValue(avgVolume * currentLivePrice)}</p>`;
-        
-        // Order Book Analysis
-        html += `<h3>📊 Order Book Analysis</h3>`;
-        html += `<p><strong>Cumulative Bid Buy Volume:</strong> ${formatUSDValue(aggregatedBids.reduce((sum, item) => sum + (item[0] * item[1]), 0))}</p>`;
-        html += `<p><strong>Cumulative Ask Sell Volume:</strong> ${formatUSDValue(aggregatedAsks.reduce((sum, item) => sum + (item[0] * item[1]), 0))}</p>`;
-        
-        if (recommendedSupport) {
-          const supportValue = recommendedSupport[0] * recommendedSupport[1];
-          html += `<p><strong>✅ Recommended Support:</strong> ${recommendedSupport[0].toFixed(getPricePrecision(recommendedSupport[0]))} (Volume: ${formatUSDValue(supportValue)})</p>`;
-        } else {
-          html += `<p><strong>✅ Recommended Support:</strong> Data insufficient</p>`;
-        }
-        
-        if (recommendedResistance) {
-          const resistanceValue = recommendedResistance[0] * recommendedResistance[1];
-          html += `<p><strong>❌ Recommended Resistance:</strong> ${recommendedResistance[0].toFixed(getPricePrecision(recommendedResistance[0]))} (Volume: ${formatUSDValue(resistanceValue)})</p>`;
-        } else {
-          html += `<p><strong>❌ Recommended Resistance:</strong> Data insufficient</p>`;
-        }
-        
-        html += `<p><strong>🔮 Price Forecast:</strong> If support breaks, next target around ${forecastLower}. If resistance breaks, next target around ${forecastUpper}.</p>`;
-        
-        // Volume Analysis
-        html += `<h3>📈 Volume Analysis</h3>`;
-        if (currentActiveBucket !== null) {
-          const bucketData = previousVolumeData[currentActiveBucket] || {};
-          html += `<p><strong>Current Price Level:</strong> ${currentActiveBucket.toFixed(getPricePrecision(currentActiveBucket))}</p>`;
-          html += `<p><strong>Total Volume:</strong> ${formatUSDValue(bucketData.totalUSD || 0)}</p>`;
-          html += `<p><strong>Buy Volume:</strong> ${formatUSDValue(bucketData.buyUSD || 0)}</p>`;
-          html += `<p><strong>Sell Volume:</strong> ${formatUSDValue(bucketData.sellUSD || 0)}</p>`;
-        } else {
-          html += `<p>Waiting for volume data...</p>`;
-        }
-        
-        html += `</div>`;
-        
-        document.getElementById("analysisResult").innerHTML = html;
-      } catch(error) {
-        console.error("Error in analysis:", error);
-        document.getElementById("analysisResult").innerHTML = `<p class="error">Error fetching analysis data</p>`;
-      }
-    }
+        aggregatedBids.sort((a, b) => b[0] - a[0]);
 
-    /* Pivot Point Calculation */
-    async function updatePivotCalculation(symbol) {
-      const timeFrame = document.getElementById("timeFrameSelect").value || "15m";
-      const endpoint = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${timeFrame}&limit=20`;
-      
-      try {
-        const response = await fetch(endpoint);
-        const data = await response.json();
-        
-        if (data.length < 2) return;
-        
-        const pivotCandle = data[data.length - 2];
-        const high = parseFloat(pivotCandle[2]);
-        const low = parseFloat(pivotCandle[3]);
-        const close = parseFloat(pivotCandle[4]);
-        
-        // Calculate pivot levels
-        const pivot = (high + low + close) / 3;
-        const s1 = pivot * 2 - high;
-        const s2 = pivot - (high - low);
-        const s3 = low - 2 * (high - pivot);
-        const r1 = pivot * 2 - low;
-        const r2 = pivot + (high - low);
-        const r3 = high + 2 * (pivot - low);
-        
-        // Calculate mid-points
-        const midR3R2 = ((r3 + r2) / 2).toFixed(getPricePrecision(r3));
-        const midR2R1 = ((r2 + r1) / 2).toFixed(getPricePrecision(r2));
-        const midR1PP = ((r1 + pivot) / 2).toFixed(getPricePrecision(r1));
-        const midPPS1 = ((pivot + s1) / 2).toFixed(getPricePrecision(pivot));
-        const midS1S2 = ((s1 + s2) / 2).toFixed(getPricePrecision(s1));
-        const midS2S3 = ((s2 + s3) / 2).toFixed(getPricePrecision(s2));
-        
-        // Update pivot table
-        document.getElementById("pivotPoint-td").textContent = pivot.toFixed(getPricePrecision(pivot));
-        document.getElementById("support1-td").textContent = s1.toFixed(getPricePrecision(s1));
-        document.getElementById("support2-td").textContent = s2.toFixed(getPricePrecision(s2));
-        document.getElementById("support3-td").textContent = s3.toFixed(getPricePrecision(s3));
-        document.getElementById("resistance1-td").textContent = r1.toFixed(getPricePrecision(r1));
-        document.getElementById("resistance2-td").textContent = r2.toFixed(getPricePrecision(r2));
-        document.getElementById("resistance3-td").textContent = r3.toFixed(getPricePrecision(r3));
-        
-        document.getElementById("midR3R2-td").textContent = midR3R2;
-        document.getElementById("midR2R1-td").textContent = midR2R1;
-        document.getElementById("midR1PP-td").textContent = midR1PP;
-        document.getElementById("midPPS1-td").textContent = midPPS1;
-        document.getElementById("midS1S2-td").textContent = midS1S2;
-        document.getElementById("midS2S3-td").textContent = midS2S3;
-        
+        const topAsks = aggregatedAsks.slice(0, 6);
+        const topBids = aggregatedBids.slice(0, 6);
+
+        // Update ask levels
+        const askMapping = [
+          { rowId: "row-resistance3", rank: 5 },
+          { rowId: "row-midR3R2", rank: 4 },
+          { rowId: "row-resistance2", rank: 3 },
+          { rowId: "row-midR2R1", rank: 2 },
+          { rowId: "row-resistance1", rank: 1 },
+          { rowId: "row-midR1PP", rank: 0 },
+        ];
+
+        askMapping.forEach((mapping) => {
+          if (topAsks[mapping.rank]) {
+            const price = topAsks[mapping.rank][0];
+            const qty = topAsks[mapping.rank][1];
+            const usdVal = price * qty;
+            const text = `${price.toFixed(
+              getPricePrecision(price)
+            )} | ${formatUSDValue(usdVal)}`;
+
+            const rowElem = document.getElementById(mapping.rowId);
+            if (rowElem) {
+              const cells = rowElem.querySelectorAll("td");
+              if (cells.length >= 3) {
+                cells[2].textContent = text;
+              }
+            }
+          }
+        });
+
+        // Update bid levels
+        const bidMapping = [
+          { rowId: "row-midPPS1", rank: 0 },
+          { rowId: "row-midS1S2", rank: 1 },
+          { rowId: "row-support2", rank: 2 },
+          { rowId: "row-midS2S3", rank: 3 },
+          { rowId: "row-support3", rank: 4 },
+          { rowId: "row-support1", rank: 5 },
+        ];
+
+        bidMapping.forEach((mapping) => {
+          if (topBids[mapping.rank]) {
+            const price = topBids[mapping.rank][0];
+            const qty = topBids[mapping.rank][1];
+            const usdVal = price * qty;
+            const text = `${price.toFixed(
+              getPricePrecision(price)
+            )} | ${formatUSDValue(usdVal)}`;
+
+            const rowElem = document.getElementById(mapping.rowId);
+            if (rowElem) {
+              const cells = rowElem.querySelectorAll("td");
+              if (cells.length >= 3) {
+                cells[2].textContent = text;
+              }
+            }
+          }
+        });
+      }
+
+      /* Helper Functions */
+      function getPricePrecision(price) {
+        if (price >= 1000) return 7;
+        if (price >= 100) return 7;
+        if (price >= 10) return 7;
+        if (price >= 1) return 7;
+        if (price >= 0.1) return 7;
+        return 7;
+      }
+
+      function formatUSDValue(value) {
+        if (isNaN(value)) return "$0";
+        const absValue = Math.abs(value);
+        if (absValue >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
+        if (absValue >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+        if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
+        if (absValue >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
+        return `$${value.toFixed(2)}`;
+      }
+
+      /* Pivot Settings Modal Functions */
+      function updateRowColor(rowKey) {
+        const bgColor = document.getElementById("bg-" + rowKey).value;
+        const fontColor = document.getElementById("font-" + rowKey).value;
+        const rowElement = document.getElementById("row-" + rowKey);
+        if (rowElement) {
+          rowElement.style.backgroundColor = bgColor;
+          rowElement.style.color = fontColor;
+        }
+      }
+
+      function updateLivePriceColor() {
+        const bgColor = document.getElementById("bg-livePrice").value;
+        const fontColor = document.getElementById("font-livePrice").value;
+        const livePriceElement = document.getElementById("livePrice");
+        if (livePriceElement) {
+          livePriceElement.style.backgroundColor = bgColor;
+          livePriceElement.style.color = fontColor;
+        }
         updatePivotPanelLivePricePosition();
-      } catch (err) {
-        console.error("Error updating pivot values", err);
       }
-    }
 
-    function updatePivotPanelLivePricePosition() {
-      if (!currentLivePrice) return;
-      
-      const levelOrder = [
-        { id: "resistance3", value: parseFloat(document.getElementById("resistance3-td").textContent || 0) },
-        { id: "midR3R2", value: parseFloat(document.getElementById("midR3R2-td").textContent || 0) },
-        { id: "resistance2", value: parseFloat(document.getElementById("resistance2-td").textContent || 0) },
-        { id: "midR2R1", value: parseFloat(document.getElementById("midR2R1-td").textContent || 0) },
-        { id: "resistance1", value: parseFloat(document.getElementById("resistance1-td").textContent || 0) },
-        { id: "midR1PP", value: parseFloat(document.getElementById("midR1PP-td").textContent || 0) },
-        { id: "pivotPoint", value: parseFloat(document.getElementById("pivotPoint-td").textContent || 0) },
-        { id: "midPPS1", value: parseFloat(document.getElementById("midPPS1-td").textContent || 0) },
-        { id: "support1", value: parseFloat(document.getElementById("support1-td").textContent || 0) },
-        { id: "midS1S2", value: parseFloat(document.getElementById("midS1S2-td").textContent || 0) },
-        { id: "support2", value: parseFloat(document.getElementById("support2-td").textContent || 0) },
-        { id: "midS2S3", value: parseFloat(document.getElementById("midS2S3-td").textContent || 0) },
-        { id: "support3", value: parseFloat(document.getElementById("support3-td").textContent || 0) }
-      ].filter(item => !isNaN(item.value));
-      
-      const tbody = document.querySelector("#pivotPanel tbody");
-      if (!tbody) return;
-      
-      // Remove old live price row
-      const oldLiveRow = document.getElementById("livePriceRow");
-      if (oldLiveRow) oldLiveRow.remove();
-      
-      // Create new live price row
-      const liveRow = document.createElement("tr");
-      liveRow.id = "livePriceRow";
-      
-      const tdLabel = document.createElement("td");
-      tdLabel.textContent = "Live Price";
-      
-      const tdValue = document.createElement("td");
-      tdValue.textContent = currentLivePrice.toFixed(getPricePrecision(currentLivePrice));
-      
-      const tdOrderBook = document.createElement("td");
-      tdOrderBook.textContent = "-";
-      
-      liveRow.appendChild(tdLabel);
-      liveRow.appendChild(tdValue);
-      liveRow.appendChild(tdOrderBook);
-      
-      // Apply styling
-      const liveBG = document.getElementById("bg-livePrice").value;
-      const liveFont = document.getElementById("font-livePrice").value;
-      liveRow.style.backgroundColor = liveBG;
-      liveRow.style.color = liveFont;
-      
-      // Insert at correct position
-      let inserted = false;
-      for (let i = 0; i < levelOrder.length; i++) {
-        if (currentLivePrice >= levelOrder[i].value) {
-          const rowElement = document.getElementById("row-" + levelOrder[i].id);
-          if (rowElement) {
-            rowElement.parentNode.insertBefore(liveRow, rowElement);
-            inserted = true;
-            break;
-          }
-        }
+      function openSettings() {
+        document.getElementById("settingsModal").style.display = "block";
       }
-      
-      if (!inserted) {
-        tbody.appendChild(liveRow);
+
+      function closeSettings() {
+        document.getElementById("settingsModal").style.display = "none";
       }
-    }
-
-    /* Pivot Order Book Column Updates */
-    function updatePivotOrderBook() {
-      if (!currentSymbol) return;
-      
-      const step = parseFloat(document.getElementById("priceStepSelect").value) || 1;
-      const aggregatedAsks = aggregateOrders(localOrderBook.asks, step);
-      const aggregatedBids = aggregateOrders(localOrderBook.bids, step);
-      
-      aggregatedAsks.sort((a, b) => a[0] - b[0]);
-      aggregatedBids.sort((a, b) => b[0] - a[0]);
-      
-      const topAsks = aggregatedAsks.slice(0, 6);
-      const topBids = aggregatedBids.slice(0, 6);
-      
-      // Update ask levels
-      const askMapping = [
-        { rowId: "row-resistance3", rank: 5 },
-        { rowId: "row-midR3R2", rank: 4 },
-        { rowId: "row-resistance2", rank: 3 },
-        { rowId: "row-midR2R1", rank: 2 },
-        { rowId: "row-resistance1", rank: 1 },
-        { rowId: "row-midR1PP", rank: 0 }
-      ];
-      
-      askMapping.forEach(mapping => {
-        if (topAsks[mapping.rank]) {
-          const price = topAsks[mapping.rank][0];
-          const qty = topAsks[mapping.rank][1];
-          const usdVal = price * qty;
-          const text = `${price.toFixed(getPricePrecision(price))} | ${formatUSDValue(usdVal)}`;
-          
-          const rowElem = document.getElementById(mapping.rowId);
-          if (rowElem) {
-            const cells = rowElem.querySelectorAll("td");
-            if (cells.length >= 3) {
-              cells[2].textContent = text;
-            }
-          }
-        }
-      });
-      
-      // Update bid levels
-      const bidMapping = [
-        { rowId: "row-midPPS1", rank: 0 },
-        { rowId: "row-midS1S2", rank: 1 },
-        { rowId: "row-support2", rank: 2 },
-        { rowId: "row-midS2S3", rank: 3 },
-        { rowId: "row-support3", rank: 4 },
-        { rowId: "row-support1", rank: 5 }
-      ];
-      
-      bidMapping.forEach(mapping => {
-        if (topBids[mapping.rank]) {
-          const price = topBids[mapping.rank][0];
-          const qty = topBids[mapping.rank][1];
-          const usdVal = price * qty;
-          const text = `${price.toFixed(getPricePrecision(price))} | ${formatUSDValue(usdVal)}`;
-          
-          const rowElem = document.getElementById(mapping.rowId);
-          if (rowElem) {
-            const cells = rowElem.querySelectorAll("td");
-            if (cells.length >= 3) {
-              cells[2].textContent = text;
-            }
-          }
-        }
-      });
-    }
-
-    /* Helper Functions */
-    function getPricePrecision(price) {
-      if (price >= 1000) return 7;
-      if (price >= 100) return 7;
-      if (price >= 10) return 7;
-      if (price >= 1) return 7;
-      if (price >= 0.1) return 7;
-      return 7;
-    }
-
-    function formatUSDValue(value) {
-      if (isNaN(value)) return "$0";
-      const absValue = Math.abs(value);
-      if (absValue >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
-      if (absValue >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-      if (absValue >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-      if (absValue >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
-      return `$${value.toFixed(2)}`;
-    }
-
-    /* Pivot Settings Modal Functions */
-    function updateRowColor(rowKey) {
-      const bgColor = document.getElementById("bg-" + rowKey).value;
-      const fontColor = document.getElementById("font-" + rowKey).value;
-      const rowElement = document.getElementById("row-" + rowKey);
-      if (rowElement) {
-        rowElement.style.backgroundColor = bgColor;
-        rowElement.style.color = fontColor;
-      }
-    }
-
-    function updateLivePriceColor() {
-      const bgColor = document.getElementById("bg-livePrice").value;
-      const fontColor = document.getElementById("font-livePrice").value;
-      const livePriceElement = document.getElementById("livePrice");
-      if (livePriceElement) {
-        livePriceElement.style.backgroundColor = bgColor;
-        livePriceElement.style.color = fontColor;
-      }
-      updatePivotPanelLivePricePosition();
-    }
-
-    function openSettings() {
-      document.getElementById("settingsModal").style.display = "block";
-    }
-
-    function closeSettings() {
-      document.getElementById("settingsModal").style.display = "none";
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
